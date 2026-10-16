@@ -47,8 +47,12 @@ python3 build.py
 
 ## Hosting on bradcowdrey.com
 
-`index.html` is static. Serve it from any web host, or turn on GitHub Pages for this repository (Settings → Pages → deploy from the `main` branch, root folder), then point a subdomain such as `md.bradcowdrey.com` at it.
+`index.html` is static. Serve it from any web host, or turn on GitHub Pages for this repository (Settings → Pages → deploy from the `main` branch, root folder), then point a subdomain such as `md.bradcowdrey.com` at it. The app runs at `https://bc101101.github.io/cowdrey-md/` once Pages is on.
 
 ## Credits
 
 Built with CodeMirror 5, markdown-it, highlight.js, MathJax 3, Mermaid, DOMPurify and Lucide icons. Feature ideas came from studying the open-source editors MacDown, MarkText, Zettlr, StackEdit, Dillinger and ghostwriter, along with Markdot.
+
+## License
+
+MIT © Bradley Cowdrey. See [LICENSE](LICENSE).

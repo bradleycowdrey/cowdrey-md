@@ -45,9 +45,13 @@ jobs:
       # Builds a universal (Apple silicon + Intel) app and DMG, then attaches it to a GitHub Release.
       # To sign and notarize, add these repository secrets and the action picks them up:
       # APPLE_CERTIFICATE, APPLE_CERTIFICATE_PASSWORD, APPLE_SIGNING_IDENTITY, APPLE_ID, APPLE_PASSWORD, APPLE_TEAM_ID
+      # With the TAURI_SIGNING_PRIVATE_KEY secret set, the build also makes a signed update bundle and
+      # latest.json, so installed copies can update themselves in place. Without it, only the DMG is built.
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           projectPath: desktop
           tagName: ${{ github.ref_type == 'tag' && github.ref_name || 'v__VERSION__' }}
@@ -57,7 +61,7 @@ jobs:
 
             Download the .dmg below, open it, and drag Cowdrey.MD into Applications. It runs on Apple silicon and Intel Macs.
 
-            This build is not yet signed by Apple. The first time you open it, right-click Cowdrey.MD in Applications and choose Open, then Open again.
+            This build is not yet signed by Apple. The first time you open it, macOS asks for confirmation: open System Settings, Privacy & Security, and click Open Anyway. Later versions install themselves from Help, Check for updates.
           releaseDraft: false
           prerelease: false
-          args: --target universal-apple-darwin
+          args: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' && '--target universal-apple-darwin --config src-tauri/tauri.updater.conf.json' || '--target universal-apple-darwin' }}

@@ -108,6 +108,9 @@ svg.lucide { width: 16px; height: 16px; stroke-width: 1.8; flex: none; }
 .icon-btn:hover { background: var(--hover); color: var(--ink); }
 .primary-btn { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; background: var(--accent); color: var(--accent-ink); padding: 9px 18px; font-weight: 600; font-size: 13.5px; }
 .primary-btn:hover { filter: brightness(1.07); }
+.ghost-btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--surface); color: var(--ink); padding: 8px 16px; font-weight: 600; font-size: 13.5px; }
+.ghost-btn:hover { background: var(--hover); }
+.share-blurb { padding: 4px 10px 8px; color: var(--ink-2); font-size: 12.5px; line-height: 1.45; max-width: 260px; }
 
 /* ---------- ribbon (Word) ---------- */
 .ribbon { flex: none; background: var(--chrome); border-bottom: 1px solid var(--line); }
@@ -356,7 +359,8 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
   .divider { display: none; }
   .menubar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
   .ruler, #sbPage, .sb-zoom { display: none; }
-  .save-state, .sb-brand, .sb-zoom input[type="range"], #zoomInBtn, #zoomOutBtn, .primary-btn span { display: none; }
+  .save-state, .sb-brand, .sb-zoom input[type="range"], #zoomInBtn, #zoomOutBtn, .primary-btn span, .ghost-btn span { display: none; }
+  .ghost-btn { padding: 8px 10px; }
   .sb-inner { gap: 10px; }
   .sb-zoom .pct { min-width: 0; }
   .primary-btn { padding: 9px 11px; }
@@ -485,7 +489,8 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
       </div>
       <div class="tb-actions">
         <button class="icon-btn" id="themeBtn" type="button" title="Theme: match system" aria-label="Change theme"><i data-lucide="sun-moon"></i></button>
-        <button class="primary-btn" id="exportBtn" type="button" aria-haspopup="menu"><i data-lucide="share"></i><span>Export</span></button>
+        <button class="ghost-btn" id="shareAppBtn" type="button" aria-haspopup="menu" title="Share Cowdrey.MD with someone"><i data-lucide="share"></i><span>Share app</span></button>
+        <button class="primary-btn" id="exportBtn" type="button" aria-haspopup="menu"><i data-lucide="download"></i><span>Export</span></button>
       </div>
     </div>
   </header>

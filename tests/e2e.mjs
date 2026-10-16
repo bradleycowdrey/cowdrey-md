@@ -530,6 +530,51 @@ await test('existing users see the new name on their stored welcome document', a
   await Q.ctx.close();
 });
 
+
+await test('Mac app: signed updates install in place, save first, and restart', async () => {
+  const Q = await newPage({ init: () => {
+    window.__calls = [];
+    localStorage.setItem('cowdrey.md:updateChecked', String(Date.now()));
+    window.__TAURI__ = {
+      core: { invoke: async (cmd) => { window.__calls.push('invoke:' + cmd); return cmd === 'take_opened_files' ? [] : null; } },
+      app: { getVersion: async () => '1.0.6' },
+      dialog: {}, event: { listen: async () => {} }, opener: { openUrl: async (u) => window.__calls.push('open:' + u) },
+      updater: { check: async () => window.__update || null },
+      process: { relaunch: async () => { window.__calls.push('relaunch:' + localStorage.getItem('cowdrey.md:doc:' + JSON.parse(localStorage.getItem('cowdrey.md:current')))); } },
+    };
+  } });
+  await menu(Q, 'checkUpdates'); await settle(Q, 300);
+  ok((await Q.textContent('#toast')).includes('latest version (1.0.6)'), 'no update: ' + await Q.textContent('#toast'));
+  await Q.evaluate(() => {
+    window.__update = { version: '1.0.7', body: '- Smoother saving', downloadAndInstall: async (cb) => {
+      cb({ event: 'Started', data: { contentLength: 100 } });
+      cb({ event: 'Progress', data: { chunkLength: 40 } }); window.__mid = document.querySelector('#updStatus').textContent;
+      cb({ event: 'Progress', data: { chunkLength: 60 } }); cb({ event: 'Finished' }); } };
+  });
+  await Q.click('.CodeMirror'); await Q.keyboard.press('Control+End'); await Q.keyboard.type(' unsaved edit');
+  await menu(Q, 'checkUpdates'); await settle(Q, 300);
+  eq(await Q.textContent('#dialog h2'), 'Cowdrey.MD 1.0.7 is available');
+  ok((await Q.textContent('#dialog')).includes('Smoother saving'), 'notes');
+  await Q.click('#dialog .btn.primary'); await settle(Q, 500);
+  eq(await Q.evaluate(() => window.__mid), 'Downloading… 40%', 'progress shown');
+  const calls = await Q.evaluate(() => window.__calls);
+  ok(calls.includes('invoke:allow_exit'), 'quit guard released');
+  const rl = calls.find((c) => c.startsWith('relaunch:'));
+  ok(rl && rl.includes('unsaved edit'), 'work saved before restart: ' + rl);
+  eq(Q.errors, [], 'page errors'); await Q.ctx.close();
+});
+
+
+await test('Share app button copies the app link, the Mac link and a ready message', async () => {
+  await P.click('#shareAppBtn'); await settle(P, 150);
+  ok((await P.textContent('#popover')).includes('Share Cowdrey.MD'), 'menu');
+  await P.click('#popover [data-share="web"]'); await settle(P, 200);
+  eq(await P.evaluate(() => navigator.clipboard.readText()), 'https://bradleycowdrey.github.io/cowdrey-md/');
+  await P.click('#shareAppBtn'); await P.click('#popover [data-share="message"]'); await settle(P, 200);
+  const msg = await P.evaluate(() => navigator.clipboard.readText());
+  ok(msg.includes('Free. Forever.') && msg.includes('releases/latest'), msg);
+});
+
 await test('no library URL points at a file that does not exist', async () => { eq([...missing], []); });
 await test('no uncaught page errors during the whole run', async () => { eq(P.errors, []); });
 

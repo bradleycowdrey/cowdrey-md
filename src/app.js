@@ -1531,6 +1531,26 @@ $('#menubar').addEventListener('mouseover', (e) => {
   const b = e.target.closest('[data-menu]');
   if (b && !popover.hidden && popAnchor && popAnchor.dataset.menu != null && popAnchor !== b) { closePopover(); openMenu(b); }
 });
+/* Share the app itself */
+const APP_URL = 'https://bradleycowdrey.github.io/cowdrey-md/';
+const MAC_URL = 'https://github.com/bradleycowdrey/cowdrey-md/releases/latest';
+const SHARE_TEXT = 'Cowdrey.MD is a free Markdown editor by Bradley Cowdrey. Free. Forever.';
+$('#shareAppBtn').addEventListener('click', (e) => {
+  const canShare = typeof navigator.share === 'function' && !inArtifact();
+  openPopover(e.currentTarget, `<div class="mhead">Share Cowdrey.MD</div><p class="share-blurb">${esc(SHARE_TEXT)} Pass it on to anyone who writes in Markdown.</p>
+    ${canShare ? `<button type="button" class="mi" data-share="native">${ic('share')}<span>Share…</span><span></span></button>` : ''}
+    <button type="button" class="mi" data-share="web">${ic('link')}<span>Copy link to the web app</span><span></span></button>
+    <button type="button" class="mi" data-share="mac">${ic('laptop')}<span>Copy Mac download link</span><span></span></button>
+    <button type="button" class="mi" data-share="message">${ic('message-square-text')}<span>Copy a message to send</span><span></span></button>`, (ev) => {
+    const b = ev.target.closest('[data-share]'); if (!b) return;
+    closePopover();
+    const kind = b.dataset.share;
+    if (kind === 'native') navigator.share({ title: 'Cowdrey.MD', text: SHARE_TEXT, url: APP_URL }).catch(() => {});
+    if (kind === 'web') copyText(APP_URL, 'Link to Cowdrey.MD copied');
+    if (kind === 'mac') copyText(MAC_URL, 'Mac download link copied');
+    if (kind === 'message') copyText(`${SHARE_TEXT}\n\nUse it in your browser: ${APP_URL}\nGet it for Mac: ${MAC_URL}`, 'Message copied, ready to paste');
+  }, { alignRight: true });
+});
 $('#exportBtn').addEventListener('click', (e) => {
   const ids = ['copyRich', 'copyMd', 'copyHtml', '-', 'saveMd', 'exportHtml', 'print'];
   openPopover(e.currentTarget, '<div class="mhead">Copy or download</div>' + menuHtml(ids), (ev) => { const b = ev.target.closest('[data-cmd]'); if (b) runCmd(b.dataset.cmd); }, { alignRight: true });
@@ -1869,11 +1889,64 @@ function isNewer(a, b) {
   for (let i = 0; i < Math.max(pa.length, pb.length); i++) if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) > (pb[i] || 0);
   return false;
 }
+const updateNotes = (text) => (text && md ? DOMPurify.sanitize(md.render(String(text).slice(0, 4000)), PURIFY) : '');
+const notesBlock = (html) => (html ? `<div class="preview" style="font-size:13.5px;max-height:220px;overflow:auto;border-top:1px solid var(--line);padding-top:8px">${html}</div>` : '');
+// In-place update: download, verify the signature, replace the app, save, and reopen on the new version.
+async function installUpdate(update) {
+  openDialog({
+    title: `Updating to Cowdrey.MD ${update.version}`,
+    body: `<p id="updStatus">Downloading…</p><progress id="updBar" max="1" value="0" style="width:100%;accent-color:var(--accent)"></progress>`,
+    actions: [],
+  });
+  let total = 0, got = 0;
+  try {
+    flushSave();
+    await update.downloadAndInstall((ev) => {
+      if (ev.event === 'Started') total = ev.data?.contentLength || 0;
+      if (ev.event === 'Progress') {
+        got += ev.data?.chunkLength || 0;
+        const bar = $('#updBar'); if (bar && total) bar.value = got / total;
+        const st = $('#updStatus'); if (st && total) st.textContent = `Downloading… ${Math.round((got / total) * 100)}%`;
+      }
+      if (ev.event === 'Finished') { const st = $('#updStatus'); if (st) st.textContent = 'Installing…'; const bar = $('#updBar'); if (bar) bar.removeAttribute('value'); }
+    });
+    const st = $('#updStatus'); if (st) st.textContent = 'Restarting…';
+    flushSave();
+    await TAURI.core.invoke('allow_exit').catch(() => {});
+    await TAURI.process.relaunch();
+  } catch (e) {
+    openDialog({
+      title: 'The update could not be installed',
+      body: `<p>${esc(e?.message || String(e))}</p><p>Your work is saved. You can download the new version and install it by hand.</p>`,
+      actions: [{ label: 'Close' }, { label: 'Open downloads page', primary: true, run: () => { TAURI.opener.openUrl(RELEASES_PAGE).catch(() => {}); } }],
+    });
+  }
+}
 async function checkForUpdates(manual) {
   if (!TAURI) return;
   let current = '0';
   try { current = await TAURI.app.getVersion(); } catch {}
   if (manual) toast('Checking for updates…');
+  // Signed in-place updates, when the release has them
+  if (TAURI.updater && typeof TAURI.updater.check === 'function') {
+    let update = null, ok = false;
+    try { update = await TAURI.updater.check(); ok = true; } catch {}
+    if (ok) {
+      store.set(KEY + ':updateChecked', Date.now());
+      if (!update) { if (manual) toast(`You have the latest version (${current}).`); return; }
+      if (!manual && store.get(KEY + ':skipVersion', '') === update.version) return;
+      openDialog({
+        title: `Cowdrey.MD ${update.version} is available`,
+        body: `<p>You have version ${esc(current)}. Cowdrey.MD will save your work, install the update and reopen.</p>${notesBlock(updateNotes(update.body))}`,
+        actions: [
+          { label: 'Skip this version', run: () => { store.set(KEY + ':skipVersion', update.version); } },
+          { label: 'Later' },
+          { label: 'Install and restart', primary: true, run: () => { setTimeout(() => installUpdate(update), 0); } },
+        ],
+      });
+      return;
+    }
+  }
   let rel;
   try {
     const r = await fetch(RELEASES_API, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
@@ -1888,10 +1961,10 @@ async function checkForUpdates(manual) {
   if (!latest || !isNewer(latest, current)) { if (manual) toast(`You have the latest version (${current}).`); return; }
   if (!manual && store.get(KEY + ':skipVersion', '') === latest) return;
   const dmg = (rel.assets || []).find((a) => /\.dmg$/i.test(a.name));
-  const notes = rel.body && md ? DOMPurify.sanitize(md.render(String(rel.body).slice(0, 4000)), PURIFY) : '';
+  const notes = updateNotes(rel.body);
   openDialog({
     title: `Cowdrey.MD ${latest} is available`,
-    body: `<p>You have version ${esc(current)}. Download the new version, open it, and drag Cowdrey.MD into Applications to replace this one. Your documents are kept.</p>${notes ? `<div class="preview" style="font-size:13.5px;max-height:220px;overflow:auto;border-top:1px solid var(--line);padding-top:8px">${notes}</div>` : ''}`,
+    body: `<p>You have version ${esc(current)}. Download the new version, open it, and drag Cowdrey.MD into Applications to replace this one. Your documents are kept.</p>${notesBlock(notes)}`,
     actions: [
       { label: 'Skip this version', run: () => { store.set(KEY + ':skipVersion', latest); } },
       { label: 'Later' },

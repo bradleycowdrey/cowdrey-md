@@ -45,6 +45,12 @@ fn write_text_file(path: String, contents: String) -> Result<(), String> {
     std::fs::write(&path, contents).map_err(|e| e.to_string())
 }
 
+/// Called just before an update relaunches the app, so the quit handler lets it go.
+#[tauri::command]
+fn allow_exit(app: AppHandle) {
+    app.state::<Quitting>().0.store(true, Ordering::SeqCst);
+}
+
 #[tauri::command]
 fn quit_app(app: AppHandle) {
     app.state::<Quitting>().0.store(true, Ordering::SeqCst);
@@ -66,9 +72,11 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .manage(PendingFiles(Mutex::new(Vec::new())))
         .manage(Quitting(AtomicBool::new(false)))
-        .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, quit_app])
+        .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, quit_app, allow_exit])
         .on_window_event(|window, event| {
             if let WindowEvent::CloseRequested { api, .. } = event {
                 let app = window.app_handle();

@@ -23,10 +23,10 @@ const KEY = 'cowdrey.md';
 
 const DEFAULTS = {
   view: 'split', outline: true, sideTab: 'outline', sync: true, focus: false, typewriter: false,
-  lineNumbers: false, wrap: true, ruler: true, guides: true, edTheme: 'auto', edSize: 14.5,
+  lineNumbers: false, wrap: true, ruler: true, guides: true, edTheme: 'auto', edSize: 14,
   pageStyle: 'cowdrey', pageSize: 'letter', margins: 'normal', zoom: 'fit',
   typographer: true, breaks: false, math: true, diagrams: true,
-  ribbonTab: 'home', ribbonCollapsed: false, split: 0.5, appTheme: 'system', openTabs: [],
+  ribbonTab: 'home', ribbonCollapsed: false, split: 0.45, appTheme: 'system', openTabs: [],
 };
 const S = Object.assign({}, DEFAULTS, store.get(KEY + ':settings', {}));
 const saveSettings = debounce(() => store.set(KEY + ':settings', S), 200);
@@ -343,8 +343,9 @@ const MARGINS = { narrow: 48, normal: 96, wide: 144 };
 let scale = 1, pageW = 816, pad = 96, compact = false;
 
 function sizePage() {
-  const avail = Math.max(240, canvas.clientWidth - (compact ? 20 : 48));
   compact = canvas.clientWidth < 560;
+  const cs = getComputedStyle(canvas);
+  const avail = Math.max(240, canvas.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 2);
   let size = PAGES[S.pageSize];
   pad = MARGINS[S.margins];
   if (compact && S.zoom === 'fit') {
@@ -372,7 +373,7 @@ function sizePage() {
 function updatePageCount() {
   const size = compact && S.zoom === 'fit' ? PAGES.fluid : PAGES[S.pageSize];
   const el = $('#sbPage');
-  if (!size.h) { el.textContent = (compact ? 'Mobile' : size.label) + ' page'; return; }
+  if (!size.h) { el.textContent = compact || S.pageSize === 'fluid' ? 'Pageless' : 'Wide page'; return; }
   const total = Math.max(1, Math.ceil((page.offsetHeight - 2) / size.h));
   const y = canvas.scrollTop - pageWrap.offsetTop + canvas.clientHeight * 0.35;
   const curPage = clamp(Math.floor(y / (size.h * scale)) + 1, 1, total);
@@ -889,8 +890,8 @@ function typewriterScroll() {
    ================================================================ */
 function updateOutline() {
   const el = $('#outlinePanel');
-  if (!headings.length) { el.innerHTML = '<div class="side-heading">Outline</div><p class="empty-note">Headings you add to the document appear here. Start a line with <b>#</b> to make one.</p>'; return; }
-  el.innerHTML = '<div class="side-heading">Outline</div>' + headings.map((h, i) =>
+  if (!headings.length) { el.innerHTML = '<p class="empty-note">Headings you add to the document appear here. Start a line with <b>#</b> to make one.</p>'; return; }
+  el.innerHTML = headings.map((h, i) =>
     `<button type="button" class="ol-item l${h.level}" data-i="${i}" style="padding-left:${8 + (h.level - 1) * 12}px" title="${esc(h.text)}">${esc(h.text || 'Untitled heading')}</button>`).join('');
   highlightOutline();
 }
@@ -1527,7 +1528,7 @@ $('#menubar').addEventListener('mouseover', (e) => {
 });
 $('#exportBtn').addEventListener('click', (e) => {
   const ids = ['copyRich', 'copyMd', 'copyHtml', '-', 'saveMd', 'exportHtml', 'print'];
-  openPopover(e.currentTarget, '<div class="mhead">Share this document</div>' + menuHtml(ids), (ev) => { const b = ev.target.closest('[data-cmd]'); if (b) runCmd(b.dataset.cmd); }, { alignRight: true });
+  openPopover(e.currentTarget, '<div class="mhead">Copy or download</div>' + menuHtml(ids), (ev) => { const b = ev.target.closest('[data-cmd]'); if (b) runCmd(b.dataset.cmd); }, { alignRight: true });
 });
 
 /* table & callout pickers */
@@ -1572,7 +1573,7 @@ C.frontMatter.short = 'Front matter'; C.view_editor.short = 'Editor'; C.view_spl
 C.toggleOutline.short = 'Sidebar'; C.toggleGuides.short = 'Page breaks'; C.toggleSync.short = 'Sync scroll';
 C.typographer.short = 'Smart quotes'; C.breaks.short = 'Line breaks'; C.toggleMath.short = 'Math'; C.toggleDiagrams.short = 'Diagrams';
 C.find.short = 'Find'; C.replace.short = 'Replace'; C.footnote.short = 'Footnote'; C.link.short = 'Link'; C.callout.short = 'Callout';
-C.toggleFocus.short = 'Focus'; C.toggleTypewriter.short = 'Typewriter'; C.zoomFit.short = 'Page width'; C.zoom100.short = '100%';
+C.toggleFocus.short = 'Focus'; C.toggleTypewriter.short = 'Typewriter'; C.zoomFit.short = 'Page width'; C.zoom100.short = 'Actual size';
 C.undo.short = 'Undo'; C.redo.short = 'Redo'; C.formatTable.short = 'Tidy table'; C.deflist.short = 'Definition'; C.wordCount.short = 'Word count';
 
 const STYLE_CARDS = [
@@ -1936,7 +1937,7 @@ if (TAURI) {
    ================================================================ */
 buildMd();
 app.dataset.outline = S.outline ? 'on' : 'off';
-if (window.innerWidth <= 980 && S.outline) { S.outline = false; app.dataset.outline = 'off'; }
+if (window.innerWidth < 1200 && S.outline) { S.outline = false; app.dataset.outline = 'off'; }
 app.dataset.view = S.view;
 renderRibbon();
 applyTheme(); applyEditorPrefs(); applyPagePrefs();

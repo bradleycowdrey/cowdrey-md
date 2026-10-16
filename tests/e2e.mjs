@@ -469,6 +469,54 @@ await test('two browser tabs share documents without erasing each other', async 
   await Q.close();
 });
 
+
+await test('Mac app: Check for updates finds a newer release and offers the DMG', async () => {
+  const tauriMock = () => {
+    window.__calls = [];
+    window.__TAURI__ = {
+      core: { invoke: async (cmd) => (cmd === 'take_opened_files' ? [] : null) },
+      app: { getVersion: async () => '1.0.1' },
+      dialog: { save: async () => null, open: async () => null },
+      event: { listen: async () => {} },
+      opener: { openUrl: async (u) => { window.__calls.push(u); } },
+    };
+    localStorage.setItem('cowdrey.md:updateChecked', String(Date.now())); // no automatic check during the test
+  };
+  const Q = await newPage({ init: tauriMock });
+  let release = { tag_name: 'v1.2.0', html_url: 'https://github.com/x/releases/tag/v1.2.0', body: '## What is new\n\n- Faster saving', assets: [{ name: 'Cowdrey.md_1.2.0_universal.dmg', browser_download_url: 'https://github.com/x/releases/download/v1.2.0/Cowdrey.md_1.2.0_universal.dmg' }] };
+  let status = 200;
+  await Q.route('https://api.github.com/**', (r) => r.fulfill({ status, contentType: 'application/json', body: JSON.stringify(release) }));
+  await menu(Q, 'checkUpdates'); await settle(Q, 400);
+  ok((await Q.textContent('#dialog h2')) === 'Cowdrey.md 1.2.0 is available', await Q.textContent('#dialog'));
+  ok((await Q.textContent('#dialog')).includes('Faster saving'), 'release notes shown');
+  await Q.click('#dialog .btn.primary'); await settle(Q, 200);
+  eq(await Q.evaluate(() => window.__calls), ['https://github.com/x/releases/download/v1.2.0/Cowdrey.md_1.2.0_universal.dmg'], 'opens the DMG');
+  release = { tag_name: 'v1.0.1', assets: [] };
+  await menu(Q, 'checkUpdates'); await settle(Q, 400);
+  ok((await Q.textContent('#toast')).includes('latest version (1.0.1)'), await Q.textContent('#toast'));
+  status = 500;
+  await menu(Q, 'checkUpdates'); await settle(Q, 400);
+  ok((await Q.textContent('#dialog h2')) === 'Could not check for updates', 'error dialog'); await Q.keyboard.press('Escape');
+  eq(Q.errors, [], 'page errors'); await Q.ctx.close();
+});
+
+await test('Mac app: the daily check stays quiet when up to date and respects Skip', async () => {
+  const Q = await newPage({ init: () => {
+    window.__TAURI__ = { core: { invoke: async () => [] }, app: { getVersion: async () => '1.0.1' }, dialog: {}, event: { listen: async () => {} }, opener: { openUrl: async () => {} } };
+    localStorage.setItem('cowdrey.md:skipVersion', JSON.stringify('1.1.0'));
+  } });
+  await Q.route('https://api.github.com/**', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify({ tag_name: 'v1.1.0', assets: [] }) }));
+  await settle(Q, 6000);
+  ok(!(await Q.evaluate(() => document.querySelector('#dialog').open)), 'no dialog for a skipped version');
+  ok(await Q.evaluate(() => Number(localStorage.getItem('cowdrey.md:updateChecked')) > 0), 'check recorded');
+  await Q.ctx.close();
+});
+
+await test('web version has no update menu item', async () => {
+  await P.click('[data-menu="6"]');
+  ok(!(await P.$('#popover [data-cmd="checkUpdates"]')), 'hidden on the web'); await P.keyboard.press('Escape');
+});
+
 await test('no library URL points at a file that does not exist', async () => { eq([...missing], []); });
 await test('no uncaught page errors during the whole run', async () => { eq(P.errors, []); });
 

@@ -2,7 +2,7 @@
 
 A Markdown editor by **Bradley Cowdrey** · [bradcowdrey.com](https://bradcowdrey.com)
 
-It combines MacDown's side-by-side writing, a Docs-style title bar, menus and paper page, and a Microsoft Word-style ribbon, ruler and status bar. It is one self-contained web page with no build server and no backend.
+It combines MacDown's side-by-side writing, a Docs-style title bar, menus and paper page, and a Word-style ribbon, ruler and status bar. It is one self-contained web page with no build server and no backend.
 
 ## Features
 
@@ -62,7 +62,7 @@ node tests/e2e.mjs
 
 Download the latest `.dmg` from [Releases](https://github.com/bradleycowdrey/cowdrey-md/releases/latest). It runs on Apple silicon and Intel Macs and works offline.
 
-The DMG is built by GitHub Actions (`.github/workflows/mac-app.yml`) whenever the version in `desktop/src-tauri/tauri.conf.json` changes on `main`, a tag such as `v1.0.1` is pushed, or the workflow is run by hand. The `desktop/` folder wraps `index.html` with [Tauri](https://tauri.app) and copies every library in, so nothing loads from the internet. Until the build is signed and notarized with an Apple Developer ID, macOS asks for confirmation the first time: right-click the app and choose **Open**.
+The Mac app checks for a newer release once a day (and from **Help → Check for updates…**) and offers to download it. The DMG is built by GitHub Actions (`.github/workflows/mac-app.yml`) whenever the version in `desktop/src-tauri/tauri.conf.json` changes on `main`, a tag such as `v1.0.1` is pushed, or the workflow is run by hand. The `desktop/` folder wraps `index.html` with [Tauri](https://tauri.app) and copies every library in, so nothing loads from the internet. Until the build is signed and notarized with an Apple Developer ID, macOS asks for confirmation the first time: right-click the app and choose **Open**.
 
 ## Fonts
 

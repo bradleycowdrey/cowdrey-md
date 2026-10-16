@@ -1017,7 +1017,7 @@ Raw HTML is allowed, so collapsible sections work too.
 
 ---
 
-Made by Bradley Cowdrey at [bradcowdrey.com](https://bradcowdrey.com). Inspired by MacDown, Docs, and Microsoft Word.
+Made by Bradley Cowdrey at [bradcowdrey.com](https://bradcowdrey.com). Inspired by MacDown, Docs, and Word.
 
 [^1]: Footnotes collect at the bottom of the page, with links back to where they were used.
 </script>
@@ -2528,6 +2528,7 @@ cmd('toggleDiagrams', { label: 'Diagrams (Mermaid)', icon: 'workflow', checked: 
 cmd('shortcuts', { label: 'Keyboard shortcuts', icon: 'keyboard', key: 'Mod-/', global: true, run: showShortcuts });
 cmd('guide', { label: 'Markdown guide', icon: 'book-open-text', run: () => newDoc(WELCOME, 'Markdown guide') });
 cmd('about', { label: 'About Cowdrey.md', icon: 'info', run: showAbout });
+cmd('checkUpdates', { label: 'Check for updates…', icon: 'refresh-cw', hidden: () => !TAURI, run: () => checkForUpdates(true) });
 cmd('wordCount', { label: 'Word count', icon: 'file-digit', key: 'Mod-Alt-w', global: true, run: showStats });
 
 function rebuild() { saveSettings(); buildMd(); render(); refreshState(); }
@@ -2570,7 +2571,7 @@ const MENUS = [
   ['Insert', ['image', 'imageUrl', 'table', 'link', '-', 'codeBlock', 'math', 'diagram', 'callout', 'details', '-', 'footnote', 'deflist', 'hr', 'toc', 'date', 'frontMatter']],
   ['Format', ['bold', 'italic', 'underline', 'strike', 'highlight', 'code', 'sup', 'sub', '-', 'normal', 'h1', 'h2', 'h3', 'h4', '-', 'ul', 'ol', 'task', 'quote', 'indent', 'outdent', '-', 'clearFormat']],
   ['Tools', ['wordCount', 'formatTable', '-', 'typographer', 'breaks', 'toggleMath', 'toggleDiagrams']],
-  ['Help', ['shortcuts', 'guide', 'about']],
+  ['Help', ['shortcuts', 'guide', '-', 'checkUpdates', 'about']],
 ];
 function menuHtml(ids) {
   return ids.filter((id) => id === '-' || !(C[id].hidden && C[id].hidden())).map((id) => {
@@ -2882,10 +2883,12 @@ function showShortcuts() {
     actions: [{ label: 'Done', primary: true }],
   });
 }
-function showAbout() {
+async function showAbout() {
+  let version = '';
+  if (TAURI) { try { version = ' ' + await TAURI.app.getVersion(); } catch {} }
   openDialog({
     title: 'About Cowdrey.md',
-    body: `<div class="about-mark"><a class="logo" href="https://bradcowdrey.com" target="_blank" rel="noopener" aria-label="bradcowdrey.com">${$('.titlebar .logo').innerHTML}</a><div><b>Cowdrey.md</b>by Bradley Cowdrey · <a href="https://bradcowdrey.com" target="_blank" rel="noopener">bradcowdrey.com</a></div></div>
+    body: `<div class="about-mark"><a class="logo" href="https://bradcowdrey.com" target="_blank" rel="noopener" aria-label="bradcowdrey.com">${$('.titlebar .logo').innerHTML}</a><div><b>Cowdrey.md${esc(version)}</b>by Bradley Cowdrey · <a href="https://bradcowdrey.com" target="_blank" rel="noopener">bradcowdrey.com</a></div></div>
       <p>A Markdown editor with MacDown’s side-by-side writing, a Docs-style page and menus, and a Word-style ribbon, ruler and status bar.</p>
       <p>Supports GitHub Flavored Markdown, tables, task lists, footnotes, callouts, LaTeX math, Mermaid diagrams, emoji, front matter and highlighted code.</p>
       <p style="font-size:12px">Built with CodeMirror, markdown-it, highlight.js, MathJax, Mermaid, DOMPurify and Lucide. Feature ideas drawn from MacDown, MarkText, Zettlr, StackEdit, Dillinger and ghostwriter.</p>`,
@@ -2919,6 +2922,44 @@ cm.on('cursorActivity', () => {
 /* ================================================================
    Mac app (Tauri): files on disk, Finder "Open With", external links
    ================================================================ */
+/* ---- updates: compare with the latest GitHub release and offer the new DMG ---- */
+const RELEASES_API = 'https://api.github.com/repos/bradleycowdrey/cowdrey-md/releases/latest';
+const RELEASES_PAGE = 'https://github.com/bradleycowdrey/cowdrey-md/releases/latest';
+function isNewer(a, b) {
+  const pa = String(a).split('.').map((x) => parseInt(x, 10) || 0), pb = String(b).split('.').map((x) => parseInt(x, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) > (pb[i] || 0);
+  return false;
+}
+async function checkForUpdates(manual) {
+  if (!TAURI) return;
+  let current = '0';
+  try { current = await TAURI.app.getVersion(); } catch {}
+  if (manual) toast('Checking for updates…');
+  let rel;
+  try {
+    const r = await fetch(RELEASES_API, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
+    if (!r.ok) throw new Error(`GitHub answered ${r.status}`);
+    rel = await r.json();
+  } catch (e) {
+    if (manual) openDialog({ title: 'Could not check for updates', body: `<p>${esc(e.message || String(e))}. Check your internet connection, or see the downloads page.</p>`, actions: [{ label: 'Close' }, { label: 'Open downloads page', primary: true, run: () => { TAURI.opener.openUrl(RELEASES_PAGE).catch(() => {}); } }] });
+    return;
+  }
+  store.set(KEY + ':updateChecked', Date.now());
+  const latest = String(rel.tag_name || '').replace(/^v/i, '');
+  if (!latest || !isNewer(latest, current)) { if (manual) toast(`You have the latest version (${current}).`); return; }
+  if (!manual && store.get(KEY + ':skipVersion', '') === latest) return;
+  const dmg = (rel.assets || []).find((a) => /\.dmg$/i.test(a.name));
+  const notes = rel.body && md ? DOMPurify.sanitize(md.render(String(rel.body).slice(0, 4000)), PURIFY) : '';
+  openDialog({
+    title: `Cowdrey.md ${latest} is available`,
+    body: `<p>You have version ${esc(current)}. Download the new version, open it, and drag Cowdrey.md into Applications to replace this one. Your documents are kept.</p>${notes ? `<div class="preview" style="font-size:13.5px;max-height:220px;overflow:auto;border-top:1px solid var(--line);padding-top:8px">${notes}</div>` : ''}`,
+    actions: [
+      { label: 'Skip this version', run: () => { store.set(KEY + ':skipVersion', latest); } },
+      { label: 'Later' },
+      { label: 'Download', primary: true, run: () => { TAURI.opener.openUrl(dmg ? dmg.browser_download_url : (rel.html_url || RELEASES_PAGE)).catch(() => {}); toast('Downloading in your browser'); } },
+    ],
+  });
+}
 const stripExt = (n) => n.replace(/\.(md|markdown|mdown|mkdn?|txt)$/i, '');
 function openPathsAsDocs(files) {
   let last;
@@ -2999,6 +3040,8 @@ if (TAURI) {
   const takeOpened = () => TAURI.core.invoke('take_opened_files').then((files) => { if (files && files.length) openPathsAsDocs(files); }).catch(() => {});
   TAURI.event.listen('open-files', takeOpened);
   setTimeout(takeOpened, 0);
+  // quiet daily check at launch
+  if (Date.now() - (store.get(KEY + ':updateChecked', 0) || 0) > 864e5) setTimeout(() => checkForUpdates(false), 5000);
   TAURI.event.listen('flush-and-quit', () => {
     try { flushSave(); } finally { TAURI.core.invoke('quit_app').catch(() => {}); }
   });

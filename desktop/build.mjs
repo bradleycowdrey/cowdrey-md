@@ -9,16 +9,9 @@ const dist = path.join(here, 'dist');
 const vendor = path.join(dist, 'vendor');
 
 function localFor(url) {
-  let m;
-  if ((m = url.match(/codemirror\/5\.65\.16\/(.+)\.min\.js$/))) return `codemirror/${m[1] === 'codemirror' ? 'lib/codemirror' : m[1]}.js`;
-  if (url.includes('/markdown-it/14.1.0/')) return 'markdown-it/dist/markdown-it.min.js';
-  if ((m = url.match(/npm\/(markdown-it-[a-z]+)@[\d.]+\/(.+)$/))) return `${m[1]}/${m[2]}`;
-  if (url.includes('/highlight.js/11.9.0/')) return '@highlightjs/cdn-assets/highlight.min.js';
-  if (url.includes('/dompurify/3.1.6/')) return 'dompurify/dist/purify.min.js';
-  if (url.includes('lucide@0.441.0')) return 'lucide/dist/umd/lucide.min.js';
-  if (url.includes('mermaid@10.9.1')) return 'mermaid/dist/mermaid.min.js';
-  if ((m = url.match(/mathjax@3\.2\.2\/(.+)$/))) return `mathjax/${m[1]}`;
-  return null;
+  // https://cdn.jsdelivr.net/npm/<package>@<version>/<file>  ->  node_modules/<package>/<file>
+  const m = url.match(/^https:\/\/cdn\.jsdelivr\.net\/npm\/((?:@[^/]+\/)?[^@/]+)@[^/]+\/(.+)$/);
+  return m ? `${m[1]}/${m[2]}` : null;
 }
 
 fs.rmSync(dist, { recursive: true, force: true });

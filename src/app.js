@@ -8,6 +8,8 @@
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
+const TAURI = window.__TAURI__ || null; // set when running as the installed Mac app
+const baseName = (p) => String(p).split(/[\\/]/).pop();
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
@@ -178,8 +180,9 @@ function structurePlugin(md) {
   md.renderer.rules.fence = fence;
 }
 
-let md;
+let md = null;
 function buildMd() {
+  if (typeof window.markdownit !== 'function') { md = null; return; }
   md = window.markdownit({ html: true, linkify: true, typographer: S.typographer, breaks: S.breaks });
   md.linkify.set({ fuzzyLink: false });
   const use = (p) => { if (typeof p === 'function') md.use(p); };
@@ -245,6 +248,11 @@ function render() {
   const f = extractFrontMatter(src);
   fm = f.data;
   let html = '';
+  if (!md) buildMd();
+  if (!md) {
+    preview.innerHTML = '<div class="render-error">The preview engine did not load, so the page cannot be shown yet. Check your internet connection and reload. Your writing is still being saved.</div>';
+    headings = []; updateOutline(); return;
+  }
   try { html = f.html + md.render(f.body, env); }
   catch (e) { html = `<div class="render-error">${esc(e.message)}</div>`; }
   headings = env.headings || [];
@@ -925,14 +933,14 @@ function updateCursorStatus() {
    Documents: save, switch, tabs, list
    ================================================================ */
 let dirty = false;
-function setSaveState(kind) {
+let setSaveState = function (kind) {
   const el = saveStateEl;
   el.classList.toggle('error', kind === 'error');
   el.innerHTML = kind === 'saving' ? `${ic('loader')}<span>Saving…</span>`
     : kind === 'error' ? `${ic('triangle-alert')}<span>Not saved. Browser storage is full or blocked, so export to keep your work.</span>`
     : `${ic('check')}<span>Saved to this browser</span>`;
   refreshIcons();
-}
+};
 function persist() {
   const ok = store.set(KEY + ':docs', docs) && store.set(KEY + ':current', currentId);
   dirty = false; setSaveState(ok ? 'saved' : 'error');
@@ -969,6 +977,7 @@ function openDoc(id) {
   closeFind();
   render(); renderTabs(); renderDocsList();
   canvas.scrollTop = 0;
+  if (!dirty) setSaveState('saved');
 }
 function newDoc(content = '', title) {
   const d = makeDoc(content, title || 'Untitled document', !title);
@@ -1101,6 +1110,16 @@ document.addEventListener('drop', (e) => {
    ================================================================ */
 const slugFile = (t) => (t || 'document').replace(/[\\/:*?"<>|]+/g, '').trim().slice(0, 80) || 'document';
 async function saveFile(name, data, mime) {
+  if (TAURI) {
+    const ext = name.split('.').pop();
+    try {
+      const path = await TAURI.dialog.save({ defaultPath: name, filters: [{ name: ext === 'md' ? 'Markdown' : ext.toUpperCase(), extensions: [ext] }] });
+      if (!path) return null;
+      await TAURI.core.invoke('write_text_file', { path, contents: data });
+      toast(`Saved ${baseName(path)}`);
+      return path;
+    } catch (e) { toast(`Could not save: ${e}`); return null; }
+  }
   if (window.claude && typeof window.claude.use === 'function') {
     let dl = null;
     try { dl = await window.claude.use('downloads'); } catch {}
@@ -1246,15 +1265,16 @@ const fmtKey = (k) => !k ? '' : k.split('-').map((p) => isMac
 const inArtifact = () => !!(window.claude && typeof window.claude.use === 'function');
 
 cmd('newDoc', { label: 'New document', icon: 'file-plus', key: 'Mod-Alt-n', global: true, run: () => newDoc() });
-cmd('openFile', { label: 'Open…', icon: 'folder-open', key: 'Mod-o', global: true, run: () => $('#fileInput').click() });
+cmd('openFile', { label: 'Open…', icon: 'folder-open', key: 'Mod-o', global: true, run: () => TAURI ? openNative() : $('#fileInput').click() });
 cmd('pasteDoc', { label: 'Paste as new document', icon: 'clipboard-paste', run: pasteAsNew });
-cmd('saveNow', { label: 'Save', icon: 'save', key: 'Mod-s', global: true, run: () => { dirty = true; if (persist()) toast('Saved to this browser'); } });
+cmd('saveNow', { label: 'Save', icon: 'save', key: 'Mod-s', global: true, run: () => { dirty = true; if (TAURI) return saveToDisk(false); if (persist()) toast('Saved to this browser'); } });
+cmd('saveAs', { label: 'Save as…', icon: 'save', key: 'Mod-Shift-s', global: true, hidden: () => !TAURI, run: () => saveToDisk(true) });
 cmd('saveMd', { label: 'Download Markdown (.md)', icon: 'file-down', run: () => saveFile(slugFile(cur().title) + '.md', cm.getValue(), 'text/markdown') });
 cmd('exportHtml', { label: 'Download web page (.html)', icon: 'file-code-2', run: exportHtml });
 cmd('copyRich', { label: 'Copy for Google Docs or Word', icon: 'clipboard-copy', key: 'Mod-Shift-c', global: true, run: copyRich });
 cmd('copyHtml', { label: 'Copy HTML source', icon: 'code', run: () => copyText(cleanPreview().innerHTML, 'HTML copied') });
 cmd('copyMd', { label: 'Copy Markdown', icon: 'copy', run: () => copyText(cm.getValue(), 'Markdown copied') });
-cmd('print', { label: 'Print or save as PDF', icon: 'printer', key: 'Mod-p', global: true, hidden: inArtifact, run: () => { if (!inArtifact()) window.print(); } });
+cmd('print', { label: 'Print or save as PDF', icon: 'printer', key: 'Mod-p', global: true, hidden: () => inArtifact() || !!TAURI, run: () => { if (!inArtifact()) window.print(); } });
 cmd('renameDoc', { label: 'Rename', icon: 'pencil-line', run: () => { titleInput.focus(); titleInput.select(); } });
 cmd('deleteDoc', { label: 'Delete document…', icon: 'trash-2', run: () => openDialog({ title: `Delete “${cur().title}”?`, body: '<p>This removes the document from this browser. It cannot be undone.</p>', actions: [{ label: 'Keep it' }, { label: 'Delete', danger: true, run: () => deleteDoc(currentId) }] }) });
 
@@ -1365,7 +1385,7 @@ document.addEventListener('keydown', (e) => {
    Menubar (Docs)
    ================================================================ */
 const MENUS = [
-  ['File', ['newDoc', 'openFile', 'pasteDoc', '-', 'saveNow', 'renameDoc', '-', 'saveMd', 'exportHtml', 'copyRich', 'copyMd', 'copyHtml', 'print', '-', 'deleteDoc']],
+  ['File', ['newDoc', 'openFile', 'pasteDoc', '-', 'saveNow', 'saveAs', 'renameDoc', '-', 'saveMd', 'exportHtml', 'copyRich', 'copyMd', 'copyHtml', 'print', '-', 'deleteDoc']],
   ['Edit', ['undo', 'redo', '-', 'selectAll', 'find', 'replace', '-', 'formatTable', 'clearFormat']],
   ['View', ['view_editor', 'view_split', 'view_preview', '-', 'toggleOutline', 'toggleRuler', 'toggleGuides', 'toggleLineNumbers', 'toggleWrap', '-', 'toggleFocus', 'toggleTypewriter', 'toggleSync', '-', 'zoomIn', 'zoomOut', 'zoomFit', 'zoom100', 'fullscreen']],
   ['Insert', ['image', 'imageUrl', 'table', 'link', '-', 'codeBlock', 'math', 'diagram', 'callout', 'details', '-', 'footnote', 'deflist', 'hr', 'toc', 'date', 'frontMatter']],
@@ -1687,6 +1707,57 @@ cm.on('cursorActivity', () => {
   if (S.focus) updateFocus();
   if (S.typewriter && cm.hasFocus()) typewriterScroll();
 });
+
+/* ================================================================
+   Mac app (Tauri): files on disk, Finder "Open With", external links
+   ================================================================ */
+function openPathsAsDocs(files) {
+  let last;
+  for (const f of files) {
+    const existing = docs.find((d) => d.path === f.path);
+    if (existing) { last = existing; continue; }
+    last = makeDoc(f.content, f.name.replace(/\.(md|markdown|mdown|mkdn?|txt)$/i, ''), false);
+    last.path = f.path;
+    docs.unshift(last);
+  }
+  if (last) { dirty = true; persist(); openDoc(last.id); }
+}
+async function openNative() {
+  try {
+    let paths = await TAURI.dialog.open({ multiple: true, filters: [{ name: 'Markdown', extensions: ['md', 'markdown', 'mdown', 'mkd', 'mkdn', 'txt'] }] });
+    if (!paths) return;
+    if (!Array.isArray(paths)) paths = [paths];
+    const files = [];
+    for (const p of paths) files.push(await TAURI.core.invoke('read_text_file', { path: typeof p === 'string' ? p : p.path }));
+    openPathsAsDocs(files);
+  } catch (e) { toast(`Could not open: ${e}`); }
+}
+async function saveToDisk(saveAs) {
+  const d = cur();
+  if (d.autoTitle) render();
+  persist();
+  if (d.path && !saveAs) {
+    try { await TAURI.core.invoke('write_text_file', { path: d.path, contents: cm.getValue() }); toast(`Saved ${baseName(d.path)}`); }
+    catch (e) { toast(`Could not save: ${e}`); }
+    return;
+  }
+  const path = await saveFile(slugFile(d.title) + '.md', cm.getValue(), 'text/markdown');
+  if (path) { d.path = path; d.title = baseName(path).replace(/\.(md|markdown|mdown|mkdn?|txt)$/i, ''); d.autoTitle = false; titleInput.value = d.title; dirty = true; persist(); renderTabs(); renderDocsList(); }
+}
+if (TAURI) {
+  const takeOpened = () => TAURI.core.invoke('take_opened_files').then((files) => { if (files && files.length) openPathsAsDocs(files); }).catch(() => {});
+  TAURI.event.listen('open-files', takeOpened);
+  setTimeout(takeOpened, 0);
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest && e.target.closest('a[href]');
+    if (!a || !/^(https?:|mailto:)/i.test(a.getAttribute('href'))) return;
+    e.preventDefault();
+    TAURI.opener.openUrl(a.href).catch(() => {});
+  }, true);
+  C.saveMd.label = 'Export Markdown (.md)…';
+  C.exportHtml.label = 'Export web page (.html)…';
+  setSaveState = ((orig) => (kind) => { orig(kind); if (kind === 'saved') saveStateEl.querySelector('span').textContent = cur() && cur().path ? `Autosaved · ⌘S saves ${baseName(cur().path)}` : 'Autosaved · ⌘S saves to a file'; })(setSaveState);
+}
 
 /* ================================================================
    Boot

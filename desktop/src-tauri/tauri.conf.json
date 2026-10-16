@@ -13,16 +13,22 @@
         "width": 1360,
         "height": 880,
         "minWidth": 720,
-        "minHeight": 520
+        "minHeight": 520,
+        "label": "main",
+        "dragDropEnabled": false
       }
     ],
     "security": {
       "csp": null
-    }
+    },
+    "withGlobalTauri": true
   },
   "bundle": {
     "active": true,
-    "targets": ["app", "dmg"],
+    "targets": [
+      "app",
+      "dmg"
+    ],
     "category": "Productivity",
     "publisher": "Bradley Cowdrey",
     "copyright": "© 2026 Bradley Cowdrey",
@@ -38,6 +44,21 @@
     ],
     "macOS": {
       "minimumSystemVersion": "10.15"
-    }
+    },
+    "fileAssociations": [
+      {
+        "ext": [
+          "md",
+          "markdown",
+          "mdown",
+          "mkd",
+          "mkdn"
+        ],
+        "name": "Markdown document",
+        "description": "Markdown document",
+        "role": "Editor",
+        "mimeType": "text/markdown"
+      }
+    ]
   }
 }

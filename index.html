@@ -425,6 +425,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.CodeMirror [contenteditable]:focus, .CodeMirror [contenteditable]:focus-visible { outline: none; } /* the caret and active line already show focus */
 svg.lucide { width: 16px; height: 16px; stroke-width: 1.8; flex: none; }
 .gutter-x { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 

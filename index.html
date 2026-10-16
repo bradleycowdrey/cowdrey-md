@@ -923,7 +923,7 @@ Markdown is a plain-text syntax created by John Gruber in 2004. The ribbon above
 | **Bold** | `**Bold**` | <kbd>⌘B</kbd> |
 | *Italic* | `*Italic*` | <kbd>⌘I</kbd> |
 | ~~Strike~~ | `~~Strike~~` | <kbd>⌘⇧X</kbd> |
-| ==Highlight== | `==Highlight==` | <kbd>⌘⌥H</kbd> |
+| ==Highlight== | `==Highlight==` | Home ribbon |
 | `Code` | `` `Code` `` | <kbd>⌘E</kbd> |
 | H~2~O and E = mc^2^ | `H~2~O`, `mc^2^` | <kbd>⌘,</kbd> <kbd>⌘.</kbd> |
 
@@ -1076,8 +1076,21 @@ const uid = () => 'd' + Date.now().toString(36) + Math.random().toString(36).sli
 const makeDoc = (content = '', title = 'Untitled document', autoTitle = true) => ({ id: uid(), title, autoTitle, content, updated: Date.now() });
 const WELCOME = $('#welcome-md').textContent.replace(/^\n/, '');
 
-let docs = store.get(KEY + ':docs', null);
-if (!Array.isArray(docs) || !docs.length) docs = [makeDoc(WELCOME, 'Welcome to Cowdrey.md', false)];
+const DOC_KEY = (id) => KEY + ':doc:' + id;
+const meta = ({ content, ...m }) => m;
+function loadDocs() {
+  const index = store.get(KEY + ':index', null);
+  if (Array.isArray(index)) return index.map((m) => ({ ...m, content: store.get(DOC_KEY(m.id), '') }));
+  const legacy = store.get(KEY + ':docs', null); // format used before per-document keys
+  if (!Array.isArray(legacy)) return null;
+  let ok = true;
+  for (const d of legacy) ok = store.set(DOC_KEY(d.id), d.content || '') && ok;
+  if (ok && store.set(KEY + ':index', legacy.map(meta))) { try { localStorage.removeItem(KEY + ':docs'); } catch {} }
+  return legacy;
+}
+let docs = loadDocs();
+const firstRun = !Array.isArray(docs) || !docs.length;
+if (firstRun) docs = [makeDoc(WELCOME, 'Welcome to Cowdrey.md', false)];
 let currentId = store.get(KEY + ':current', null);
 if (!docs.some((d) => d.id === currentId)) currentId = docs[0].id;
 S.openTabs = (S.openTabs || []).filter((id) => docs.some((d) => d.id === id));
@@ -1169,7 +1182,7 @@ function structurePlugin(md) {
       if (t.type === 'heading_open') {
         const inl = ts[i + 1];
         const text = inl.children.filter((c) => c.type === 'text' || c.type === 'code_inline' || c.type === 'emoji').map((c) => c.type === 'emoji' ? '' : c.content).join('').trim() || inl.content;
-        let id = slugify(text) || 'section'; const base = id; let n = 1;
+        let id = 'h-' + (slugify(text) || 'section'); const base = id; let n = 1;
         while (used[id]) id = base + '-' + n++;
         used[id] = 1; t.attrSet('id', id);
         env.headings.push({ level: +t.tag.slice(1), text, id, line: t.map[0] });
@@ -1280,7 +1293,7 @@ let headings = [], lineMap = [], fm = null;
 const mermaidCache = new Map();
 let mermaidSeq = 0, mathReady = !!(window.MathJax && MathJax.typesetPromise);
 
-const PURIFY = { ADD_ATTR: ['target', 'data-line', 'data-src', 'data-task-line', 'checked'], FORBID_TAGS: ['style', 'form', 'base'], SANITIZE_DOM: false };
+const PURIFY = { ADD_ATTR: ['target', 'data-line', 'data-src', 'data-task-line', 'checked'], FORBID_TAGS: ['style', 'form', 'base'] };
 
 function render() {
   const src = cm.getValue();
@@ -1298,12 +1311,21 @@ function render() {
   headings = env.headings || [];
   html = html.replace(/<p data-line="\d+">\[(?:TOC|toc|\[toc\])\]\]?<\/p>/g, () => tocHtml(headings));
   preview.innerHTML = window.DOMPurify ? DOMPurify.sanitize(html, PURIFY) : html;
+  // Ids from the document live in their own namespace so they can never collide with the app's own elements.
+  for (const el of preview.querySelectorAll('[id]')) if (!el.id.startsWith('h-')) el.id = 'u-' + el.id;
+  for (const el of preview.querySelectorAll('[name]')) el.removeAttribute('name');
   for (const a of preview.querySelectorAll('a[href]')) {
-    if (/^(https?:)?\/\//i.test(a.getAttribute('href'))) { a.target = '_blank'; a.rel = 'noopener'; }
+    const href = a.getAttribute('href');
+    if (/^(https?:)?\/\//i.test(href)) { a.target = '_blank'; a.rel = 'noopener'; }
+    else if (href.length > 1 && href.startsWith('#')) {
+      let t = href.slice(1); try { t = decodeURIComponent(t); } catch {}
+      const hit = ['h-' + slugify(t), 'h-' + t, 'u-' + t].find((x) => preview.querySelector('#' + CSS.escape(x)));
+      if (hit) a.setAttribute('href', '#' + hit);
+    }
   }
-  renderMermaid();
-  typesetMath();
-  updateOutline(); updateStats(); autoTitle(); updateStyleGallery();
+  for (const step of [renderMermaid, typesetMath, updateOutline, updateStats, autoTitle, updateStyleGallery]) {
+    try { step(); } catch (e) { console.error(e); }
+  }
   requestAnimationFrame(() => { sizePage(); buildLineMap(); if (S.sync && S.view === 'split') syncFromEditor(); });
 }
 const scheduleRender = (() => {
@@ -1320,7 +1342,7 @@ let mermaidTheme = null;
 function renderMermaid() {
   const blocks = $$('.mermaid-block', preview);
   if (!blocks.length) return;
-  if (!window.mermaid) { blocks.forEach((b) => { b.innerHTML = '<div class="render-error">Loading diagram renderer…</div>'; }); return; }
+  if (!window.mermaid || typeof window.mermaid.render !== 'function') { blocks.forEach((b) => { b.innerHTML = '<div class="render-error">Loading diagram renderer…</div>'; }); return; }
   const theme = isDark() ? 'dark' : 'default';
   if (mermaidTheme !== theme) { mermaid.initialize({ startOnLoad: false, theme, securityLevel: 'strict', fontFamily: 'Instrument Sans, system-ui, sans-serif' }); mermaidTheme = theme; }
   const badge = $('#renderBadge');
@@ -1537,10 +1559,11 @@ function wrapInline(b, a = b, ph = 'text') {
     if (ranges.length === 1) {
       const r = ranges[0];
       const from = cmpPos(r.anchor, r.head) < 0 ? r.anchor : r.head, to = from === r.anchor ? r.head : r.anchor;
-      const before = cm.getRange({ line: from.line, ch: Math.max(0, from.ch - b.length - 1) }, from);
+      const before = cm.getRange({ line: from.line, ch: Math.max(0, from.ch - b.length - 2) }, from);
       const after = cm.getRange(to, { line: to.line, ch: to.ch + a.length + 1 });
+      const single = b === '*' || b === '~';
       const ok = before.endsWith(b) && after.startsWith(a) &&
-        !(b === '*' && before.endsWith('**') && !before.endsWith('***') && from.ch >= 2) ;
+        !(single && before.endsWith(b + b) && !before.endsWith(b + b + b));
       if (ok) {
         cm.replaceRange('', to, { line: to.line, ch: to.ch + a.length });
         cm.replaceRange('', { line: from.line, ch: from.ch - b.length }, from);
@@ -1550,7 +1573,14 @@ function wrapInline(b, a = b, ph = 'text') {
       }
     }
     const texts = cm.getSelections();
-    cm.replaceSelections(texts.map((t) => (t.startsWith(b) && t.endsWith(a) && t.length >= b.length + a.length) ? t.slice(b.length, t.length - a.length) : b + t + a), 'around');
+    const isWrapped = (t) => {
+      if (!(t.startsWith(b) && t.endsWith(a) && t.length >= b.length + a.length)) return false;
+      const inner = t.slice(b.length, t.length - a.length);
+      if (inner.includes(b) || inner.includes(a)) return false; // "*one* and *two*" is two spans, not one
+      if ((b === '*' || b === '~') && t.startsWith(b + b) && !t.startsWith(b + b + b)) return false; // **bold** is not *italic*
+      return true;
+    };
+    cm.replaceSelections(texts.map((t) => isWrapped(t) ? t.slice(b.length, t.length - a.length) : b + t + a), 'around');
     // shrink selection to inner text
     cm.setSelections(cm.listSelections().map((r) => {
       const from = cmpPos(r.anchor, r.head) < 0 ? r.anchor : r.head, to = from === r.anchor ? r.head : r.anchor;
@@ -1579,6 +1609,10 @@ function setHeading(n) {
   const [a, b] = selLineRange();
   const firstLevel = (/^(#{1,6})\s/.exec(cm.getLine(a)) || [, ''])[1].length;
   const target = firstLevel === n ? 0 : n;
+  if (a === b && !cm.getLine(a).trim() && n) {
+    cm.replaceRange('#'.repeat(n) + ' ', { line: a, ch: 0 }, { line: a, ch: cm.getLine(a).length });
+    return;
+  }
   const out = [];
   for (let l = a; l <= b; l++) {
     const t = cm.getLine(l).replace(/^#{1,6}\s+/, '');
@@ -1600,7 +1634,7 @@ function toggleBlock(kind) {
   let n = 1;
   const out = lines.map((t) => {
     if (!t.trim()) return t;
-    if (kind === 'quote') return all ? t.replace(/^(\s*)>\s?/, '$1') : '> ' + t;
+    if (kind === 'quote') return all ? t.replace(/^(\s*)>\s?/, '$1') : (test(t) ? t : '> ' + t);
     const ind = /^\s*/.exec(t)[0];
     const rest = t.slice(ind.length).replace(LIST_PREFIX, '');
     if (all) return ind + rest;
@@ -1622,7 +1656,9 @@ function clearFormatting() {
   }
   cm.replaceSelections(cm.getSelections().map((t) => t
     .replace(/<\/?(u|mark|sup|sub|b|i|em|strong)>/gi, '')
-    .replace(/(\*\*|__|~~|==)(.+?)\1/g, '$2').replace(/(\*|_|~|\^)(\S(?:.*?\S)?)\1/g, '$2')
+    .replace(/\*\*\*(.+?)\*\*\*/g, '$1')
+    .replace(/(\*\*|~~|==)(.+?)\1/g, '$2').replace(/(\*|~|\^)(\S(?:.*?\S)?)\1/g, '$2')
+    .replace(/(^|[^\p{L}\p{N}_])(__?)(\S(?:.*?\S)?)\2(?![\p{L}\p{N}_])/gu, '$1$3')
     .replace(/`([^`]+)`/g, '$1')), 'around');
 }
 function frontMatterEnd() {
@@ -1657,16 +1693,18 @@ function insertInline(text, selStart, selEnd) {
 function insertLink() {
   const t = cm.getSelection();
   if (/^https?:\/\/\S+$/.test(t)) return insertInline(`[](${t})`, 1);
-  if (t && !t.includes('\n')) return insertInline(`[${t}](https://)`, t.length + 3, t.length + 11);
+  if (t) return insertInline(`[${t}](https://)`, t.length + 3, t.length + 11);
   insertInline('[link text](https://)', 1, 10);
 }
 function insertFootnote() {
   const used = new Set([...cm.getValue().matchAll(/\[\^(\d+)\]/g)].map((m) => +m[1]));
   let n = 1; while (used.has(n)) n++;
-  cm.replaceSelection(`[^${n}]`);
+  const end = cm.getCursor('to');
+  cm.replaceRange(`[^${n}]`, end);
   const last = cm.lastLine();
   const lastText = cm.getLine(last);
-  const block = (lastText.trim() ? '\n\n' : (last > 0 && cm.getLine(last - 1).trim() && !/^\[\^/.test(cm.getLine(last - 1)) ? '\n' : '')) + `[^${n}]: `;
+  const isNote = (l) => /^\[\^[^\]]+\]:/.test(l);
+  const block = (lastText.trim() ? (isNote(lastText) ? '\n' : '\n\n') : (last > 0 && cm.getLine(last - 1).trim() && !isNote(cm.getLine(last - 1)) ? '\n' : '')) + `[^${n}]: `;
   cm.replaceRange(block, { line: last, ch: lastText.length });
   cm.setCursor({ line: cm.lastLine(), ch: cm.getLine(cm.lastLine()).length });
   cm.focus();
@@ -1684,7 +1722,7 @@ function splitRow(line) {
   for (let i = 0; i < s.length; i++) {
     const ch = s[i];
     if (ch === '\\' && s[i + 1] === '|') { curCell += '\\|'; i++; continue; }
-    if (ch === '`') inCode = !inCode;
+    if (ch === '`' && (inCode || s.indexOf('`', i + 1) !== -1)) inCode = !inCode;
     if (ch === '|' && !inCode) { cells.push(curCell.trim()); curCell = ''; continue; }
     curCell += ch;
   }
@@ -1742,8 +1780,15 @@ async function fileToDataUrl(file) {
 async function insertImages(files, at) {
   files = [...files].filter((f) => /^image\//.test(f.type));
   if (!files.length) return;
-  if (at) cm.setCursor(at);
-  let n = Math.max(0, ...[...cm.getValue().matchAll(/^\[image-(\d+)\]:/gm)].map((m) => +m[1]));
+  const doc = cm.getDoc();
+  if (at) doc.setCursor(at);
+  const isRef = (l) => /^\[image-\d+\]:/.test(doc.getLine(l) || '');
+  let cl = doc.getCursor().line;
+  if (isRef(cl)) {
+    while (cl > 0 && isRef(cl - 1)) cl--;
+    doc.setCursor({ line: cl, ch: 0 }); doc.replaceSelection('\n\n'); doc.setCursor({ line: cl, ch: 0 });
+  }
+  let n = Math.max(0, ...[...doc.getValue().matchAll(/^\[image-(\d+)\]:/gm)].map((m) => +m[1]));
   const refs = [], inline = [];
   for (const f of files) {
     const url = await fileToDataUrl(f);
@@ -1751,15 +1796,16 @@ async function insertImages(files, at) {
     const alt = (f.name || 'image').replace(/\.[^.]+$/, '').replace(/[[\]]/g, '');
     inline.push(`![${alt}][image-${n}]`); refs.push(`[image-${n}]: ${url}`);
   }
-  cm.operation(() => {
-    cm.replaceSelection(inline.join('\n'));
-    const keep = cm.getCursor();
-    const last = cm.lastLine(), lt = cm.getLine(last);
+  const apply = () => {
+    doc.replaceSelection(inline.join('\n'));
+    const keep = doc.getCursor();
+    const last = doc.lastLine(), lt = doc.getLine(last);
     const sep = /^\[image-\d+\]:/.test(lt) ? '\n' : (lt.trim() ? '\n\n' : '\n');
-    cm.replaceRange(sep + refs.join('\n'), { line: last, ch: lt.length });
-    cm.setCursor(keep);
-  });
-  cm.focus();
+    doc.replaceRange(sep + refs.join('\n'), { line: last, ch: lt.length });
+    doc.setCursor(keep);
+  };
+  if (doc === cm.getDoc()) { cm.operation(apply); cm.focus(); } else apply();
+  if (refs.join('').length > 2_500_000) toast('Large pictures may not fit in browser storage. Export the document to keep it safe.');
   toast(files.length > 1 ? `${files.length} pictures added` : 'Picture added');
 }
 
@@ -1783,18 +1829,19 @@ function findQuery() {
   if (F.re) { try { return new RegExp(q, F.cs ? 'g' : 'gi'); } catch { return undefined; } }
   return q;
 }
-function runFind(keepNearest) {
+function runFind(keepNearest, noScroll) {
   clearFindMarks(); F.matches = [];
   const q = findQuery(), count = $('#findCount');
   if (q === undefined) { count.textContent = 'Bad pattern'; return; }
   if (!q) { count.textContent = '0 of 0'; return; }
   const sc = cm.getSearchCursor(q, { line: 0, ch: 0 }, { caseFold: !F.cs });
   let last = null;
-  while (sc.findNext()) {
+  let found;
+  while ((found = sc.findNext())) {
     const from = sc.from(), to = sc.to();
     if (last && cmpPos(from, last) === 0 && cmpPos(from, to) === 0) break;
     if (cmpPos(from, to) === 0) { last = from; continue; }
-    F.matches.push({ from, to }); last = from;
+    F.matches.push({ from, to, groups: Array.isArray(found) ? [...found] : null }); last = from;
     if (F.matches.length >= 5000) break;
   }
   cm.operation(() => { for (const m of F.matches) F.marks.push(cm.markText(m.from, m.to, { className: 'cm-match' })); });
@@ -1803,34 +1850,38 @@ function runFind(keepNearest) {
     F.idx = F.matches.findIndex((m) => cmpPos(m.from, c) >= 0);
     if (F.idx < 0) F.idx = 0;
   } else F.idx = clamp(F.idx, 0, F.matches.length - 1);
-  showMatch(false);
+  showMatch(false, noScroll);
 }
-function showMatch(select = true) {
+function showMatch(select = true, noScroll = false) {
   const count = $('#findCount');
   F.curMark && F.curMark.clear(); F.curMark = null;
   if (!F.matches.length) { count.textContent = '0 of 0'; return; }
   const m = F.matches[F.idx];
   count.textContent = `${nf.format(F.idx + 1)} of ${nf.format(F.matches.length)}`;
   F.curMark = cm.markText(m.from, m.to, { className: 'cm-match-current' });
-  cm.scrollIntoView({ from: m.from, to: m.to }, 80);
+  if (!noScroll) cm.scrollIntoView({ from: m.from, to: m.to }, 80);
   if (select) cm.setSelection(m.from, m.to);
 }
 function stepFind(d) { if (!F.matches.length) return; F.idx = (F.idx + d + F.matches.length) % F.matches.length; showMatch(true); }
-function replaceText(matchText) {
+// $1…$99, $& and $$ expand from the groups captured when the match was found, so lookarounds and \b keep working
+function replaceText(m) {
   const r = $('#replaceInput').value;
-  if (F.re) { try { return matchText.replace(new RegExp(findQuery().source, F.cs ? '' : 'i'), r); } catch { return r; } }
-  return r;
+  if (!F.re || !m.groups) return r;
+  return r.replace(/\$(\$|&|\d{1,2})/g, (_, g) => g === '$' ? '$' : g === '&' ? m.groups[0] : (m.groups[+g] ?? ''));
 }
 function replaceOne() {
   if (!F.matches.length) return;
   const m = F.matches[F.idx];
-  cm.replaceRange(replaceText(cm.getRange(m.from, m.to)), m.from, m.to);
-  runFind(false); showMatch(true);
+  const text = replaceText(m);
+  cm.replaceRange(text, m.from, m.to);
+  const end = cm.posFromIndex(cm.indexFromPos(m.from) + text.length);
+  runFind(false, true);
+  if (F.matches.length) { const i = F.matches.findIndex((x) => cmpPos(x.from, end) >= 0); F.idx = i < 0 ? 0 : i; showMatch(true); }
 }
 function replaceAll() {
   if (!F.matches.length) return;
   const n = F.matches.length;
-  cm.operation(() => { for (const m of [...F.matches].reverse()) cm.replaceRange(replaceText(cm.getRange(m.from, m.to)), m.from, m.to); });
+  cm.operation(() => { for (const m of [...F.matches].reverse()) cm.replaceRange(replaceText(m), m.from, m.to); });
   runFind(false); toast(`Replaced ${nf.format(n)} ${n === 1 ? 'match' : 'matches'}`);
 }
 $('#findInput').addEventListener('input', () => runFind(true));
@@ -1849,7 +1900,7 @@ $('#replaceOne').onclick = replaceOne;
 $('#replaceAll').onclick = replaceAll;
 $('#findCase').onclick = (e) => { F.cs = !F.cs; e.currentTarget.setAttribute('aria-pressed', F.cs); runFind(true); };
 $('#findRegex').onclick = (e) => { F.re = !F.re; e.currentTarget.setAttribute('aria-pressed', F.re); runFind(true); };
-cm.on('changes', debounce(() => { if (!$('#findbar').hidden) runFind(false); }, 150));
+cm.on('changes', debounce(() => { if (!$('#findbar').hidden) runFind(false, true); }, 150));
 
 /* ================================================================
    Focus & typewriter modes
@@ -1972,7 +2023,11 @@ function updateCursorStatus() {
 /* ================================================================
    Documents: save, switch, tabs, list
    ================================================================ */
-let dirty = false;
+const dirtyIds = new Set(firstRun ? docs.map((d) => d.id) : []);
+const deletedIds = new Set();
+let seenInStore = new Set((store.get(KEY + ':index', []) || []).map((m) => m.id));
+let applyingRemote = false;
+const markDirty = (id = currentId) => { dirtyIds.add(id); };
 let setSaveState = function (kind) {
   const el = saveStateEl;
   el.classList.toggle('error', kind === 'error');
@@ -1981,13 +2036,61 @@ let setSaveState = function (kind) {
     : `${ic('check')}<span>Saved to this browser</span>`;
   refreshIcons();
 };
+// Pull in documents created, edited or deleted in other browser tabs. Returns true when anything changed.
+function syncFromStorage() {
+  const stored = store.get(KEY + ':index', null);
+  if (!Array.isArray(stored)) return false;
+  let changed = false;
+  const ids = new Set(stored.map((m) => m.id));
+  for (const m of stored) {
+    if (deletedIds.has(m.id)) continue;
+    const d = docs.find((x) => x.id === m.id);
+    if (!d) { docs.push({ ...m, content: store.get(DOC_KEY(m.id), '') }); changed = true; continue; }
+    if (m.updated > d.updated && !dirtyIds.has(d.id)) {
+      Object.assign(d, m, { content: store.get(DOC_KEY(m.id), d.content) });
+      const cd = cmDocs.get(d.id);
+      if (cd && cd.getValue() !== d.content) {
+        applyingRemote = true;
+        const c = cd.getCursor(); cd.setValue(d.content); cd.setCursor(c);
+        applyingRemote = false;
+      }
+      changed = true;
+    }
+  }
+  for (const d of [...docs]) {
+    if (seenInStore.has(d.id) && !ids.has(d.id) && !dirtyIds.has(d.id)) {
+      docs.splice(docs.indexOf(d), 1); cmDocs.delete(d.id);
+      S.openTabs = S.openTabs.filter((x) => x !== d.id); changed = true;
+    }
+  }
+  seenInStore = ids;
+  return changed;
+}
 function persist() {
-  const ok = store.set(KEY + ':docs', docs) && store.set(KEY + ':current', currentId);
-  dirty = false; setSaveState(ok ? 'saved' : 'error');
+  syncFromStorage();
+  let ok = true;
+  for (const id of [...dirtyIds]) {
+    const d = docs.find((x) => x.id === id);
+    if (!d) { dirtyIds.delete(id); continue; }
+    if (store.set(DOC_KEY(id), d.content)) dirtyIds.delete(id); else ok = false;
+  }
+  for (const id of deletedIds) { try { localStorage.removeItem(DOC_KEY(id)); } catch {} }
+  deletedIds.clear();
+  const index = docs.map(meta);
+  if (store.set(KEY + ':index', index)) seenInStore = new Set(index.map((m) => m.id)); else ok = false;
+  store.set(KEY + ':current', currentId);
+  setSaveState(ok ? 'saved' : 'error');
   return ok;
 }
+window.addEventListener('storage', (e) => {
+  if (e.key !== KEY + ':index') return;
+  if (!syncFromStorage()) return;
+  if (!cur()) { currentId = (docs[0] || newDocSilently()).id; openDoc(currentId); return; }
+  titleInput.value = cur().title; renderTabs(); renderDocsList();
+  if (!dirtyIds.has(currentId)) render();
+});
 const scheduleSave = debounce(persist, 600);
-function flushSave() { if (dirty) persist(); }
+function flushSave() { if (dirtyIds.size) persist(); store.set(KEY + ':settings', S); }
 window.addEventListener('pagehide', flushSave);
 document.addEventListener('visibilitychange', () => { if (document.hidden) flushSave(); });
 
@@ -1996,11 +2099,11 @@ function autoTitle() {
   let t = (fm && fm.title && fm.title.replace(/^["']|["']$/g, '')) || (headings[0] && headings[0].text) || '';
   if (!t) { const line = cm.getValue().split('\n').find((l) => l.trim()); t = line ? line.replace(/^[#>*\-+\s\d.[\]]+/, '').trim() : ''; }
   t = (t || 'Untitled document').slice(0, 80);
-  if (t !== d.title) { d.title = t; if (document.activeElement !== titleInput) titleInput.value = t; renderTabs(); renderDocsList(); }
+  if (t !== d.title) { d.title = t; markDirty(d.id); scheduleSave(); if (document.activeElement !== titleInput) titleInput.value = t; renderTabs(); renderDocsList(); }
 }
 titleInput.addEventListener('input', () => {
   const d = cur(); d.title = titleInput.value.trim() || 'Untitled document'; d.autoTitle = false; d.updated = Date.now();
-  dirty = true; scheduleSave(); renderTabs(); renderDocsList();
+  markDirty(d.id); scheduleSave(); renderTabs(); renderDocsList();
 });
 titleInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); cm.focus(); } });
 
@@ -2017,11 +2120,11 @@ function openDoc(id) {
   closeFind();
   render(); renderTabs(); renderDocsList();
   canvas.scrollTop = 0;
-  if (!dirty) setSaveState('saved');
+  if (!dirtyIds.size) setSaveState('saved');
 }
 function newDoc(content = '', title) {
   const d = makeDoc(content, title || 'Untitled document', !title);
-  docs.unshift(d); dirty = true; persist(); openDoc(d.id); cm.focus();
+  docs.unshift(d); markDirty(d.id); persist(); openDoc(d.id); cm.focus();
   return d;
 }
 function closeTab(id) {
@@ -2031,15 +2134,15 @@ function closeTab(id) {
   if (id === currentId) openDoc(S.openTabs[Math.min(i, S.openTabs.length - 1)]);
   saveSettings(); renderTabs();
 }
-function newDocSilently() { const d = makeDoc(); docs.unshift(d); persist(); return d; }
+function newDocSilently() { const d = makeDoc(); docs.unshift(d); markDirty(d.id); persist(); return d; }
 function deleteDoc(id) {
   const i = docs.findIndex((d) => d.id === id); if (i < 0) return;
   const [d] = docs.splice(i, 1);
-  cmDocs.delete(id);
+  cmDocs.delete(id); dirtyIds.delete(id); deletedIds.add(id);
   S.openTabs = S.openTabs.filter((x) => x !== id);
-  if (!docs.length) docs.push(makeDoc());
-  if (id === currentId) { currentId = (S.openTabs[0] && docs.find((x) => x.id === S.openTabs[0])) ? S.openTabs[0] : docs[0].id; dirty = true; persist(); openDoc(currentId); }
-  else { dirty = true; persist(); renderTabs(); renderDocsList(); }
+  if (!docs.length) { const n = makeDoc(); docs.push(n); markDirty(n.id); }
+  if (id === currentId) { currentId = (S.openTabs[0] && docs.find((x) => x.id === S.openTabs[0])) ? S.openTabs[0] : docs[0].id; persist(); openDoc(currentId); }
+  else { persist(); renderTabs(); renderDocsList(); }
   toast(`Deleted “${d.title}”`);
 }
 function renderTabs() {
@@ -2095,14 +2198,14 @@ $$('.side-tabs button').forEach((b) => b.onclick = () => setSideTab(b.dataset.si
 /* files */
 function readTextFile(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsText(file); }); }
 async function openFiles(files) {
-  let last;
+  let last, opened = 0;
   for (const f of files) {
     if (!/\.(md|markdown|mdown|mkdn?|txt)$/i.test(f.name) && !/^text\//.test(f.type)) { toast(`${f.name} is not a Markdown or text file`); continue; }
     const text = await readTextFile(f);
     last = makeDoc(text, f.name.replace(/\.(md|markdown|mdown|mkdn?|txt)$/i, ''), false);
-    docs.unshift(last);
+    docs.unshift(last); markDirty(last.id); opened++;
   }
-  if (last) { dirty = true; persist(); openDoc(last.id); toast(files.length > 1 ? `Opened ${files.length} files` : `Opened ${files[0].name}`); }
+  if (last) { persist(); openDoc(last.id); toast(opened > 1 ? `Opened ${opened} files` : `Opened ${last.title}`); }
 }
 $('#fileInput').addEventListener('change', (e) => { openFiles([...e.target.files]); e.target.value = ''; });
 $('#imageInput').addEventListener('change', (e) => { insertImages(e.target.files); e.target.value = ''; });
@@ -2307,11 +2410,11 @@ const inArtifact = () => !!(window.claude && typeof window.claude.use === 'funct
 cmd('newDoc', { label: 'New document', icon: 'file-plus', key: 'Mod-Alt-n', global: true, run: () => newDoc() });
 cmd('openFile', { label: 'Open…', icon: 'folder-open', key: 'Mod-o', global: true, run: () => TAURI ? openNative() : $('#fileInput').click() });
 cmd('pasteDoc', { label: 'Paste as new document', icon: 'clipboard-paste', run: pasteAsNew });
-cmd('saveNow', { label: 'Save', icon: 'save', key: 'Mod-s', global: true, run: () => { dirty = true; if (TAURI) return saveToDisk(false); if (persist()) toast('Saved to this browser'); } });
+cmd('saveNow', { label: 'Save', icon: 'save', key: 'Mod-s', global: true, run: () => { markDirty(); if (TAURI) return saveToDisk(false); if (persist()) toast('Saved to this browser'); } });
 cmd('saveAs', { label: 'Save as…', icon: 'save', key: 'Mod-Shift-s', global: true, hidden: () => !TAURI, run: () => saveToDisk(true) });
 cmd('saveMd', { label: 'Download Markdown (.md)', icon: 'file-down', run: () => saveFile(slugFile(cur().title) + '.md', cm.getValue(), 'text/markdown') });
 cmd('exportHtml', { label: 'Download web page (.html)', icon: 'file-code-2', run: exportHtml });
-cmd('copyRich', { label: 'Copy for Google Docs or Word', icon: 'clipboard-copy', key: 'Mod-Shift-c', global: true, run: copyRich });
+cmd('copyRich', { label: 'Copy for Google Docs or Word', icon: 'clipboard-copy', key: 'Mod-Alt-Shift-c', global: true, run: copyRich });
 cmd('copyHtml', { label: 'Copy HTML source', icon: 'code', run: () => copyText(cleanPreview().innerHTML, 'HTML copied') });
 cmd('copyMd', { label: 'Copy Markdown', icon: 'copy', run: () => copyText(cm.getValue(), 'Markdown copied') });
 cmd('print', { label: 'Print or save as PDF', icon: 'printer', key: 'Mod-p', global: true, hidden: () => inArtifact() || !!TAURI, run: () => { if (!inArtifact()) window.print(); } });
@@ -2329,7 +2432,7 @@ cmd('bold', { label: 'Bold', icon: 'bold', key: 'Mod-b', run: () => wrapInline('
 cmd('italic', { label: 'Italic', icon: 'italic', key: 'Mod-i', run: () => wrapInline('*') });
 cmd('underline', { label: 'Underline', icon: 'underline', key: 'Mod-u', run: () => wrapInline('<u>', '</u>') });
 cmd('strike', { label: 'Strikethrough', icon: 'strikethrough', key: 'Mod-Shift-x', run: () => wrapInline('~~') });
-cmd('highlight', { label: 'Highlight', icon: 'highlighter', key: 'Mod-Alt-h', run: () => wrapInline('==') });
+cmd('highlight', { label: 'Highlight', icon: 'highlighter', run: () => wrapInline('==') });
 cmd('code', { label: 'Inline code', icon: 'code', key: 'Mod-e', run: () => wrapInline('`', '`', 'code') });
 cmd('sup', { label: 'Superscript', icon: 'superscript', key: 'Mod-.', run: () => wrapInline('^') });
 cmd('sub', { label: 'Subscript', icon: 'subscript', key: 'Mod-,', run: () => wrapInline('~') });
@@ -2353,7 +2456,14 @@ cmd('imageUrl', { label: 'Picture from web address', icon: 'image-plus', run: ()
 }) });
 cmd('footnote', { label: 'Footnote', icon: 'footprints', key: isMac ? 'Mod-Alt-g' : 'Mod-Alt-f', run: insertFootnote });
 cmd('table', { label: 'Table', icon: 'table', run: (anchor) => openTablePicker(anchor) });
-cmd('codeBlock', { label: 'Code block', icon: 'square-code', key: 'Mod-Alt-c', run: () => { const s = cm.getSelection(); if (s.includes('\n') || s) { const t = '```\n' + s + '\n```'; cm.replaceSelection(t); cm.setCursor({ line: cm.getCursor().line - s.split('\n').length - 1, ch: 3 }); cm.focus(); } else insertBlock('```\n\n```', 3); } });
+cmd('codeBlock', { label: 'Code block', icon: 'square-code', key: 'Mod-Alt-c', run: () => {
+  const s = cm.getSelection();
+  if (!s) return insertBlock('```\n\n```', 3);
+  const from = cm.getCursor('from'), to = cm.getCursor('to');
+  const pre = from.ch > 0 ? '\n' : '', post = to.ch < cm.getLine(to.line).length ? '\n' : '';
+  cm.replaceSelection(pre + '```\n' + s + '\n```' + post);
+  cm.setCursor({ line: from.line + (pre ? 1 : 0), ch: 3 }); cm.focus();
+} });
 cmd('math', { label: 'Equation', icon: 'sigma', run: () => insertBlock('$$\nE = mc^2\n$$', 3, 11) });
 cmd('diagram', { label: 'Diagram', icon: 'workflow', run: () => insertBlock('```mermaid\nflowchart LR\n  A[Draft] --> B{Review}\n  B -- Approved --> C[Publish]\n  B -- Changes --> A\n```', 11) });
 cmd('callout', { label: 'Callout', icon: 'message-square-warning', run: (anchor) => openCalloutPicker(anchor) });
@@ -2392,7 +2502,7 @@ cmd('toggleDiagrams', { label: 'Diagrams (Mermaid)', icon: 'workflow', checked: 
 cmd('shortcuts', { label: 'Keyboard shortcuts', icon: 'keyboard', key: 'Mod-/', global: true, run: showShortcuts });
 cmd('guide', { label: 'Markdown guide', icon: 'book-open-text', run: () => newDoc(WELCOME, 'Markdown guide') });
 cmd('about', { label: 'About Cowdrey.md', icon: 'info', run: showAbout });
-cmd('wordCount', { label: 'Word count', icon: 'file-digit', key: 'Mod-Shift-w', global: true, run: showStats });
+cmd('wordCount', { label: 'Word count', icon: 'file-digit', key: 'Mod-Alt-w', global: true, run: showStats });
 
 function rebuild() { saveSettings(); buildMd(); render(); refreshState(); }
 function runCmd(id, anchor) { const c = C[id]; if (!c) return; closePopover(); c.run(anchor); refreshState(); }
@@ -2401,6 +2511,8 @@ function runCmd(id, anchor) { const c = C[id]; if (!c) return; closePopover(); c
 const KEYMAP = {};
 for (const c of Object.values(C)) if (c.key) KEYMAP[c.key.toLowerCase()] = c.id;
 const codeKey = (e) => {
+  // Use the character the layout produces (Dvorak, AZERTY…); fall back to the physical key when Option/Alt changed it.
+  if (!e.altKey && /^[a-z0-9]$/i.test(e.key || '')) return e.key.toLowerCase();
   const c = e.code || '';
   if (c.startsWith('Key')) return c.slice(3).toLowerCase();
   if (c.startsWith('Digit')) return c.slice(5);
@@ -2408,6 +2520,7 @@ const codeKey = (e) => {
 };
 document.addEventListener('keydown', (e) => {
   const mod = isMac ? e.metaKey : e.ctrlKey;
+  if (!isMac && e.getModifierState && e.getModifierState('AltGraph')) return; // AltGr types characters, it is not a shortcut
   if (!mod) { if (e.key === 'Escape' && !popover.hidden) closePopover(); return; }
   const combo = ['mod', e.altKey && 'alt', e.shiftKey && 'shift', codeKey(e)].filter(Boolean).join('-');
   const id = KEYMAP[combo]; if (!id) return;
@@ -2681,11 +2794,16 @@ preview.addEventListener('click', (e) => {
   }
   const copy = e.target.closest('.copy-code');
   if (copy) { const code = copy.closest('.code-block').querySelector('code').textContent; copyText(code, 'Code copied'); return; }
+  const link = e.target.closest('a[href]');
+  if (link && !TAURI) {
+    const href = link.getAttribute('href');
+    if (!href.startsWith('#') && !/^(https?:|mailto:|tel:)/i.test(href)) { e.preventDefault(); toast('Links to other files open in the Mac app. Here, only web links and links within this page work.'); return; }
+  }
   const a = e.target.closest('a[href^="#"]');
   if (a) {
     e.preventDefault();
     const id = decodeURIComponent(a.getAttribute('href').slice(1));
-    const t = id && preview.querySelector('#' + CSS.escape(id));
+    const t = id && (preview.querySelector('#' + CSS.escape(id)) || preview.querySelector('#u-' + CSS.escape(id)) || preview.querySelector('#h-' + CSS.escape(id)));
     if (t) { canvas.scrollTop += t.getBoundingClientRect().top - canvas.getBoundingClientRect().top - 20; }
   }
 });
@@ -2739,8 +2857,9 @@ function pasteAsNew() {
    ================================================================ */
 cm.on('change', () => {
   const d = cur(); if (!d) return;
+  if (applyingRemote) { d.content = cm.getValue(); scheduleRender(); return; }
   d.content = cm.getValue(); d.updated = Date.now();
-  dirty = true; setSaveState('saving'); scheduleSave(); scheduleRender();
+  markDirty(d.id); setSaveState('saving'); scheduleSave(); scheduleRender();
 });
 cm.on('cursorActivity', () => {
   updateCursorStatus(); highlightOutline(); updateStyleGallery();
@@ -2751,16 +2870,30 @@ cm.on('cursorActivity', () => {
 /* ================================================================
    Mac app (Tauri): files on disk, Finder "Open With", external links
    ================================================================ */
+const stripExt = (n) => n.replace(/\.(md|markdown|mdown|mkdn?|txt)$/i, '');
 function openPathsAsDocs(files) {
   let last;
   for (const f of files) {
     const existing = docs.find((d) => d.path === f.path);
-    if (existing) { last = existing; continue; }
-    last = makeDoc(f.content, f.name.replace(/\.(md|markdown|mdown|mkdn?|txt)$/i, ''), false);
-    last.path = f.path;
-    docs.unshift(last);
+    if (existing) {
+      last = existing;
+      if (f.content !== existing.diskContent) {
+        if (existing.content === existing.diskContent) {
+          // no unsaved edits here, so take the newer copy from disk
+          existing.content = existing.diskContent = f.content; existing.updated = Date.now();
+          cmDocs.get(existing.id)?.setValue(f.content);
+          markDirty(existing.id);
+        } else {
+          toast(`${f.name} changed on disk. Your unsaved version is kept; use Save as to keep both.`);
+        }
+      }
+      continue;
+    }
+    last = makeDoc(f.content, stripExt(f.name), false);
+    last.path = f.path; last.diskContent = f.content;
+    docs.unshift(last); markDirty(last.id);
   }
-  if (last) { dirty = true; persist(); openDoc(last.id); }
+  if (last) { persist(); openDoc(last.id); }
 }
 async function openNative() {
   try {
@@ -2772,27 +2905,66 @@ async function openNative() {
     openPathsAsDocs(files);
   } catch (e) { toast(`Could not open: ${e}`); }
 }
+async function writeToPath(d, path, contents) {
+  await TAURI.core.invoke('write_text_file', { path, contents });
+  d.path = path; d.diskContent = contents; markDirty(d.id); persist();
+  toast(`Saved ${baseName(path)}`);
+}
 async function saveToDisk(saveAs) {
   const d = cur();
   if (d.autoTitle) render();
   persist();
+  const contents = cm.getValue();
   if (d.path && !saveAs) {
-    try { await TAURI.core.invoke('write_text_file', { path: d.path, contents: cm.getValue() }); toast(`Saved ${baseName(d.path)}`); }
-    catch (e) { toast(`Could not save: ${e}`); }
+    try {
+      let onDisk = null;
+      try { onDisk = (await TAURI.core.invoke('read_text_file', { path: d.path })).content; } catch {}
+      if (onDisk !== null && d.diskContent !== undefined && onDisk !== d.diskContent && onDisk !== contents) {
+        openDialog({
+          title: `${baseName(d.path)} changed on disk`,
+          body: '<p>Another app changed this file after you opened it. Saving now replaces those changes with your version.</p>',
+          actions: [{ label: 'Cancel' }, { label: 'Save as…', run: () => { setTimeout(() => saveToDisk(true), 0); } }, { label: 'Replace', danger: true, run: () => { writeToPath(d, d.path, contents).catch((e) => toast(`Could not save: ${e}`)); } }],
+        });
+        return;
+      }
+      await writeToPath(d, d.path, contents);
+    } catch (e) { toast(`Could not save: ${e}`); }
     return;
   }
-  const path = await saveFile(slugFile(d.title) + '.md', cm.getValue(), 'text/markdown');
-  if (path) { d.path = path; d.title = baseName(path).replace(/\.(md|markdown|mdown|mkdn?|txt)$/i, ''); d.autoTitle = false; titleInput.value = d.title; dirty = true; persist(); renderTabs(); renderDocsList(); }
+  try {
+    const path = await TAURI.dialog.save({ defaultPath: slugFile(d.title) + '.md', filters: [{ name: 'Markdown', extensions: ['md'] }] });
+    if (!path) return;
+    await writeToPath(d, path, contents);
+    d.title = stripExt(baseName(path)); d.autoTitle = false; titleInput.value = d.title;
+    markDirty(d.id); persist(); renderTabs(); renderDocsList();
+  } catch (e) { toast(`Could not save: ${e}`); }
+}
+function dirName(p) { const i = p.lastIndexOf('/'); return i > 0 ? p.slice(0, i) : '/'; }
+function resolvePath(base, rel) {
+  const parts = (rel.startsWith('/') ? rel : dirName(base) + '/' + rel).split('/');
+  const out = [];
+  for (const x of parts) { if (x === '..') out.pop(); else if (x && x !== '.') out.push(x); }
+  return '/' + out.join('/');
 }
 if (TAURI) {
   const takeOpened = () => TAURI.core.invoke('take_opened_files').then((files) => { if (files && files.length) openPathsAsDocs(files); }).catch(() => {});
   TAURI.event.listen('open-files', takeOpened);
   setTimeout(takeOpened, 0);
+  TAURI.event.listen('flush-and-quit', () => {
+    try { flushSave(); } finally { TAURI.core.invoke('quit_app').catch(() => {}); }
+  });
   document.addEventListener('click', (e) => {
     const a = e.target.closest && e.target.closest('a[href]');
-    if (!a || !/^(https?:|mailto:)/i.test(a.getAttribute('href'))) return;
+    if (!a) return;
+    const href = a.getAttribute('href');
+    if (/^(https?:|mailto:)/i.test(href)) { e.preventDefault(); TAURI.opener.openUrl(a.href).catch(() => {}); return; }
+    if (href.startsWith('#') || !preview.contains(a)) return;
     e.preventDefault();
-    TAURI.opener.openUrl(a.href).catch(() => {});
+    const target = decodeURI(href.split('#')[0]);
+    const d = cur();
+    if (!/\.(md|markdown|mdown|mkdn?|txt)$/i.test(target)) { toast('Only links to Markdown files and web pages open from here.'); return; }
+    if (!d.path && !target.startsWith('/')) { toast('Save this document first so links to nearby files can be found.'); return; }
+    TAURI.core.invoke('read_text_file', { path: resolvePath(d.path || '/', target) }).then((f) => openPathsAsDocs([f])).catch((err) => toast(String(err)));
   }, true);
   C.saveMd.label = 'Export Markdown (.md)…';
   C.exportHtml.label = 'Export web page (.html)…';
@@ -2812,7 +2984,7 @@ setSideTab(S.sideTab);
 openDoc(currentId);
 refreshState(); refreshIcons();
 if (window.innerWidth > 760) cm.focus();
-setSaveState(store.get(KEY + ':docs', null) ? 'saved' : 'saved');
+if (firstRun) persist(); else setSaveState('saved');
 window.addEventListener('resize', debounce(() => { cm.refresh(); sizePage(); buildLineMap(); }, 120));
 document.fonts && document.fonts.ready.then(() => { cm.refresh(); sizePage(); buildLineMap(); });
 })();

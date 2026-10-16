@@ -1,12 +1,17 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::path::Path;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
-use tauri::{Emitter, Manager};
+use std::time::Duration;
+use tauri::{AppHandle, Emitter, Manager, RunEvent, WindowEvent};
 
 /// Files macOS asked us to open (Finder double-click, "Open With", drag onto the Dock icon)
 /// that the page has not picked up yet.
 struct PendingFiles(Mutex<Vec<String>>);
+
+/// Set once the page has saved and we are allowed to quit.
+struct Quitting(AtomicBool);
 
 #[derive(serde::Serialize, Clone)]
 struct OpenedFile {
@@ -40,17 +45,50 @@ fn write_text_file(path: String, contents: String) -> Result<(), String> {
     std::fs::write(&path, contents).map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn quit_app(app: AppHandle) {
+    app.state::<Quitting>().0.store(true, Ordering::SeqCst);
+    app.exit(0);
+}
+
+/// Ask the page to save, then quit. If the page does not answer quickly, quit anyway.
+fn flush_then_quit(app: &AppHandle) {
+    let _ = app.emit("flush-and-quit", ());
+    let handle = app.clone();
+    std::thread::spawn(move || {
+        std::thread::sleep(Duration::from_millis(1500));
+        handle.state::<Quitting>().0.store(true, Ordering::SeqCst);
+        handle.exit(0);
+    });
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .manage(PendingFiles(Mutex::new(Vec::new())))
-        .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file])
+        .manage(Quitting(AtomicBool::new(false)))
+        .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, quit_app])
+        .on_window_event(|window, event| {
+            if let WindowEvent::CloseRequested { api, .. } = event {
+                let app = window.app_handle();
+                if !app.state::<Quitting>().0.load(Ordering::SeqCst) {
+                    api.prevent_close();
+                    flush_then_quit(app);
+                }
+            }
+        })
         .build(tauri::generate_context!())
         .expect("Cowdrey.md could not start")
         .run(|app, event| {
+            if let RunEvent::ExitRequested { api, code, .. } = &event {
+                if code.is_none() && !app.state::<Quitting>().0.load(Ordering::SeqCst) {
+                    api.prevent_exit();
+                    flush_then_quit(app);
+                }
+            }
             #[cfg(target_os = "macos")]
-            if let tauri::RunEvent::Opened { urls } = &event {
+            if let RunEvent::Opened { urls } = &event {
                 let paths: Vec<String> = urls
                     .iter()
                     .filter_map(|u| u.to_file_path().ok())

@@ -904,7 +904,7 @@ $('#outlinePanel').addEventListener('click', (e) => {
   const b = e.target.closest('.ol-item'); if (!b) return;
   const h = headings[+b.dataset.i]; if (!h) return;
   goToLine(h.line);
-  if (window.innerWidth <= 980) toggleOutline(false);
+  if (window.innerWidth <= 1180) toggleOutline(false);
 });
 function goToLine(line) {
   cm.setCursor({ line, ch: 0 });
@@ -1108,9 +1108,11 @@ function deleteDoc(id) {
 }
 function renderTabs() {
   const el = $('#docTabs');
+  el.setAttribute('role', 'tablist'); el.setAttribute('aria-label', 'Open documents');
   el.innerHTML = S.openTabs.map((id) => {
     const d = docs.find((x) => x.id === id); if (!d) return '';
-    return `<button type="button" class="doc-tab${id === currentId ? ' current' : ''}" data-id="${id}" title="${esc(d.title)}">${ic('file-text')}<span>${esc(d.title)}</span><span class="x" data-close="${id}" role="button" aria-label="Close tab">${ic('x')}</span></button>`;
+    const curTab = id === currentId;
+    return `<div class="doc-tab${curTab ? ' current' : ''}" data-id="${id}" role="tab" aria-selected="${curTab}"><button type="button" class="open" title="${esc(d.title)}"${curTab ? ' aria-current="page"' : ''}>${ic('file-text')}<span>${esc(d.title)}</span></button><button type="button" class="x" data-close="${id}" aria-label="Close ${esc(d.title)}">${ic('x')}</button></div>`;
   }).join('') + `<button type="button" class="new-tab" data-cmd="newDoc" title="New document" aria-label="New document">${ic('plus')}</button>`;
   refreshIcons();
 }
@@ -1144,9 +1146,9 @@ $('#docsPanel').addEventListener('click', (e) => {
   const del = e.target.closest('[data-del]'); if (del) { e.stopPropagation(); confirmDelete = del.dataset.del; renderDocsList(); return; }
   const yes = e.target.closest('[data-yes]'); if (yes) { confirmDelete = null; deleteDoc(yes.dataset.yes); return; }
   if (e.target.closest('[data-no]')) { confirmDelete = null; renderDocsList(); return; }
-  const it = e.target.closest('.doc-item'); if (it) { openDoc(it.dataset.id); if (window.innerWidth <= 980) toggleOutline(false); }
+  const it = e.target.closest('.doc-item'); if (it) { openDoc(it.dataset.id); if (window.innerWidth <= 1180) toggleOutline(false); }
 });
-$('#docsPanel').addEventListener('keydown', (e) => { const it = e.target.closest('.doc-item'); if (it && e.key === 'Enter') openDoc(it.dataset.id); });
+$('#docsPanel').addEventListener('keydown', (e) => { const it = e.target.closest('.doc-item'); if (it && e.target === it && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openDoc(it.dataset.id); } });
 
 function setSideTab(t) {
   S.sideTab = t; saveSettings();
@@ -1512,7 +1514,7 @@ function menuHtml(ids) {
     if (id === '-') return '<div class="msep"></div>';
     const c = C[id];
     const checked = c.checked ? c.checked() : null;
-    return `<button type="button" class="mi" role="menuitem" data-cmd="${id}">${checked === null ? ic(c.icon) : checked ? `<span class="chk">${ic('check')}</span>` : '<span></span>'}<span>${esc(c.label)}</span><span class="k">${fmtKey(c.key || c.hint)}</span></button>`;
+    return `<button type="button" class="mi" role="${checked === null ? 'menuitem' : 'menuitemcheckbox'}"${checked === null ? '' : ` aria-checked="${checked}"`} data-cmd="${id}">${checked === null ? ic(c.icon) : checked ? `<span class="chk">${ic('check')}</span>` : '<span></span>'}<span>${esc(c.label)}</span><span class="k">${fmtKey(c.key || c.hint)}</span></button>`;
   }).join('').replace(/^(<div class="msep"><\/div>)+|(<div class="msep"><\/div>)+$/g, '').replace(/(<div class="msep"><\/div>){2,}/g, '<div class="msep"></div>');
 }
 function openMenu(btn) {
@@ -1623,15 +1625,38 @@ const RIBBON = {
 };
 const TABS = [['home', 'Home'], ['insert', 'Insert'], ['layout', 'Layout'], ['view', 'View']];
 function renderRibbonTabs() {
-  $('#ribbonTabs').innerHTML = TABS.map(([k, l]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${S.ribbonTab === k && !S.ribbonCollapsed}">${l}</button>`).join('') +
+  $('#ribbonTabs').innerHTML = TABS.map(([k, l]) => { const on = S.ribbonTab === k; return `<button type="button" role="tab" id="rtab-${k}" data-tab="${k}" aria-controls="ribbonBody" aria-selected="${on && !S.ribbonCollapsed}" tabindex="${on ? 0 : -1}">${l}</button>`; }).join('') +
     `<span class="spacer"></span><button type="button" class="collapse" id="ribbonToggle" title="${S.ribbonCollapsed ? 'Show the ribbon' : 'Collapse the ribbon'}" aria-label="${S.ribbonCollapsed ? 'Show the ribbon' : 'Collapse the ribbon'}">${ic(S.ribbonCollapsed ? 'chevron-down' : 'chevron-up')}</button>`;
 }
+function focusKey(el) {
+  if (!el || !el.closest || !el.closest('#ribbon')) return null;
+  for (const a of ['data-tab', 'data-pagestyle', 'data-style', 'data-cmd', 'data-edsize']) if (el.hasAttribute(a)) return `[${a}="${el.getAttribute(a)}"]`;
+  if (el.closest('.seg')) return `.seg[data-seg="${el.parentElement.dataset.seg}"] [data-v="${el.dataset.v}"]`;
+  if (el.id) return '#' + el.id;
+  return null;
+}
 function renderRibbon() {
+  const keep = focusKey(document.activeElement);
   renderRibbonTabs();
   $('#ribbon').classList.toggle('collapsed', S.ribbonCollapsed);
-  $('#ribbonBody').innerHTML = `<div class="ribbon-panel" role="tabpanel">${RIBBON[S.ribbonTab]()}</div>`;
-  refreshIcons(); updateStyleGallery();
+  $('#ribbonBody').innerHTML = `<div class="ribbon-panel" role="tabpanel" aria-labelledby="rtab-${S.ribbonTab}">${RIBBON[S.ribbonTab]()}</div>`;
+  refreshIcons(); updateStyleGallery(); updateRibbonOverflow();
+  if (keep) { const el = $('#ribbon').querySelector(keep); el && el.focus({ preventScroll: true }); }
 }
+function updateRibbonOverflow() {
+  const b = $('#ribbonBody'); b.classList.toggle('overflow', b.scrollWidth > b.clientWidth + 2 && b.scrollLeft + b.clientWidth < b.scrollWidth - 2);
+}
+$('#ribbonBody').addEventListener('scroll', updateRibbonOverflow, { passive: true });
+window.addEventListener('resize', debounce(updateRibbonOverflow, 100));
+$('#ribbonTabs').addEventListener('keydown', (e) => {
+  const t = e.target.closest('[data-tab]'); if (!t) return;
+  const keys = TABS.map(([k]) => k), i = keys.indexOf(t.dataset.tab);
+  const j = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: keys.length - 1 }[e.key];
+  if (j === undefined) return;
+  e.preventDefault();
+  S.ribbonTab = keys[(j + keys.length) % keys.length]; S.ribbonCollapsed = false; saveSettings(); renderRibbon();
+  $(`[data-tab="${S.ribbonTab}"]`).focus();
+});
 $('#ribbonTabs').addEventListener('click', (e) => {
   if (e.target.closest('#ribbonToggle')) { S.ribbonCollapsed = !S.ribbonCollapsed; saveSettings(); renderRibbon(); return; }
   const t = e.target.closest('[data-tab]'); if (!t) return;
@@ -1938,6 +1963,7 @@ if (TAURI) {
 buildMd();
 app.dataset.outline = S.outline ? 'on' : 'off';
 if (window.innerWidth < 1200 && S.outline) { S.outline = false; app.dataset.outline = 'off'; }
+if (window.innerWidth <= 760 && !store.get(KEY + ':settings', null)) { S.view = 'editor'; S.ribbonCollapsed = true; }
 app.dataset.view = S.view;
 renderRibbon();
 applyTheme(); applyEditorPrefs(); applyPagePrefs();

@@ -346,10 +346,23 @@ await test('full storage shows a clear warning instead of failing silently', asy
   await Q.ctx.close();
 });
 
-await test('phone width: no sideways scrolling, editor and page both visible', async () => {
+await test('phone width: no sideways scrolling, writing gets the screen, preview one tap away', async () => {
   const Q = await newPage({ width: 390, height: 844 });
-  const r = await Q.evaluate(() => ({ h: document.documentElement.scrollWidth <= innerWidth, ed: document.querySelector('.editor-pane').getBoundingClientRect().height > 150, pv: document.querySelector('.preview-pane').getBoundingClientRect().height > 150 }));
-  eq(r, { h: true, ed: true, pv: true }); eq(Q.errors, [], 'page errors'); await Q.ctx.close();
+  const r = await Q.evaluate(() => ({ h: document.documentElement.scrollWidth <= innerWidth, ed: document.querySelector('.editor-pane').getBoundingClientRect().height > 450, ribbon: document.querySelector('#ribbon').classList.contains('collapsed') }));
+  eq(r, { h: true, ed: true, ribbon: true });
+  await Q.click('#sbViews [data-view="preview"]'); await settle(Q, 300);
+  ok(await Q.evaluate(() => document.querySelector('.preview-pane').getBoundingClientRect().height > 450), 'preview fills the screen');
+  eq(Q.errors, [], 'page errors'); await Q.ctx.close();
+});
+
+await test('keyboard: ribbon tabs keep focus and move with arrow keys; tab close is a real button', async () => {
+  await P.focus('[data-tab="home"]'); await P.keyboard.press('ArrowRight'); await settle(P, 150);
+  eq(await P.evaluate(() => [document.activeElement.dataset.tab, document.querySelector('#ribbonBody [aria-labelledby]').getAttribute('aria-labelledby')]), ['insert', 'rtab-insert']);
+  await P.click('[data-tab="layout"]'); await P.focus('[data-pagestyle="github"]'); await P.keyboard.press('Enter'); await settle(P, 150);
+  eq(await P.evaluate(() => document.activeElement.dataset.pagestyle), 'github', 'focus stays on the card');
+  await P.keyboard.press('Shift+Tab'); await P.keyboard.press('Tab'); await P.focus('[data-pagestyle="cowdrey"]'); await P.keyboard.press('Enter');
+  await P.click('[data-tab="home"]');
+  eq(await P.evaluate(() => { const x = document.querySelector('.doc-tab .x'); const r = x.getBoundingClientRect(); return [x.tagName, r.width >= 24 && r.height >= 24, !x.closest('button.doc-tab')]; }), ['BUTTON', true, true]);
 });
 
 await test('dark theme renders without errors', async () => {

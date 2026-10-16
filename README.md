@@ -45,6 +45,15 @@ Build:
 python3 build.py
 ```
 
+## Tests
+
+`tests/e2e.mjs` drives the real app in Chromium through 48 scenarios: editing commands, lists, find and replace, tables, pictures, attempted script injection, math and diagrams, documents across browser tabs, persistence, export, clipboard, sync scroll, zoom, themes, phone layout, accessibility names and large-document speed. GitHub Actions runs it on every push (`.github/workflows/tests.yml`).
+
+```sh
+(cd desktop && npm ci) && npm install --no-save playwright && npx playwright install chromium
+node tests/e2e.mjs
+```
+
 ## Hosting on bradcowdrey.com
 
 `index.html` is static. Serve it from any web host, or turn on GitHub Pages for this repository (Settings → Pages → deploy from the `main` branch, root folder), then point a subdomain such as `md.bradcowdrey.com` at it. The app runs at `https://bradleycowdrey.github.io/cowdrey-md/` once Pages is on.

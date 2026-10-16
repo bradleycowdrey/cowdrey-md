@@ -49,6 +49,12 @@ python3 build.py
 
 `index.html` is static. Serve it from any web host, or turn on GitHub Pages for this repository (Settings → Pages → deploy from the `main` branch, root folder), then point a subdomain such as `md.bradcowdrey.com` at it. The app runs at `https://bc101101.github.io/cowdrey-md/` once Pages is on.
 
+## Mac app
+
+Download the latest `.dmg` from [Releases](https://github.com/bc101101/cowdrey-md/releases/latest). It runs on Apple silicon and Intel Macs and works offline.
+
+The DMG is built by GitHub Actions (`.github/workflows/mac-app.yml`) whenever a tag such as `v1.0.0` is pushed. The `desktop/` folder wraps `index.html` with [Tauri](https://tauri.app) and copies every library in, so nothing loads from the internet. Until the build is signed and notarized with an Apple Developer ID, macOS asks for confirmation the first time: right-click the app and choose **Open**.
+
 ## Credits
 
 Built with CodeMirror 5, markdown-it, highlight.js, MathJax 3, Mermaid, DOMPurify and Lucide icons. Feature ideas came from studying the open-source editors MacDown, MarkText, Zettlr, StackEdit, Dillinger and ghostwriter, along with Markdot.

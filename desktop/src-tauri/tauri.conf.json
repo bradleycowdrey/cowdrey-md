@@ -1,0 +1,43 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Cowdrey.md",
+  "version": "1.0.0",
+  "identifier": "com.bradcowdrey.cowdreymd",
+  "build": {
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Cowdrey.md",
+        "width": 1360,
+        "height": 880,
+        "minWidth": 720,
+        "minHeight": 520
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app", "dmg"],
+    "category": "Productivity",
+    "publisher": "Bradley Cowdrey",
+    "copyright": "© 2026 Bradley Cowdrey",
+    "homepage": "https://bradcowdrey.com",
+    "shortDescription": "Markdown editor",
+    "longDescription": "Cowdrey.md is a Markdown editor by Bradley Cowdrey that combines MacDown's split view, a Google Docs page and a Word ribbon.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.png"
+    ],
+    "macOS": {
+      "minimumSystemVersion": "10.15"
+    }
+  }
+}

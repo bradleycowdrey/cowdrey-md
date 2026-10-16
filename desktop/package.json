@@ -1,0 +1,26 @@
+{
+  "name": "cowdrey-md-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mac desktop build of Cowdrey.md by Bradley Cowdrey",
+  "scripts": {
+    "prepare-web": "node build.mjs",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@highlightjs/cdn-assets": "11.9.0",
+    "@tauri-apps/cli": "2.12.1",
+    "codemirror": "5.65.16",
+    "dompurify": "3.1.6",
+    "lucide": "0.441.0",
+    "markdown-it": "14.1.0",
+    "markdown-it-deflist": "3.0.0",
+    "markdown-it-emoji": "3.0.0",
+    "markdown-it-footnote": "4.0.0",
+    "markdown-it-mark": "4.0.0",
+    "markdown-it-sub": "2.0.0",
+    "markdown-it-sup": "2.0.0",
+    "mathjax": "3.2.2",
+    "mermaid": "10.9.1"
+  }
+}

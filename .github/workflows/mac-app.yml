@@ -1,0 +1,58 @@
+name: Mac app
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  dmg:
+    name: Build Cowdrey.md.dmg
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri -> target
+
+      - name: Install build tools and libraries
+        working-directory: desktop
+        run: npm ci
+
+      - name: Bundle the web app for offline use
+        working-directory: desktop
+        run: node build.mjs
+
+      # Builds a universal (Apple silicon + Intel) app and DMG, then attaches it to a GitHub Release.
+      # To sign and notarize, add these repository secrets and the action picks them up:
+      # APPLE_CERTIFICATE, APPLE_CERTIFICATE_PASSWORD, APPLE_SIGNING_IDENTITY, APPLE_ID, APPLE_PASSWORD, APPLE_TEAM_ID
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: desktop
+          tagName: ${{ github.ref_type == 'tag' && github.ref_name || 'v__VERSION__' }}
+          releaseName: Cowdrey.md v__VERSION__
+          releaseBody: |
+            Cowdrey.md for Mac, a Markdown editor by Bradley Cowdrey (https://bradcowdrey.com).
+
+            Download the .dmg below, open it, and drag Cowdrey.md into Applications. It runs on Apple silicon and Intel Macs.
+
+            This build is not yet signed by Apple. The first time you open it, right-click Cowdrey.md in Applications and choose Open, then Open again.
+          releaseDraft: false
+          prerelease: false
+          args: --target universal-apple-darwin

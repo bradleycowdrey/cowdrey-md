@@ -4,6 +4,12 @@ A Markdown editor by **Bradley Cowdrey** · [bradcowdrey.com](https://bradcowdre
 
 It combines MacDown's side-by-side writing, a Docs-style title bar, menus and paper page, and a Word-style ribbon, ruler and status bar. It is one self-contained web page with no build server and no backend.
 
+### [⬇ Download for Mac](https://github.com/bradleycowdrey/cowdrey-md/releases/latest) · [Open in your browser](https://bradleycowdrey.github.io/cowdrey-md/)
+
+**Free. Forever.** The Mac download is a `.dmg` for Apple silicon and Intel Macs: open it and drag Cowdrey.MD into Applications. The first time, macOS asks for confirmation; open **System Settings → Privacy & Security** and click **Open Anyway**. After that, the app keeps itself up to date.
+
+[![Latest release](https://img.shields.io/github/v/release/bradleycowdrey/cowdrey-md?label=latest%20version)](https://github.com/bradleycowdrey/cowdrey-md/releases/latest)
+
 ## Features
 
 **Writing**

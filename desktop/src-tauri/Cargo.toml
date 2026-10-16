@@ -1,6 +1,6 @@
 [package]
 name = "cowdrey-md"
-version = "1.0.0"
+version = "1.0.1"
 description = "Cowdrey.md, a Markdown editor by Bradley Cowdrey"
 authors = ["Bradley Cowdrey"]
 license = "MIT"

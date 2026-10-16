@@ -1261,7 +1261,7 @@ function exportHtml() {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="generator" content="Cowdrey.md by Bradley Cowdrey · bradcowdrey.com">
 <title>${esc(title)}</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap">
+<style>${$('#font-css').textContent}</style>
 <style>
 :root { ${tokens} }
 body { margin: 0; background: var(--canvas); padding: 40px 16px; }
@@ -1297,13 +1297,13 @@ async function copyRich() {
   try {
     if (!window.ClipboardItem) throw 0;
     await navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }), 'text/plain': new Blob([text], { type: 'text/plain' }) })]);
-    toast('Copied with formatting. Paste into Google Docs or Word.');
+    toast('Copied with formatting. Paste into Docs or Word.');
   } catch {
     const r = document.createRange(); r.selectNodeContents(preview);
     const s = getSelection(); s.removeAllRanges(); s.addRange(r);
     let ok = false; try { ok = document.execCommand('copy'); } catch {}
     s.removeAllRanges();
-    toast(ok ? 'Copied with formatting. Paste into Google Docs or Word.' : `Copy was blocked here. Select the page and press ${isMac ? '⌘C' : 'Ctrl+C'}.`);
+    toast(ok ? 'Copied with formatting. Paste into Docs or Word.' : `Copy was blocked here. Select the page and press ${isMac ? '⌘C' : 'Ctrl+C'}.`);
   }
 }
 
@@ -1377,7 +1377,7 @@ cmd('saveNow', { label: 'Save', icon: 'save', key: 'Mod-s', global: true, run: (
 cmd('saveAs', { label: 'Save as…', icon: 'save', key: 'Mod-Shift-s', global: true, hidden: () => !TAURI, run: () => saveToDisk(true) });
 cmd('saveMd', { label: 'Download Markdown (.md)', icon: 'file-down', run: () => saveFile(slugFile(cur().title) + '.md', cm.getValue(), 'text/markdown') });
 cmd('exportHtml', { label: 'Download web page (.html)', icon: 'file-code-2', run: exportHtml });
-cmd('copyRich', { label: 'Copy for Google Docs or Word', icon: 'clipboard-copy', key: 'Mod-Alt-Shift-c', global: true, run: copyRich });
+cmd('copyRich', { label: 'Copy for Docs or Word', icon: 'clipboard-copy', key: 'Mod-Alt-Shift-c', global: true, run: copyRich });
 cmd('copyHtml', { label: 'Copy HTML source', icon: 'code', run: () => copyText(cleanPreview().innerHTML, 'HTML copied') });
 cmd('copyMd', { label: 'Copy Markdown', icon: 'copy', run: () => copyText(cm.getValue(), 'Markdown copied') });
 cmd('print', { label: 'Print or save as PDF', icon: 'printer', key: 'Mod-p', global: true, hidden: () => inArtifact() || !!TAURI, run: () => { if (!inArtifact()) window.print(); } });
@@ -1823,7 +1823,7 @@ function showAbout() {
   openDialog({
     title: 'About Cowdrey.md',
     body: `<div class="about-mark"><a class="logo" href="https://bradcowdrey.com" target="_blank" rel="noopener" aria-label="bradcowdrey.com">${$('.titlebar .logo').innerHTML}</a><div><b>Cowdrey.md</b>by Bradley Cowdrey · <a href="https://bradcowdrey.com" target="_blank" rel="noopener">bradcowdrey.com</a></div></div>
-      <p>A Markdown editor with MacDown’s side-by-side writing, a Google Docs-style page and menus, and a Word-style ribbon, ruler and status bar.</p>
+      <p>A Markdown editor with MacDown’s side-by-side writing, a Docs-style page and menus, and a Word-style ribbon, ruler and status bar.</p>
       <p>Supports GitHub Flavored Markdown, tables, task lists, footnotes, callouts, LaTeX math, Mermaid diagrams, emoji, front matter and highlighted code.</p>
       <p style="font-size:12px">Built with CodeMirror, markdown-it, highlight.js, MathJax, Mermaid, DOMPurify and Lucide. Feature ideas drawn from MacDown, MarkText, Zettlr, StackEdit, Dillinger and ghostwriter.</p>`,
     actions: [{ label: 'Close', primary: true }],

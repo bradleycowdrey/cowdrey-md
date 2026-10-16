@@ -2,14 +2,14 @@
 
 A Markdown editor by **Bradley Cowdrey** · [bradcowdrey.com](https://bradcowdrey.com)
 
-It combines MacDown's side-by-side writing, a Google Docs-style title bar, menus and paper page, and a Microsoft Word-style ribbon, ruler and status bar. It is one self-contained web page with no build server and no backend.
+It combines MacDown's side-by-side writing, a Docs-style title bar, menus and paper page, and a Microsoft Word-style ribbon, ruler and status bar. It is one self-contained web page with no build server and no backend.
 
 ## Features
 
 **Writing**
 - Syntax-highlighted Markdown source (CodeMirror) with spell check, auto-closing brackets, and lists that continue and renumber on Enter
 - Word-style ribbon (Home, Insert, Layout, View) with a Styles gallery (Normal, Heading 1–4, Quote, Code)
-- Docs-style menus (File, Edit, View, Insert, Format, Tools, Help) and keyboard shortcuts that match Google Docs where possible
+- Docs-style menus (File, Edit, View, Insert, Format, Tools, Help) and keyboard shortcuts that match Docs where possible
 - Find and replace with match case and regular expressions
 - Table picker grid, plus **Tidy table** to realign pipes
 - Paste or drop pictures (large ones are downscaled automatically); paste a URL over selected text to make a link
@@ -26,7 +26,7 @@ It combines MacDown's side-by-side writing, a Google Docs-style title bar, menus
 **Documents**
 - Multiple documents with tabs, a Recent documents list, and an outline of headings
 - Autosaves to the browser's local storage
-- Open `.md` files, paste as a new document, download `.md` or a standalone `.html`, copy Markdown or HTML, or **Copy for Google Docs or Word** (rich text)
+- Open `.md` files, paste as a new document, download `.md` or a standalone `.html`, copy Markdown or HTML, or **Copy for Docs or Word** (rich text)
 - Word count dialog with reading and speaking time and a Flesch reading-ease score
 
 ## Project layout
@@ -63,6 +63,10 @@ node tests/e2e.mjs
 Download the latest `.dmg` from [Releases](https://github.com/bradleycowdrey/cowdrey-md/releases/latest). It runs on Apple silicon and Intel Macs and works offline.
 
 The DMG is built by GitHub Actions (`.github/workflows/mac-app.yml`) whenever the version in `desktop/src-tauri/tauri.conf.json` changes on `main`, a tag such as `v1.0.1` is pushed, or the workflow is run by hand. The `desktop/` folder wraps `index.html` with [Tauri](https://tauri.app) and copies every library in, so nothing loads from the internet. Until the build is signed and notarized with an Apple Developer ID, macOS asks for confirmation the first time: right-click the app and choose **Open**.
+
+## Fonts
+
+Instrument Sans, JetBrains Mono, Source Serif 4 and Tinos are bundled in `fonts/` and embedded into `index.html` at build time, so the app never loads fonts from an outside service and works fully offline. Each font is under the SIL Open Font License; its license file sits next to it.
 
 ## Credits
 

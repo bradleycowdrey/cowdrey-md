@@ -3,6 +3,11 @@ name: Mac app
 on:
   push:
     tags: ['v*']
+    branches: [main]
+    # Build a new DMG when the version number (or this workflow) changes on main.
+    paths:
+      - desktop/src-tauri/tauri.conf.json
+      - .github/workflows/mac-app.yml
   workflow_dispatch:
 
 permissions:

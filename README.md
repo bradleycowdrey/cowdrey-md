@@ -62,7 +62,7 @@ node tests/e2e.mjs
 
 Download the latest `.dmg` from [Releases](https://github.com/bradleycowdrey/cowdrey-md/releases/latest). It runs on Apple silicon and Intel Macs and works offline.
 
-The DMG is built by GitHub Actions (`.github/workflows/mac-app.yml`) whenever a tag such as `v1.0.0` is pushed. The `desktop/` folder wraps `index.html` with [Tauri](https://tauri.app) and copies every library in, so nothing loads from the internet. Until the build is signed and notarized with an Apple Developer ID, macOS asks for confirmation the first time: right-click the app and choose **Open**.
+The DMG is built by GitHub Actions (`.github/workflows/mac-app.yml`) whenever the version in `desktop/src-tauri/tauri.conf.json` changes on `main`, a tag such as `v1.0.1` is pushed, or the workflow is run by hand. The `desktop/` folder wraps `index.html` with [Tauri](https://tauri.app) and copies every library in, so nothing loads from the internet. Until the build is signed and notarized with an Apple Developer ID, macOS asks for confirmation the first time: right-click the app and choose **Open**.
 
 ## Credits
 

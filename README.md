@@ -1,4 +1,4 @@
-# Cowdrey.md
+# Cowdrey.MD
 
 A Markdown editor by **Bradley Cowdrey** · [bradcowdrey.com](https://bradcowdrey.com)
 

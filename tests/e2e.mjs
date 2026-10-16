@@ -1,4 +1,4 @@
-// End-to-end tests for Cowdrey.md.
+// End-to-end tests for Cowdrey.MD.
 // Run: (cd desktop && npm ci) && node tests/e2e.mjs
 // Libraries are served from desktop/node_modules, mapped from the exact jsDelivr URLs in index.html,
 // so a URL that points at a file the npm package does not contain fails the suite.
@@ -483,14 +483,14 @@ await test('Mac app: Check for updates finds a newer release and offers the DMG'
     localStorage.setItem('cowdrey.md:updateChecked', String(Date.now())); // no automatic check during the test
   };
   const Q = await newPage({ init: tauriMock });
-  let release = { tag_name: 'v1.2.0', html_url: 'https://github.com/x/releases/tag/v1.2.0', body: '## What is new\n\n- Faster saving', assets: [{ name: 'Cowdrey.md_1.2.0_universal.dmg', browser_download_url: 'https://github.com/x/releases/download/v1.2.0/Cowdrey.md_1.2.0_universal.dmg' }] };
+  let release = { tag_name: 'v1.2.0', html_url: 'https://github.com/x/releases/tag/v1.2.0', body: '## What is new\n\n- Faster saving', assets: [{ name: 'Cowdrey.MD_1.2.0_universal.dmg', browser_download_url: 'https://github.com/x/releases/download/v1.2.0/Cowdrey.MD_1.2.0_universal.dmg' }] };
   let status = 200;
   await Q.route('https://api.github.com/**', (r) => r.fulfill({ status, contentType: 'application/json', body: JSON.stringify(release) }));
   await menu(Q, 'checkUpdates'); await settle(Q, 400);
-  ok((await Q.textContent('#dialog h2')) === 'Cowdrey.md 1.2.0 is available', await Q.textContent('#dialog'));
+  ok((await Q.textContent('#dialog h2')) === 'Cowdrey.MD 1.2.0 is available', await Q.textContent('#dialog'));
   ok((await Q.textContent('#dialog')).includes('Faster saving'), 'release notes shown');
   await Q.click('#dialog .btn.primary'); await settle(Q, 200);
-  eq(await Q.evaluate(() => window.__calls), ['https://github.com/x/releases/download/v1.2.0/Cowdrey.md_1.2.0_universal.dmg'], 'opens the DMG');
+  eq(await Q.evaluate(() => window.__calls), ['https://github.com/x/releases/download/v1.2.0/Cowdrey.MD_1.2.0_universal.dmg'], 'opens the DMG');
   release = { tag_name: 'v1.0.1', assets: [] };
   await menu(Q, 'checkUpdates'); await settle(Q, 400);
   ok((await Q.textContent('#toast')).includes('latest version (1.0.1)'), await Q.textContent('#toast'));
@@ -515,6 +515,19 @@ await test('Mac app: the daily check stays quiet when up to date and respects Sk
 await test('web version has no update menu item', async () => {
   await P.click('[data-menu="6"]');
   ok(!(await P.$('#popover [data-cmd="checkUpdates"]')), 'hidden on the web'); await P.keyboard.press('Escape');
+});
+
+
+await test('existing users see the new name on their stored welcome document', async () => {
+  const Q = await newPage({ init: () => {
+    if (localStorage.getItem('cowdrey.md:index')) return;
+    localStorage.setItem('cowdrey.md:index', JSON.stringify([{ id: 'dold', title: 'Welcome to Cowdrey' + '.md', autoTitle: false, updated: 1 }]));
+    localStorage.setItem('cowdrey.md:doc:dold', JSON.stringify('# Welcome to Cowdrey' + '.md\n\nI am **Cowdrey' + '.md**.'));
+    localStorage.setItem('cowdrey.md:current', JSON.stringify('dold'));
+  } });
+  eq(await Q.inputValue('#docTitle'), 'Welcome to Cowdrey.MD');
+  eq(await Q.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), '# Welcome to Cowdrey.MD\n\nI am **Cowdrey.MD**.');
+  await Q.ctx.close();
 });
 
 await test('no library URL points at a file that does not exist', async () => { eq([...missing], []); });

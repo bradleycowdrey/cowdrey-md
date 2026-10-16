@@ -79,7 +79,7 @@ fn main() {
             }
         })
         .build(tauri::generate_context!())
-        .expect("Cowdrey.md could not start")
+        .expect("Cowdrey.MD could not start")
         .run(|app, event| {
             if let RunEvent::ExitRequested { api, code, .. } = &event {
                 if code.is_none() && !app.state::<Quitting>().0.load(Ordering::SeqCst) {

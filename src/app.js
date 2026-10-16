@@ -2,7 +2,7 @@
 'use strict';
 
 /* ================================================================
-   Cowdrey.md — Markdown editor by bradcowdrey.com
+   Cowdrey.MD — Markdown editor by bradcowdrey.com
    ================================================================ */
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -50,7 +50,9 @@ function loadDocs() {
 }
 let docs = loadDocs();
 const firstRun = !Array.isArray(docs) || !docs.length;
-if (firstRun) docs = [makeDoc(WELCOME, 'Welcome to Cowdrey.md', false)];
+if (firstRun) docs = [makeDoc(WELCOME, 'Welcome to Cowdrey.MD', false)];
+// the app is now written Cowdrey.MD; update the stored welcome document to match
+for (const d of docs) if (d.title === 'Welcome to Cowdrey' + '.md') { d.title = 'Welcome to Cowdrey.MD'; d.content = d.content.split('Cowdrey' + '.md').join('Cowdrey.MD'); }
 let currentId = store.get(KEY + ':current', null);
 if (!docs.some((d) => d.id === currentId)) currentId = docs[0].id;
 S.openTabs = (S.openTabs || []).filter((id) => docs.some((d) => d.id === id));
@@ -1259,7 +1261,7 @@ function exportHtml() {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="generator" content="Cowdrey.md by Bradley Cowdrey · bradcowdrey.com">
+<meta name="generator" content="Cowdrey.MD by Bradley Cowdrey · bradcowdrey.com">
 <title>${esc(title)}</title>
 <style>${$('#font-css').textContent}</style>
 <style>
@@ -1464,7 +1466,7 @@ cmd('toggleDiagrams', { label: 'Diagrams (Mermaid)', icon: 'workflow', checked: 
 
 cmd('shortcuts', { label: 'Keyboard shortcuts', icon: 'keyboard', key: 'Mod-/', global: true, run: showShortcuts });
 cmd('guide', { label: 'Markdown guide', icon: 'book-open-text', run: () => newDoc(WELCOME, 'Markdown guide') });
-cmd('about', { label: 'About Cowdrey.md', icon: 'info', run: showAbout });
+cmd('about', { label: 'About Cowdrey.MD', icon: 'info', run: showAbout });
 cmd('checkUpdates', { label: 'Check for updates…', icon: 'refresh-cw', hidden: () => !TAURI, run: () => checkForUpdates(true) });
 cmd('wordCount', { label: 'Word count', icon: 'file-digit', key: 'Mod-Alt-w', global: true, run: showStats });
 
@@ -1824,8 +1826,8 @@ async function showAbout() {
   let version = '';
   if (TAURI) { try { version = ' ' + await TAURI.app.getVersion(); } catch {} }
   openDialog({
-    title: 'About Cowdrey.md',
-    body: `<div class="about-mark"><a class="logo" href="https://bradcowdrey.com" target="_blank" rel="noopener" aria-label="bradcowdrey.com">${$('.titlebar .logo').innerHTML}</a><div><b>Cowdrey.md${esc(version)}</b>by Bradley Cowdrey · <a href="https://bradcowdrey.com" target="_blank" rel="noopener">bradcowdrey.com</a></div></div>
+    title: 'About Cowdrey.MD',
+    body: `<div class="about-mark"><a class="logo" href="https://bradcowdrey.com" target="_blank" rel="noopener" aria-label="bradcowdrey.com">${$('.titlebar .logo').innerHTML}</a><div><b>Cowdrey.MD${esc(version)}</b>by Bradley Cowdrey · <a href="https://bradcowdrey.com" target="_blank" rel="noopener">bradcowdrey.com</a></div></div>
       <p>A Markdown editor with MacDown’s side-by-side writing, a Docs-style page and menus, and a Word-style ribbon, ruler and status bar.</p>
       <p>Supports GitHub Flavored Markdown, tables, task lists, footnotes, callouts, LaTeX math, Mermaid diagrams, emoji, front matter and highlighted code.</p>
       <p style="font-size:12px">Built with CodeMirror, markdown-it, highlight.js, MathJax, Mermaid, DOMPurify and Lucide. Feature ideas drawn from MacDown, MarkText, Zettlr, StackEdit, Dillinger and ghostwriter.</p>`,
@@ -1888,8 +1890,8 @@ async function checkForUpdates(manual) {
   const dmg = (rel.assets || []).find((a) => /\.dmg$/i.test(a.name));
   const notes = rel.body && md ? DOMPurify.sanitize(md.render(String(rel.body).slice(0, 4000)), PURIFY) : '';
   openDialog({
-    title: `Cowdrey.md ${latest} is available`,
-    body: `<p>You have version ${esc(current)}. Download the new version, open it, and drag Cowdrey.md into Applications to replace this one. Your documents are kept.</p>${notes ? `<div class="preview" style="font-size:13.5px;max-height:220px;overflow:auto;border-top:1px solid var(--line);padding-top:8px">${notes}</div>` : ''}`,
+    title: `Cowdrey.MD ${latest} is available`,
+    body: `<p>You have version ${esc(current)}. Download the new version, open it, and drag Cowdrey.MD into Applications to replace this one. Your documents are kept.</p>${notes ? `<div class="preview" style="font-size:13.5px;max-height:220px;overflow:auto;border-top:1px solid var(--line);padding-top:8px">${notes}</div>` : ''}`,
     actions: [
       { label: 'Skip this version', run: () => { store.set(KEY + ':skipVersion', latest); } },
       { label: 'Later' },

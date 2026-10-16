@@ -1,8 +1,8 @@
 {
   "name": "cowdrey-md-desktop",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
-  "description": "Mac desktop build of Cowdrey.md by Bradley Cowdrey",
+  "description": "Mac desktop build of Cowdrey.MD by Bradley Cowdrey",
   "scripts": {
     "prepare-web": "node build.mjs",
     "tauri": "tauri"

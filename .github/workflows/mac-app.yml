@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   dmg:
-    name: Build Cowdrey.md.dmg
+    name: Build Cowdrey.MD.dmg
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -51,13 +51,13 @@ jobs:
         with:
           projectPath: desktop
           tagName: ${{ github.ref_type == 'tag' && github.ref_name || 'v__VERSION__' }}
-          releaseName: Cowdrey.md v__VERSION__
+          releaseName: Cowdrey.MD v__VERSION__
           releaseBody: |
-            Cowdrey.md for Mac, a Markdown editor by Bradley Cowdrey (https://bradcowdrey.com).
+            Cowdrey.MD for Mac, a Markdown editor by Bradley Cowdrey (https://bradcowdrey.com).
 
-            Download the .dmg below, open it, and drag Cowdrey.md into Applications. It runs on Apple silicon and Intel Macs.
+            Download the .dmg below, open it, and drag Cowdrey.MD into Applications. It runs on Apple silicon and Intel Macs.
 
-            This build is not yet signed by Apple. The first time you open it, right-click Cowdrey.md in Applications and choose Open, then Open again.
+            This build is not yet signed by Apple. The first time you open it, right-click Cowdrey.MD in Applications and choose Open, then Open again.
           releaseDraft: false
           prerelease: false
           args: --target universal-apple-darwin

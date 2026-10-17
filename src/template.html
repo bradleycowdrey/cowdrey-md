@@ -193,6 +193,9 @@ svg.lucide { width: 16px; height: 16px; stroke-width: 1.8; flex: none; }
 .doc-item { display: grid; grid-template-columns: 18px 1fr auto; align-items: center; gap: 8px; padding: 6px 6px 6px 8px; border-radius: 7px; cursor: pointer; }
 .doc-item:hover { background: var(--hover); }
 .doc-item.current { background: var(--accent-soft); }
+.doc-open { display: flex; align-items: center; gap: 8px; min-width: 0; border: 0; background: none; color: inherit; text-align: left; padding: 0; font: inherit; }
+.doc-open .t, .doc-open .m { display: block; }
+.doc-item { grid-template-columns: 1fr auto; }
 .doc-item .t { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
 .doc-item .m { font-size: 11px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
 .doc-item .del { opacity: 0; border: 0; background: none; color: var(--ink-3); border-radius: 5px; padding: 3px; display: grid; }
@@ -294,7 +297,7 @@ svg.lucide { width: 16px; height: 16px; stroke-width: 1.8; flex: none; }
 .sb-item { font-variant-numeric: tabular-nums; }
 .sb-spacer { flex: 1; }
 .sb-brand { color: var(--ink-3); font-weight: 500; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.sb-brand a { color: inherit; text-decoration: none; }
+.sb-brand a { color: inherit; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: color-mix(in srgb, currentColor 45%, transparent); }
 .sb-brand a:hover, .sb-brand a:focus-visible { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
 .sb-views { display: flex; gap: 2px; }
 .sb-views button { border: 0; background: none; width: 26px; height: 24px; border-radius: 5px; display: grid; place-items: center; color: var(--ink-2); }
@@ -503,8 +506,8 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
       </div>
       <div class="tb-actions">
         <button class="icon-btn" id="themeBtn" type="button" title="Theme: match system" aria-label="Change theme"><i data-lucide="sun-moon"></i></button>
-        <button class="ghost-btn" id="shareAppBtn" type="button" aria-haspopup="menu" title="Share Cowdrey.MD with someone"><i data-lucide="share"></i><span>Share app</span></button>
-        <button class="primary-btn" id="exportBtn" type="button" aria-haspopup="menu"><i data-lucide="download"></i><span>Export</span></button>
+        <button class="ghost-btn" id="shareAppBtn" type="button" aria-haspopup="menu" title="Share Cowdrey.MD with someone" aria-label="Share app"><i data-lucide="share"></i><span>Share app</span></button>
+        <button class="primary-btn" id="exportBtn" type="button" aria-haspopup="menu" aria-label="Export"><i data-lucide="download"></i><span>Export</span></button>
       </div>
     </div>
   </header>
@@ -516,19 +519,19 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
 
   <main class="workspace" id="workspace">
     <aside class="sidebar" id="sidebar" aria-label="Documents and outline">
-      <div class="side-rail" aria-label="Sidebar">
-        <button class="rail-btn" type="button" data-rail="expand" title="Expand sidebar" aria-label="Expand sidebar"><i data-lucide="panel-left-open"></i></button>
+      <div class="side-rail" role="toolbar" aria-orientation="vertical" aria-label="Sidebar">
+        <button class="rail-btn" type="button" data-rail="expand" title="Expand sidebar" aria-label="Expand sidebar" aria-controls="sidebar"><i data-lucide="panel-left-open"></i></button>
         <span class="rail-sep"></span>
         <button class="rail-btn" type="button" data-cmd="newDoc" title="New document" aria-label="New document"><i data-lucide="file-plus"></i></button>
         <button class="rail-btn" type="button" data-cmd="openFile" title="Open file…" aria-label="Open file"><i data-lucide="folder-open"></i></button>
         <button class="rail-btn" type="button" data-cmd="pasteDoc" title="Paste as new document" aria-label="Paste as new document"><i data-lucide="clipboard-paste"></i></button>
         <span class="rail-sep"></span>
-        <button class="rail-btn" type="button" data-rail="outline" title="Outline" aria-label="Show outline"><i data-lucide="list-tree"></i></button>
-        <button class="rail-btn" type="button" data-rail="docs" title="Documents" aria-label="Show documents"><i data-lucide="files"></i></button>
+        <button class="rail-btn" type="button" data-rail="outline" title="Outline" aria-label="Expand sidebar and show the outline"><i data-lucide="list-tree"></i></button>
+        <button class="rail-btn" type="button" data-rail="docs" title="Documents" aria-label="Expand sidebar and show documents"><i data-lucide="files"></i></button>
       </div>
       <div class="side-full">
       <div class="side-actions">
-        <button class="side-collapse" type="button" id="sideCollapse" title="Collapse sidebar" aria-label="Collapse sidebar"><i data-lucide="panel-left-close"></i></button>
+        <button class="side-collapse" type="button" id="sideCollapse" title="Collapse sidebar" aria-label="Collapse sidebar" aria-controls="sidebar"><i data-lucide="panel-left-close"></i></button>
         <button class="side-act" type="button" data-cmd="newDoc"><i data-lucide="file-plus"></i>New document</button>
         <button class="side-act" type="button" data-cmd="openFile"><i data-lucide="folder-open"></i>Open file…</button>
         <button class="side-act" type="button" data-cmd="pasteDoc"><i data-lucide="clipboard-paste"></i>Paste as new document</button>
@@ -548,7 +551,7 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
         <div class="findbar" id="findbar" hidden>
           <div class="find-row">
             <input type="text" id="findInput" placeholder="Find in document" aria-label="Find" spellcheck="false">
-            <span class="find-count" id="findCount">0 of 0</span>
+            <span class="find-count" id="findCount" role="status">0 of 0</span>
             <button class="rb" type="button" id="findPrev" title="Previous match (Shift+Enter)"><i data-lucide="chevron-up"></i></button>
             <button class="rb" type="button" id="findNext" title="Next match (Enter)"><i data-lucide="chevron-down"></i></button>
             <button class="rb txt" type="button" id="findCase" title="Match case" aria-pressed="false">Aa</button>

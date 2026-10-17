@@ -595,13 +595,15 @@ await test('Mac menu bar mirrors the in-app menus, shortcuts and check marks', a
     const inApp = await Q.evaluate(() => [...document.querySelectorAll('#popover .mi span:nth-child(2)')].map((x) => x.textContent));
     await Q.keyboard.press('Escape');
     const native = spec[i].items.filter((x) => x.kind === 'item').map((x) => x.label);
-    const expected = inApp.filter((l) => !(spec[i].title === 'Help' && /About|Check for updates/.test(l)));
+    const expected = inApp.filter((l) => !(spec[i].title === 'Help' && /About|Check for updates/.test(l)) && !['Undo', 'Redo', 'Select all'].includes(l));
     eq(native, expected, spec[i].title + ' labels');
   }
   const find = (label) => spec.flatMap((m) => m.items).find((x) => x.label === label);
   eq(find('Bold').accel, 'CmdOrCtrl+B'); eq(find('Clear formatting').accel, 'CmdOrCtrl+Backslash'); eq(find('Heading 2').accel, 'CmdOrCtrl+Alt+2');
   eq(find('Zoom out').accel, 'CmdOrCtrl+Alt+Minus'); eq(find('Ruler').checked, true);
-  ok(spec[1].items.some((x) => x.kind === 'native' && x.role === 'paste'), 'native paste in Edit');
+  eq(spec[1].items.filter((x) => x.kind === 'native').map((x) => x.role), ['undo', 'redo', 'cut', 'copy', 'paste', 'select_all'], 'native edit items');
+  const accels = spec.flatMap((m) => m.items).map((x) => x.accel).filter(Boolean);
+  eq(accels.length, new Set(accels).size, 'no duplicate shortcuts');
   // choosing a Mac menu item runs the command, and check marks follow
   await Q.evaluate(() => window.__handlers['menu-command']({ payload: 'toggleRuler' })); await settle(Q, 300);
   eq(await Q.evaluate(() => document.querySelector('#app').dataset.ruler), 'off', 'ruler hidden');

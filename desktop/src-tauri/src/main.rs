@@ -95,6 +95,9 @@ fn build_items(app: &AppHandle, specs: &[ItemSpec]) -> tauri::Result<Vec<Item>> 
                 "cut" => out.push(Box::new(PredefinedMenuItem::cut(app, None)?)),
                 "copy" => out.push(Box::new(PredefinedMenuItem::copy(app, None)?)),
                 "paste" => out.push(Box::new(PredefinedMenuItem::paste(app, None)?)),
+                "undo" => out.push(Box::new(PredefinedMenuItem::undo(app, None)?)),
+                "redo" => out.push(Box::new(PredefinedMenuItem::redo(app, None)?)),
+                "select_all" => out.push(Box::new(PredefinedMenuItem::select_all(app, None)?)),
                 _ => {}
             },
             ItemSpec::Item { id, label, accel, checked } => match checked {
@@ -125,7 +128,8 @@ fn set_menu(app: AppHandle, menus: Vec<MenuSpec>) -> Result<(), String> {
             Box::new(PredefinedMenuItem::hide_others(&app, None)?),
             Box::new(PredefinedMenuItem::show_all(&app, None)?),
             Box::new(PredefinedMenuItem::separator(&app)?),
-            Box::new(PredefinedMenuItem::quit(&app, None)?),
+            // a custom Quit so the page can save before the app exits (the predefined one skips that)
+            Box::new(MenuItem::with_id(&app, "app:quit", "Quit Cowdrey.MD", true, Some("CmdOrCtrl+Q"))?),
         ];
         let mut subs: Vec<Submenu<Wry>> = vec![submenu(&app, "Cowdrey.MD", &app_items)?];
         let mut window_added = false;
@@ -169,6 +173,10 @@ fn main() {
         .manage(Quitting(AtomicBool::new(false)))
         .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, quit_app, allow_exit, set_menu])
         .on_menu_event(|app, event| {
+            if event.id().0 == "app:quit" {
+                flush_then_quit(app);
+                return;
+            }
             if let Some(cmd) = event.id().0.strip_prefix("cmd:") {
                 let _ = app.emit("menu-command", cmd.to_string());
             }

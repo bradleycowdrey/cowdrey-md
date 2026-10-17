@@ -37,10 +37,11 @@ const makeDoc = (content = '', title = 'Untitled document', autoTitle = true) =>
 const WELCOME = $('#welcome-md').textContent.replace(/^\n/, '');
 
 const DOC_KEY = (id) => KEY + ':doc:' + id;
-const meta = ({ content, ...m }) => m;
+const meta = ({ content, diskContent, ...m }) => m;
+const DISK_KEY = (id) => KEY + ':disk:' + id;
 function loadDocs() {
   const index = store.get(KEY + ':index', null);
-  if (Array.isArray(index)) return index.map((m) => ({ ...m, content: store.get(DOC_KEY(m.id), '') }));
+  if (Array.isArray(index)) return index.map((m) => { const d = { ...m, content: store.get(DOC_KEY(m.id), '') }; if (m.path) { const dc = store.get(DISK_KEY(m.id), null); if (dc != null) d.diskContent = dc; } return d; });
   const legacy = store.get(KEY + ':docs', null); // format used before per-document keys
   if (!Array.isArray(legacy)) return null;
   let ok = true;
@@ -237,6 +238,7 @@ function tocHtml(hs) {
    Editor (CodeMirror 5)
    ================================================================ */
 const MODE = { name: 'yaml-frontmatter', base: { name: 'gfm', highlightFormatting: true, fencedCodeBlockHighlighting: true, xml: true, tokenTypeOverrides: { emoji: 'builtin' } } };
+let tabEscape = false; // Esc, then Tab or Shift+Tab, moves focus out of the editor
 const cm = CodeMirror($('#editorHost'), {
   value: '', mode: MODE, theme: 'cowdrey', lineWrapping: S.wrap, lineNumbers: S.lineNumbers,
   indentUnit: 4, tabSize: 4, indentWithTabs: false, styleActiveLine: { nonEmpty: false }, autoCloseBrackets: '()[]{}""``',
@@ -244,9 +246,9 @@ const cm = CodeMirror($('#editorHost'), {
   viewportMargin: 30, cursorScrollMargin: 40,
   extraKeys: {
     Enter: 'newlineAndIndentContinueMarkdownList',
-    Tab: (c) => (c.somethingSelected() || /^\s*([-*+]|\d+[.)])\s/.test(c.getLine(c.getCursor().line))) ? c.execCommand('indentMore') : c.execCommand('insertSoftTab'),
-    'Shift-Tab': 'indentLess',
-    Esc: () => { if (!$('#findbar').hidden) closeFind(); },
+    Tab: (c) => tabEscape ? (tabEscape = false, CodeMirror.Pass) : (c.somethingSelected() || /^\s*([-*+]|\d+[.)])\s/.test(c.getLine(c.getCursor().line))) ? c.execCommand('indentMore') : c.execCommand('insertSoftTab'),
+    'Shift-Tab': (c) => tabEscape ? (tabEscape = false, CodeMirror.Pass) : c.execCommand('indentLess'),
+    Esc: () => { if (!$('#findbar').hidden) closeFind(); else { tabEscape = true; toast('Press Tab to move focus out of the editor'); } },
   },
 });
 
@@ -1035,14 +1037,16 @@ function persist() {
   for (const id of [...dirtyIds]) {
     const d = docs.find((x) => x.id === id);
     if (!d) { dirtyIds.delete(id); continue; }
-    if (store.set(DOC_KEY(id), d.content)) dirtyIds.delete(id); else ok = false;
+    if (store.set(DOC_KEY(id), d.content) && (d.diskContent == null || store.set(DISK_KEY(id), d.diskContent))) dirtyIds.delete(id); else ok = false;
   }
-  for (const id of deletedIds) { try { localStorage.removeItem(DOC_KEY(id)); } catch {} }
+  for (const id of deletedIds) { try { localStorage.removeItem(DOC_KEY(id)); localStorage.removeItem(DISK_KEY(id)); } catch {} }
   deletedIds.clear();
   const index = docs.map(meta);
   if (store.set(KEY + ':index', index)) seenInStore = new Set(index.map((m) => m.id)); else ok = false;
   store.set(KEY + ':current', currentId);
   setSaveState(ok ? 'saved' : 'error');
+  if (!ok && !persist.warned) { persist.warned = true; toast('Not saved: browser storage is full or blocked. Export to keep your work.'); }
+  if (ok) persist.warned = false;
   return ok;
 }
 window.addEventListener('storage', (e) => {
@@ -1135,13 +1139,12 @@ let confirmDelete = null;
 function renderDocsList() {
   const el = $('#docsPanel');
   const sorted = [...docs].sort((a, b) => b.updated - a.updated);
-  el.innerHTML = `<div class="side-heading">Recent documents</div>` + sorted.map((d) => `
-    <div class="doc-item${d.id === currentId ? ' current' : ''}" data-id="${d.id}" role="button" tabindex="0">
-      ${ic('file-text')}
-      <div style="min-width:0"><div class="t">${esc(d.title)}</div><div class="m">${rel(d.updated)} · ${nf.format(countWords(d.content).count)} words</div></div>
+  el.innerHTML = `<div class="side-heading" id="docsHeading">Recent documents</div><div role="list" aria-labelledby="docsHeading">` + sorted.map((d) => `
+    <div class="doc-item${d.id === currentId ? ' current' : ''}" data-id="${d.id}" role="listitem">
+      <button type="button" class="doc-open"${d.id === currentId ? ' aria-current="page"' : ''}>${ic('file-text')}<span style="min-width:0"><span class="t">${esc(d.title)}</span><span class="m">${rel(d.updated)} · ${nf.format(countWords(d.content).count)} words</span></span></button>
       <button class="del" type="button" data-del="${d.id}" title="Delete document" aria-label="Delete ${esc(d.title)}">${ic('trash-2')}</button>
     </div>${confirmDelete === d.id ? `<div class="confirm-row">Delete for good?<button class="mini-btn danger" type="button" data-yes="${d.id}">Delete</button><button class="mini-btn" type="button" data-no>Keep</button></div>` : ''}`).join('')
-    + '<p class="empty-note">Documents are saved in this browser. Export anything you want to keep elsewhere.</p>';
+    + '</div><p class="empty-note">Documents are saved in this browser. Export anything you want to keep elsewhere.</p>';
   refreshIcons();
 }
 $('#docsPanel').addEventListener('click', (e) => {
@@ -1150,15 +1153,20 @@ $('#docsPanel').addEventListener('click', (e) => {
   if (e.target.closest('[data-no]')) { confirmDelete = null; renderDocsList(); return; }
   const it = e.target.closest('.doc-item'); if (it) { openDoc(it.dataset.id); if (window.innerWidth <= 1180) toggleOutline(false); }
 });
-$('#docsPanel').addEventListener('keydown', (e) => { const it = e.target.closest('.doc-item'); if (it && e.target === it && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openDoc(it.dataset.id); } });
 
 function setSideTab(t) {
   S.sideTab = t; saveSettings();
-  $$('.side-tabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.side === t));
+  $$('.side-tabs button').forEach((b) => { const on = b.dataset.side === t; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; b.setAttribute('aria-controls', b.dataset.side === 'outline' ? 'outlinePanel' : 'docsPanel'); });
   $('#outlinePanel').hidden = t !== 'outline'; $('#docsPanel').hidden = t !== 'docs';
   if (t === 'docs') renderDocsList();
 }
 $$('.side-tabs button').forEach((b) => b.onclick = () => setSideTab(b.dataset.side));
+$('.side-tabs').addEventListener('keydown', (e) => {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+  e.preventDefault();
+  const t = e.key === 'Home' ? 'outline' : e.key === 'End' ? 'docs' : (S.sideTab === 'outline' ? 'docs' : 'outline');
+  setSideTab(t); $(`.side-tabs [data-side="${t}"]`).focus();
+});
 
 /* files */
 function readTextFile(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsText(file); }); }
@@ -1312,8 +1320,11 @@ async function copyRich() {
 /* ================================================================
    Dialogs, popovers
    ================================================================ */
+let dialogOpener = null;
 function openDialog({ title, body, actions = [{ label: 'Close', primary: true }], onOpen }) {
-  dialog.innerHTML = `<div class="dlg-head"><h2>${esc(title)}</h2><button class="icon-btn" type="button" data-close aria-label="Close">${ic('x')}</button></div>
+  if (!dialog.open) dialogOpener = popAnchor || document.activeElement;
+  dialog.setAttribute('aria-labelledby', 'dlgTitle');
+  dialog.innerHTML = `<div class="dlg-head"><h2 id="dlgTitle">${esc(title)}</h2><button class="icon-btn" type="button" data-close aria-label="Close">${ic('x')}</button></div>
     <div class="dlg-body">${body}</div>
     <div class="dlg-actions">${actions.map((a, i) => `<button type="button" class="btn${a.primary ? ' primary' : ''}${a.danger ? ' danger' : ''}" data-a="${i}">${esc(a.label)}</button>`).join('')}</div>`;
   refreshIcons();
@@ -1328,6 +1339,15 @@ function openDialog({ title, body, actions = [{ label: 'Close', primary: true }]
   onOpen && onOpen(dialog);
 }
 function closeDialog() { try { dialog.close(); } catch { dialog.removeAttribute('open'); } }
+dialog.addEventListener('close', () => {
+  const o = dialogOpener; dialogOpener = null;
+  setTimeout(() => {
+    if (dialog.open) return;
+    const active = document.activeElement;
+    if (active && active !== document.body && active.offsetParent) return; // something else already took focus
+    if (o && o.isConnected && o.offsetParent && !o.closest('#popover')) o.focus({ preventScroll: true }); else cm.focus();
+  }, 0);
+});
 
 let popAnchor = null;
 function openPopover(anchor, html, onClick, opts = {}) {
@@ -1341,7 +1361,10 @@ function openPopover(anchor, html, onClick, opts = {}) {
   left = clamp(left, 8, window.innerWidth - pw - 8);
   let top = r.bottom + 4; if (top + ph > window.innerHeight - 8) top = Math.max(8, r.top - ph - 4);
   popover.style.left = left + 'px'; popover.style.top = top + 'px';
-  popover.onclick = (e) => onClick(e);
+  popover.onclick = (e) => { const a = popAnchor; onClick(e); setTimeout(() => { const f = document.activeElement; if (popover.hidden && (!f || f === document.body || !f.offsetParent)) (a && a.offsetParent ? a : cm).focus({ preventScroll: true }); }, 0); };
+  $$('button', popover).forEach((b) => { b.tabIndex = -1; if (b.classList.contains('mi') && !b.getAttribute('role')) b.setAttribute('role', 'menuitem'); });
+  popover.setAttribute('aria-label', opts.label || anchor.getAttribute('aria-label') || anchor.textContent.trim());
+  if (opts.describedBy) popover.setAttribute('aria-describedby', opts.describedBy); else popover.removeAttribute('aria-describedby');
   opts.onOpen && opts.onOpen(popover);
   const first = popover.querySelector('button'); first && !opts.noFocus && first.focus({ preventScroll: true });
 }
@@ -1355,6 +1378,9 @@ popover.addEventListener('keydown', (e) => {
   const items = $$('button', popover); const i = items.indexOf(document.activeElement);
   if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length]?.focus(); }
   if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length]?.focus(); }
+  if (e.key === 'Home') { e.preventDefault(); items[0]?.focus(); }
+  if (e.key === 'End') { e.preventDefault(); items[items.length - 1]?.focus(); }
+  if (e.key === 'Tab') { e.preventDefault(); const a = popAnchor; closePopover(); a && a.focus(); }
   if (e.key === 'Escape') { e.preventDefault(); const a = popAnchor; closePopover(); a && a.focus(); }
   if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && popAnchor && popAnchor.dataset.menu != null) {
     e.preventDefault(); const btns = $$('#menubar > button'); const j = btns.indexOf(popAnchor);
@@ -1372,7 +1398,7 @@ const fmtKey = (k) => !k ? '' : k.split('-').map((p) => isMac
   : ({ Mod: 'Ctrl+', Alt: 'Alt+', Shift: 'Shift+' }[p] || p.toUpperCase())).join('');
 const inArtifact = () => !!(window.claude && typeof window.claude.use === 'function');
 
-cmd('newDoc', { label: 'New document', icon: 'file-plus', key: 'Mod-Alt-n', global: true, run: () => newDoc() });
+cmd('newDoc', { label: 'New document', icon: 'file-plus', key: TAURI ? 'Mod-n' : 'Mod-Alt-n', global: true, run: () => newDoc() });
 cmd('openFile', { label: 'Open…', icon: 'folder-open', key: 'Mod-o', global: true, run: () => TAURI ? openNative() : $('#fileInput').click() });
 cmd('pasteDoc', { label: 'Paste as new document', icon: 'clipboard-paste', run: pasteAsNew });
 cmd('saveNow', { label: 'Save', icon: 'save', key: 'Mod-s', global: true, run: () => { markDirty(); if (TAURI) return saveToDisk(false); if (persist()) toast('Saved to this browser'); } });
@@ -1472,6 +1498,8 @@ cmd('checkUpdates', { label: 'Check for updates…', icon: 'refresh-cw', hidden:
 cmd('wordCount', { label: 'Word count', icon: 'file-digit', key: 'Mod-Alt-w', global: true, run: showStats });
 
 function rebuild() { saveSettings(); buildMd(); render(); refreshState(); }
+// read-only hook for the automated tests: list and run commands like a menu click would
+window.__cowdreyTest = Object.freeze({ commands: () => Object.keys(C), label: (id) => C[id] && C[id].label, hidden: (id) => !!(C[id] && C[id].hidden && C[id].hidden()), run: (id) => runCmd(id), settings: () => JSON.parse(JSON.stringify(S)) });
 function runCmd(id, anchor) { const c = C[id]; if (!c) return; closePopover(); c.run(anchor); refreshState(); }
 
 /* key handling */
@@ -1488,7 +1516,7 @@ const codeKey = (e) => {
 document.addEventListener('keydown', (e) => {
   const mod = isMac ? e.metaKey : e.ctrlKey;
   if (!isMac && e.getModifierState && e.getModifierState('AltGraph')) return; // AltGr types characters, it is not a shortcut
-  if (!mod) { if (e.key === 'Escape' && !popover.hidden) closePopover(); return; }
+  if (!mod) { if (e.key === 'Escape' && !popover.hidden) { const a = popAnchor; closePopover(); a && a.focus(); } return; }
   const combo = ['mod', e.altKey && 'alt', e.shiftKey && 'shift', codeKey(e)].filter(Boolean).join('-');
   const id = KEYMAP[combo]; if (!id) return;
   const c = C[id];
@@ -1538,7 +1566,7 @@ const MAC_URL = 'https://github.com/bradleycowdrey/cowdrey-md/releases/latest';
 const SHARE_TEXT = 'Cowdrey.MD is a free Markdown editor by Bradley Cowdrey. Free. Forever.';
 $('#shareAppBtn').addEventListener('click', (e) => {
   const canShare = typeof navigator.share === 'function' && !inArtifact();
-  openPopover(e.currentTarget, `<div class="mhead">Share Cowdrey.MD</div><p class="share-blurb">${esc(SHARE_TEXT)} Pass it on to anyone who writes in Markdown.</p>
+  openPopover(e.currentTarget, `<div class="mhead">Share Cowdrey.MD</div><p class="share-blurb" id="shareBlurb">${esc(SHARE_TEXT)} Pass it on to anyone who writes in Markdown.</p>
     ${canShare ? `<button type="button" class="mi" data-share="native">${ic('share')}<span>Share…</span><span></span></button>` : ''}
     <button type="button" class="mi" data-share="web">${ic('link')}<span>Copy link to the web app</span><span></span></button>
     <button type="button" class="mi" data-share="mac">${ic('laptop')}<span>Copy Mac download link</span><span></span></button>
@@ -1550,7 +1578,7 @@ $('#shareAppBtn').addEventListener('click', (e) => {
     if (kind === 'web') copyText(APP_URL, 'Link to Cowdrey.MD copied');
     if (kind === 'mac') copyText(MAC_URL, 'Mac download link copied');
     if (kind === 'message') copyText(`${SHARE_TEXT}\n\nUse it in your browser: ${APP_URL}\nGet it for Mac: ${MAC_URL}`, 'Message copied, ready to paste');
-  }, { alignRight: true });
+  }, { alignRight: true, label: 'Share Cowdrey.MD', describedBy: 'shareBlurb' });
 });
 $('#exportBtn').addEventListener('click', (e) => {
   const ids = ['copyRich', 'copyMd', 'copyHtml', '-', 'saveMd', 'exportHtml', 'print'];
@@ -1725,6 +1753,7 @@ function toAccelerator(k) {
   return [m[1] && 'CmdOrCtrl', m[2] && 'Alt', m[3] && 'Shift', ACCEL_KEYS[m[4]] || m[4].toUpperCase()].filter(Boolean).join('+');
 }
 function nativeMenuSpec() {
+  const usedAccels = new Set();
   return MENUS.map(([title, ids]) => {
     const items = [];
     for (const id of ids) {
@@ -1732,8 +1761,11 @@ function nativeMenuSpec() {
       if (title === 'Help' && (id === 'about' || id === 'checkUpdates')) continue; // these live in the Cowdrey.MD app menu
       const c = C[id];
       if (!c || (c.hidden && c.hidden())) continue;
-      items.push({ kind: 'item', id: 'cmd:' + id, label: c.label, accel: toAccelerator(c.key || c.hint), checked: c.checked ? !!c.checked() : null });
-      if (id === 'redo') items.push({ kind: 'sep' }, { kind: 'native', role: 'cut' }, { kind: 'native', role: 'copy' }, { kind: 'native', role: 'paste' });
+      if (id === 'undo' || id === 'redo' || id === 'selectAll') { items.push({ kind: 'native', role: id === 'selectAll' ? 'select_all' : id }); if (id === 'redo') items.push({ kind: 'sep' }, { kind: 'native', role: 'cut' }, { kind: 'native', role: 'copy' }, { kind: 'native', role: 'paste' }); continue; }
+      let accel = toAccelerator(c.key || c.hint);
+      if (accel && usedAccels.has(accel)) accel = null; // a shortcut belongs to one menu item
+      if (accel) usedAccels.add(accel);
+      items.push({ kind: 'item', id: 'cmd:' + id, label: c.label, accel, checked: c.checked ? !!c.checked() : null });
     }
     while (items.length && items[items.length - 1].kind === 'sep') items.pop();
     return { title, items };
@@ -1785,7 +1817,7 @@ function applyTheme() {
   if (S.appTheme === 'system') { if (initialTheme) root.setAttribute('data-theme', initialTheme); else root.removeAttribute('data-theme'); }
   else root.setAttribute('data-theme', S.appTheme);
   const meta = { system: ['sun-moon', 'Theme: match system'], light: ['sun', 'Theme: light'], dark: ['moon', 'Theme: dark'] }[S.appTheme];
-  $('#themeBtn').innerHTML = ic(meta[0]); $('#themeBtn').title = meta[1]; refreshIcons();
+  $('#themeBtn').innerHTML = ic(meta[0]); $('#themeBtn').title = meta[1]; $('#themeBtn').setAttribute('aria-label', meta[1] + '. Change theme'); refreshIcons();
   mermaidTheme = null; requestAnimationFrame(() => { renderMermaid(); drawRuler(); });
 }
 $('#themeBtn').onclick = () => { S.appTheme = { system: 'light', light: 'dark', dark: 'system' }[S.appTheme]; saveSettings(); applyTheme(); toast($('#themeBtn').title); };
@@ -1794,7 +1826,10 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { 
 /* divider */
 (() => {
   const d = $('#divider'), panes = $('#panes');
-  const apply = () => { editorPane.style.flexBasis = (S.split * 100).toFixed(2) + '%'; };
+  const apply = () => {
+    editorPane.style.flexBasis = (S.split * 100).toFixed(2) + '%';
+    d.setAttribute('aria-valuemin', '20'); d.setAttribute('aria-valuemax', '80'); d.setAttribute('aria-valuenow', Math.round(S.split * 100)); d.setAttribute('aria-controls', 'editorPane');
+  };
   apply();
   d.addEventListener('pointerdown', (e) => {
     d.setPointerCapture(e.pointerId); d.classList.add('drag');
@@ -1805,7 +1840,9 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { 
   });
   d.addEventListener('dblclick', () => { S.split = 0.5; apply(); saveSettings(); cm.refresh(); });
   d.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { S.split = clamp(S.split + (e.key === 'ArrowLeft' ? -0.03 : 0.03), 0.2, 0.8); apply(); saveSettings(); cm.refresh(); }
+    const v = { ArrowLeft: S.split - 0.03, ArrowRight: S.split + 0.03, Home: 0.2, End: 0.8, Enter: 0.5 }[e.key];
+    if (v === undefined) return;
+    e.preventDefault(); S.split = clamp(v, 0.2, 0.8); apply(); saveSettings(); cm.refresh();
   });
 })();
 
@@ -1828,6 +1865,8 @@ $('#sideCollapse').addEventListener('click', () => setSideRail(true));
 function applySidebar() {
   app.dataset.rail = S.sideRail ? 'on' : 'off';
   $('#sidebar').style.setProperty('--side-w', clamp(S.sideWidth, 180, 440) + 'px');
+  $('#sideResize').setAttribute('aria-valuenow', clamp(S.sideWidth, 180, 440));
+  $('#sideCollapse').setAttribute('aria-expanded', 'true'); $('[data-rail="expand"]').setAttribute('aria-expanded', 'false');
 }
 function setSideRail(on) {
   S.sideRail = on; saveSettings(); applySidebar(); refreshState();
@@ -1837,6 +1876,7 @@ function setSideRail(on) {
 (() => {
   const h = $('#sideResize');
   const set = (w) => { S.sideWidth = clamp(Math.round(w), 180, 440); applySidebar(); };
+  h.setAttribute('aria-valuemin', '180'); h.setAttribute('aria-valuemax', '440'); h.setAttribute('aria-controls', 'sidebar');
   const done = () => { saveSettings(); cm.refresh(); sizePage(); buildLineMap(); };
   h.addEventListener('pointerdown', (e) => {
     e.preventDefault(); h.setPointerCapture(e.pointerId); h.classList.add('drag');
@@ -1847,7 +1887,9 @@ function setSideRail(on) {
   });
   h.addEventListener('dblclick', () => { set(248); done(); });
   h.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); set(S.sideWidth + (e.key === 'ArrowLeft' ? -16 : 16)); done(); }
+    const v = { ArrowLeft: S.sideWidth - 16, ArrowRight: S.sideWidth + 16, Home: 180, End: 440, Enter: 248 }[e.key];
+    if (v === undefined) return;
+    e.preventDefault(); set(v); done();
   });
 })();
 $('#docTabs').addEventListener('click', (e) => { const b = e.target.closest('.new-tab'); if (b) runCmd('newDoc'); });
@@ -1935,6 +1977,7 @@ cm.on('change', () => {
   d.content = cm.getValue(); d.updated = Date.now();
   markDirty(d.id); setSaveState('saving'); scheduleSave(); scheduleRender();
 });
+cm.on('blur', () => { tabEscape = false; });
 cm.on('cursorActivity', () => {
   updateCursorStatus(); highlightOutline(); updateStyleGallery();
   if (S.focus) updateFocus();
@@ -2117,7 +2160,14 @@ if (TAURI) {
   setTimeout(takeOpened, 0);
   // quiet daily check at launch
   if (Date.now() - (store.get(KEY + ':updateChecked', 0) || 0) > 864e5) setTimeout(() => checkForUpdates(false), 5000);
-  TAURI.event.listen('menu-command', (e) => { if (C[e.payload]) runCmd(e.payload); });
+  TAURI.event.listen('menu-command', (e) => {
+    const c = C[e.payload]; if (!c) return;
+    lastMenuJson = ''; // macOS flips check marks itself; always resend the true state
+    const f = document.activeElement;
+    const inField = f && f.matches && f.matches('input, textarea, select') && !f.closest('.CodeMirror');
+    if (inField && !c.global) { updateNativeMenu(); return; } // a shortcut typed in a text field must not edit the document
+    runCmd(e.payload); updateNativeMenu();
+  });
   TAURI.event.listen('flush-and-quit', () => {
     try { flushSave(); } finally { TAURI.core.invoke('quit_app').catch(() => {}); }
   });
@@ -2128,7 +2178,9 @@ if (TAURI) {
     if (/^(https?:|mailto:)/i.test(href)) { e.preventDefault(); TAURI.opener.openUrl(a.href).catch(() => {}); return; }
     if (href.startsWith('#') || !preview.contains(a)) return;
     e.preventDefault();
-    const target = decodeURI(href.split('#')[0]);
+    let target;
+    try { target = href.startsWith('file:') ? decodeURIComponent(new URL(href).pathname) : decodeURI(href.split('#')[0]); }
+    catch { toast('That link could not be read.'); return; }
     const d = cur();
     if (!/\.(md|markdown|mdown|mkdn?|txt)$/i.test(target)) { toast('Only links to Markdown files and web pages open from here.'); return; }
     if (!d.path && !target.startsWith('/')) { toast('Save this document first so links to nearby files can be found.'); return; }

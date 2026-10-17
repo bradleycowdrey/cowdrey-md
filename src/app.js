@@ -26,7 +26,7 @@ const DEFAULTS = {
   lineNumbers: false, wrap: true, ruler: true, guides: true, edTheme: 'auto', edSize: 14,
   pageStyle: 'cowdrey', pageSize: 'letter', margins: 'normal', zoom: 'fit',
   typographer: true, breaks: false, math: true, diagrams: true,
-  ribbonTab: 'home', ribbonCollapsed: false, split: 0.45, appTheme: 'system', openTabs: [],
+  ribbonTab: 'home', ribbonCollapsed: false, sideRail: false, sideWidth: 248, split: 0.45, appTheme: 'system', openTabs: [],
 };
 const S = Object.assign({}, DEFAULTS, store.get(KEY + ':settings', {}));
 const saveSettings = debounce(() => store.set(KEY + ':settings', S), 200);
@@ -1442,6 +1442,7 @@ cmd('frontMatter', { label: 'Front matter', icon: 'file-text', run: insertFrontM
 const viewCmd = (v, label, icon) => cmd('view_' + v, { label, icon, checked: () => S.view === v, run: () => setView(v) });
 viewCmd('editor', 'Editor only', 'pencil-line'); viewCmd('split', 'Editor and preview', 'columns-2'); viewCmd('preview', 'Preview only', 'eye');
 cmd('cycleView', { label: 'Switch view', icon: 'columns-2', key: 'Mod-Shift-\\', global: true, run: () => setView({ split: 'preview', preview: 'editor', editor: 'split' }[S.view]) });
+cmd('toggleRail', { label: 'Compact sidebar', icon: 'panel-left-close', key: 'Mod-Alt-s', global: true, checked: () => S.sideRail, run: () => { if (!S.outline) toggleOutline(true); setSideRail(!S.sideRail); } });
 cmd('toggleOutline', { label: 'Sidebar', icon: 'panel-left', key: 'Mod-Alt-o', global: true, checked: () => S.outline, run: () => toggleOutline() });
 cmd('toggleSync', { label: 'Sync scrolling', icon: 'arrow-down-up', checked: () => S.sync, run: () => { S.sync = !S.sync; saveSettings(); refreshState(); if (S.sync) syncFromEditor(); } });
 cmd('toggleFocus', { label: 'Focus mode', icon: 'focus', key: 'Mod-Shift-f', global: true, checked: () => S.focus, run: () => { S.focus = !S.focus; applyEditorPrefs(); toast(S.focus ? 'Focus mode on: other paragraphs are dimmed' : 'Focus mode off'); } });
@@ -1506,7 +1507,7 @@ document.addEventListener('keydown', (e) => {
 const MENUS = [
   ['File', ['newDoc', 'openFile', 'pasteDoc', '-', 'saveNow', 'saveAs', 'renameDoc', '-', 'saveMd', 'exportHtml', 'copyRich', 'copyMd', 'copyHtml', 'print', '-', 'deleteDoc']],
   ['Edit', ['undo', 'redo', '-', 'selectAll', 'find', 'replace', '-', 'formatTable', 'clearFormat']],
-  ['View', ['view_editor', 'view_split', 'view_preview', '-', 'toggleOutline', 'toggleRuler', 'toggleGuides', 'toggleLineNumbers', 'toggleWrap', '-', 'toggleFocus', 'toggleTypewriter', 'toggleSync', '-', 'zoomIn', 'zoomOut', 'zoomFit', 'zoom100', 'fullscreen']],
+  ['View', ['view_editor', 'view_split', 'view_preview', '-', 'toggleOutline', 'toggleRail', 'toggleRuler', 'toggleGuides', 'toggleLineNumbers', 'toggleWrap', '-', 'toggleFocus', 'toggleTypewriter', 'toggleSync', '-', 'zoomIn', 'zoomOut', 'zoomFit', 'zoom100', 'fullscreen']],
   ['Insert', ['image', 'imageUrl', 'table', 'link', '-', 'codeBlock', 'math', 'diagram', 'callout', 'details', '-', 'footnote', 'deflist', 'hr', 'toc', 'date', 'frontMatter']],
   ['Format', ['bold', 'italic', 'underline', 'strike', 'highlight', 'code', 'sup', 'sub', '-', 'normal', 'h1', 'h2', 'h3', 'h4', '-', 'ul', 'ol', 'task', 'quote', 'indent', 'outdent', '-', 'clearFormat']],
   ['Tools', ['wordCount', 'formatTable', '-', 'typographer', 'breaks', 'toggleMath', 'toggleDiagrams']],
@@ -1818,7 +1819,37 @@ $('#zoomPct').onclick = () => setZoom('fit');
 canvas.addEventListener('wheel', (e) => { if (e.ctrlKey || e.metaKey) { e.preventDefault(); setZoom(Math.round(scale * 100) + (e.deltaY < 0 ? 10 : -10)); } }, { passive: false });
 
 /* sidebar & generic data-cmd buttons */
-$('#sidebar').addEventListener('click', (e) => { const b = e.target.closest('[data-cmd]'); if (b) runCmd(b.dataset.cmd, b); });
+$('#sidebar').addEventListener('click', (e) => {
+  const r = e.target.closest('.rail-btn[data-rail]');
+  if (r) { setSideRail(false); if (r.dataset.rail !== 'expand') setSideTab(r.dataset.rail); return; }
+  const b = e.target.closest('[data-cmd]'); if (b) runCmd(b.dataset.cmd, b);
+});
+$('#sideCollapse').addEventListener('click', () => setSideRail(true));
+function applySidebar() {
+  app.dataset.rail = S.sideRail ? 'on' : 'off';
+  $('#sidebar').style.setProperty('--side-w', clamp(S.sideWidth, 180, 440) + 'px');
+}
+function setSideRail(on) {
+  S.sideRail = on; saveSettings(); applySidebar(); refreshState();
+  requestAnimationFrame(() => { cm.refresh(); sizePage(); buildLineMap(); });
+  (on ? $('[data-rail="expand"]') : $('#sideCollapse'))?.focus({ preventScroll: true });
+}
+(() => {
+  const h = $('#sideResize');
+  const set = (w) => { S.sideWidth = clamp(Math.round(w), 180, 440); applySidebar(); };
+  const done = () => { saveSettings(); cm.refresh(); sizePage(); buildLineMap(); };
+  h.addEventListener('pointerdown', (e) => {
+    e.preventDefault(); h.setPointerCapture(e.pointerId); h.classList.add('drag');
+    const left = $('#sidebar').getBoundingClientRect().left;
+    const move = (ev) => set(ev.clientX - left);
+    h.addEventListener('pointermove', move);
+    h.addEventListener('pointerup', () => { h.classList.remove('drag'); h.removeEventListener('pointermove', move); done(); }, { once: true });
+  });
+  h.addEventListener('dblclick', () => { set(248); done(); });
+  h.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); set(S.sideWidth + (e.key === 'ArrowLeft' ? -16 : 16)); done(); }
+  });
+})();
 $('#docTabs').addEventListener('click', (e) => { const b = e.target.closest('.new-tab'); if (b) runCmd('newDoc'); });
 
 /* preview interactions */
@@ -2113,6 +2144,7 @@ if (TAURI) {
    ================================================================ */
 buildMd();
 app.dataset.outline = S.outline ? 'on' : 'off';
+applySidebar();
 if (window.innerWidth < 1200 && S.outline) { S.outline = false; app.dataset.outline = 'off'; }
 if (window.innerWidth <= 760 && !store.get(KEY + ':settings', null)) { S.view = 'editor'; S.ribbonCollapsed = true; }
 app.dataset.view = S.view;

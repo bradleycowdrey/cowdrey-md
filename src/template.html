@@ -160,7 +160,21 @@ svg.lucide { width: 16px; height: 16px; stroke-width: 1.8; flex: none; }
 
 /* ---------- workspace ---------- */
 .workspace { flex: 1; display: flex; min-height: 0; position: relative; background: var(--canvas); }
-.sidebar { width: 248px; flex: none; display: flex; flex-direction: column; background: var(--chrome); border-right: 1px solid var(--line); min-height: 0; }
+.sidebar { width: var(--side-w, 248px); box-sizing: border-box; flex: none; display: flex; flex-direction: column; background: var(--chrome); border-right: 1px solid var(--line); min-height: 0; position: relative; }
+.side-full { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.side-rail { display: none; flex-direction: column; align-items: center; gap: 4px; padding: 10px 0; }
+.rail-btn { width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 8px; background: none; color: var(--ink-2); }
+.rail-btn:hover, .rail-btn:focus-visible { background: var(--hover); color: var(--ink); }
+.rail-sep { width: 24px; height: 1px; background: var(--line); margin: 4px 0; }
+.app[data-rail="on"] .sidebar { width: 52px; position: static; box-shadow: none; }
+.app[data-rail="on"] .side-full, .app[data-rail="on"] .side-resize { display: none; }
+.app[data-rail="on"] .side-rail { display: flex; }
+.side-collapse { position: absolute; top: 10px; right: 8px; width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 7px; background: none; color: var(--ink-2); z-index: 2; }
+.side-collapse:hover, .side-collapse:focus-visible { background: var(--hover); color: var(--ink); }
+.side-resize { position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 5; }
+.side-resize::after { content: ""; position: absolute; top: 0; bottom: 0; left: 3.5px; width: 1px; background: transparent; }
+.side-resize:hover::after, .side-resize.drag::after, .side-resize:focus-visible::after { background: var(--accent); width: 2px; left: 3px; }
+.side-act { padding-right: 40px; }
 .app[data-outline="off"] .sidebar { display: none; }
 .side-actions { display: flex; flex-direction: column; gap: 1px; padding: 10px 8px 6px max(8px, env(safe-area-inset-left, 0px)); }
 .side-act { display: flex; align-items: center; gap: 10px; border: 0; background: none; border-radius: 7px; padding: 7px 8px; text-align: left; color: var(--ink); font-size: 13px; }
@@ -502,7 +516,19 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
 
   <main class="workspace" id="workspace">
     <aside class="sidebar" id="sidebar" aria-label="Documents and outline">
+      <div class="side-rail" aria-label="Sidebar">
+        <button class="rail-btn" type="button" data-rail="expand" title="Expand sidebar" aria-label="Expand sidebar"><i data-lucide="panel-left-open"></i></button>
+        <span class="rail-sep"></span>
+        <button class="rail-btn" type="button" data-cmd="newDoc" title="New document" aria-label="New document"><i data-lucide="file-plus"></i></button>
+        <button class="rail-btn" type="button" data-cmd="openFile" title="Open file…" aria-label="Open file"><i data-lucide="folder-open"></i></button>
+        <button class="rail-btn" type="button" data-cmd="pasteDoc" title="Paste as new document" aria-label="Paste as new document"><i data-lucide="clipboard-paste"></i></button>
+        <span class="rail-sep"></span>
+        <button class="rail-btn" type="button" data-rail="outline" title="Outline" aria-label="Show outline"><i data-lucide="list-tree"></i></button>
+        <button class="rail-btn" type="button" data-rail="docs" title="Documents" aria-label="Show documents"><i data-lucide="files"></i></button>
+      </div>
+      <div class="side-full">
       <div class="side-actions">
+        <button class="side-collapse" type="button" id="sideCollapse" title="Collapse sidebar" aria-label="Collapse sidebar"><i data-lucide="panel-left-close"></i></button>
         <button class="side-act" type="button" data-cmd="newDoc"><i data-lucide="file-plus"></i>New document</button>
         <button class="side-act" type="button" data-cmd="openFile"><i data-lucide="folder-open"></i>Open file…</button>
         <button class="side-act" type="button" data-cmd="pasteDoc"><i data-lucide="clipboard-paste"></i>Paste as new document</button>
@@ -513,6 +539,8 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
       </div>
       <div class="side-body" id="outlinePanel" role="tabpanel" aria-label="Outline"></div>
       <div class="side-body" id="docsPanel" role="tabpanel" aria-label="Documents" hidden></div>
+      </div>
+      <div class="side-resize" id="sideResize" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" tabindex="0" title="Drag to resize. Double-click to reset."></div>
     </aside>
     <div class="panes" id="panes">
       <section class="pane editor-pane" id="editorPane" aria-label="Markdown source">

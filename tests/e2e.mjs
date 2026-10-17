@@ -459,7 +459,7 @@ await test('two browser tabs share documents without erasing each other', async 
   const Q = await P.ctx.newPage(); Q.errors = [];
   await Q.goto('https://app.test/'); await Q.waitForFunction(() => document.querySelector('.CodeMirror')); await settle(Q, 600);
   // tab B makes a new document
-  await Q.click('[data-cmd="newDoc"]'); await Q.keyboard.type('# Made in B'); await settle(Q, 1000);
+  await Q.click('.side-act[data-cmd="newDoc"]'); await Q.keyboard.type('# Made in B'); await settle(Q, 1000);
   // tab A keeps editing its own document afterwards
   await P.bringToFront(); await P.click('.CodeMirror'); await P.keyboard.press('Control+End'); await P.keyboard.type(' and more'); await settle(P, 1000);
   const stored = await P.evaluate(() => JSON.parse(localStorage.getItem('cowdrey.md:index')).map((m) => m.title));
@@ -609,6 +609,27 @@ await test('Mac menu bar mirrors the in-app menus, shortcuts and check marks', a
   eq(spec2.flatMap((m) => m.items).find((x) => x.label === 'Ruler').checked, false, 'check mark updated');
   await Q.evaluate(() => window.__handlers['menu-command']({ payload: 'toggleRuler' }));
   eq(Q.errors, [], 'page errors'); await Q.ctx.close();
+});
+
+
+await test('sidebar collapses to an icon strip, expands, resizes and remembers', async () => {
+  const w = () => P.evaluate(() => Math.round(document.querySelector('#sidebar').getBoundingClientRect().width));
+  eq(await w(), 248, 'default width');
+  await P.click('#sideCollapse'); await settle(P, 200);
+  eq(await w(), 52, 'collapsed strip');
+  ok(await P.evaluate(() => getComputedStyle(document.querySelector('.side-rail')).display === 'flex'), 'icons shown');
+  await P.click('[data-rail="docs"]'); await settle(P, 200);
+  eq([await w(), await P.evaluate(() => document.querySelector('[data-side="docs"]').getAttribute('aria-selected'))], [248, 'true'], 'expanded to Documents');
+  await P.click('[data-side="outline"]');
+  const h = await P.$('#sideResize'); const b = await h.boundingBox();
+  await P.mouse.move(b.x + 4, b.y + 200); await P.mouse.down(); await P.mouse.move(b.x + 104, b.y + 200, { steps: 5 }); await P.mouse.up(); await settle(P, 400);
+  ok(Math.abs((await w()) - 348) <= 3, 'resized to ' + (await w()));
+  await P.click('#sideCollapse'); await settle(P, 900);
+  await P.reload(); await P.waitForFunction(() => document.querySelector('.CodeMirror')); await settle(P, 600);
+  eq(await w(), 52, 'collapsed state remembered');
+  await P.click('[data-rail="expand"]'); await settle(P, 200);
+  ok(Math.abs((await w()) - 348) <= 3, 'width remembered: ' + (await w()));
+  await P.dblclick('#sideResize'); await settle(P, 300); eq(await w(), 248, 'double-click resets');
 });
 
 await test('no library URL points at a file that does not exist', async () => { eq([...missing], []); });

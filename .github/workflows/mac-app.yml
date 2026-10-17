@@ -66,3 +66,16 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' && '--target universal-apple-darwin --config src-tauri/tauri.updater.conf.json' || '--target universal-apple-darwin' }}
+
+      # Without the signing secret, attach the plain app bundle so it can be signed elsewhere and
+      # published through updates/latest.json (see publish-update.yml).
+      - name: Attach the app bundle for in-place updates
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HAS_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' }}
+        if: env.HAS_KEY == 'false'
+        run: |
+          V=$(node -p "require('./desktop/src-tauri/tauri.conf.json').version")
+          cd desktop/src-tauri/target/universal-apple-darwin/release/bundle/macos
+          COPYFILE_DISABLE=1 tar --no-mac-metadata -czf Cowdrey.MD_universal.app.tar.gz Cowdrey.MD.app
+          gh release upload "v$V" Cowdrey.MD_universal.app.tar.gz --clobber --repo "$GITHUB_REPOSITORY"

@@ -4,7 +4,8 @@ use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use std::time::Duration;
-use tauri::{AppHandle, Emitter, Manager, RunEvent, WindowEvent};
+use tauri::menu::{CheckMenuItem, IsMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu};
+use tauri::{AppHandle, Emitter, Manager, RunEvent, WindowEvent, Wry};
 
 /// Files macOS asked us to open (Finder double-click, "Open With", drag onto the Dock icon)
 /// that the page has not picked up yet.
@@ -68,6 +69,96 @@ fn flush_then_quit(app: &AppHandle) {
     });
 }
 
+/// One menu in the menu bar, described by the page so it matches the in-app menus exactly.
+#[derive(serde::Deserialize)]
+struct MenuSpec {
+    title: String,
+    items: Vec<ItemSpec>,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(tag = "kind", rename_all = "lowercase")]
+enum ItemSpec {
+    Item { id: String, label: String, accel: Option<String>, checked: Option<bool> },
+    Sep,
+    Native { role: String },
+}
+
+type Item = Box<dyn IsMenuItem<Wry>>;
+
+fn build_items(app: &AppHandle, specs: &[ItemSpec]) -> tauri::Result<Vec<Item>> {
+    let mut out: Vec<Item> = Vec::new();
+    for spec in specs {
+        match spec {
+            ItemSpec::Sep => out.push(Box::new(PredefinedMenuItem::separator(app)?)),
+            ItemSpec::Native { role } => match role.as_str() {
+                "cut" => out.push(Box::new(PredefinedMenuItem::cut(app, None)?)),
+                "copy" => out.push(Box::new(PredefinedMenuItem::copy(app, None)?)),
+                "paste" => out.push(Box::new(PredefinedMenuItem::paste(app, None)?)),
+                _ => {}
+            },
+            ItemSpec::Item { id, label, accel, checked } => match checked {
+                Some(on) => out.push(Box::new(CheckMenuItem::with_id(app, id, label, true, *on, accel.as_deref())?)),
+                None => out.push(Box::new(MenuItem::with_id(app, id, label, true, accel.as_deref())?)),
+            },
+        }
+    }
+    Ok(out)
+}
+
+fn submenu(app: &AppHandle, title: &str, items: &[Item]) -> tauri::Result<Submenu<Wry>> {
+    let refs: Vec<&dyn IsMenuItem<Wry>> = items.iter().map(|b| b.as_ref()).collect();
+    Submenu::with_items(app, title, true, &refs)
+}
+
+/// Replace the menu bar: the Cowdrey.MD app menu, the page's own menus, then Window.
+#[tauri::command]
+fn set_menu(app: AppHandle, menus: Vec<MenuSpec>) -> Result<(), String> {
+    let build = || -> tauri::Result<Menu<Wry>> {
+        let app_items: Vec<Item> = vec![
+            Box::new(MenuItem::with_id(&app, "cmd:about", "About Cowdrey.MD", true, None::<&str>)?),
+            Box::new(MenuItem::with_id(&app, "cmd:checkUpdates", "Check for Updates…", true, None::<&str>)?),
+            Box::new(PredefinedMenuItem::separator(&app)?),
+            Box::new(PredefinedMenuItem::services(&app, None)?),
+            Box::new(PredefinedMenuItem::separator(&app)?),
+            Box::new(PredefinedMenuItem::hide(&app, None)?),
+            Box::new(PredefinedMenuItem::hide_others(&app, None)?),
+            Box::new(PredefinedMenuItem::show_all(&app, None)?),
+            Box::new(PredefinedMenuItem::separator(&app)?),
+            Box::new(PredefinedMenuItem::quit(&app, None)?),
+        ];
+        let mut subs: Vec<Submenu<Wry>> = vec![submenu(&app, "Cowdrey.MD", &app_items)?];
+        let mut window_added = false;
+        for m in &menus {
+            if m.title == "Help" && !window_added {
+                subs.push(window_menu(&app)?);
+                window_added = true;
+            }
+            let items = build_items(&app, &m.items)?;
+            subs.push(submenu(&app, &m.title, &items)?);
+        }
+        if !window_added {
+            subs.push(window_menu(&app)?);
+        }
+        let refs: Vec<&dyn IsMenuItem<Wry>> = subs.iter().map(|s| s as &dyn IsMenuItem<Wry>).collect();
+        Menu::with_items(&app, &refs)
+    };
+    let menu = build().map_err(|e| e.to_string())?;
+    app.set_menu(menu).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+fn window_menu(app: &AppHandle) -> tauri::Result<Submenu<Wry>> {
+    let items: Vec<Item> = vec![
+        Box::new(PredefinedMenuItem::minimize(app, None)?),
+        Box::new(PredefinedMenuItem::maximize(app, None)?),
+        Box::new(PredefinedMenuItem::fullscreen(app, None)?),
+        Box::new(PredefinedMenuItem::separator(app)?),
+        Box::new(PredefinedMenuItem::close_window(app, None)?),
+    ];
+    submenu(app, "Window", &items)
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -76,7 +167,12 @@ fn main() {
         .plugin(tauri_plugin_process::init())
         .manage(PendingFiles(Mutex::new(Vec::new())))
         .manage(Quitting(AtomicBool::new(false)))
-        .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, quit_app, allow_exit])
+        .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, quit_app, allow_exit, set_menu])
+        .on_menu_event(|app, event| {
+            if let Some(cmd) = event.id().0.strip_prefix("cmd:") {
+                let _ = app.emit("menu-command", cmd.to_string());
+            }
+        })
         .on_window_event(|window, event| {
             if let WindowEvent::CloseRequested { api, .. } = event {
                 let app = window.app_handle();

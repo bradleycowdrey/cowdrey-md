@@ -575,6 +575,42 @@ await test('Share app button copies the app link, the Mac link and a ready messa
   ok(msg.includes('Free. Forever.') && msg.includes('releases/latest'), msg);
 });
 
+
+await test('Mac menu bar mirrors the in-app menus, shortcuts and check marks', async () => {
+  const Q = await newPage({ init: () => {
+    window.__menus = []; window.__handlers = {};
+    localStorage.setItem('cowdrey.md:updateChecked', String(Date.now()));
+    window.__TAURI__ = {
+      core: { invoke: async (cmd, args) => { if (cmd === 'set_menu') window.__menus.push(args.menus); return cmd === 'take_opened_files' ? [] : null; } },
+      app: { getVersion: async () => '1.0.7' }, dialog: {}, opener: { openUrl: async () => {} },
+      event: { listen: async (name, fn) => { window.__handlers[name] = fn; } },
+    };
+  } });
+  await settle(Q, 400);
+  const spec = await Q.evaluate(() => window.__menus[window.__menus.length - 1]);
+  eq(spec.map((m) => m.title), ['File', 'Edit', 'View', 'Insert', 'Format', 'Tools', 'Help'], 'same menus');
+  // every in-app menu item appears with the same label
+  for (let i = 0; i < 7; i++) {
+    await Q.click(`[data-menu="${i}"]`);
+    const inApp = await Q.evaluate(() => [...document.querySelectorAll('#popover .mi span:nth-child(2)')].map((x) => x.textContent));
+    await Q.keyboard.press('Escape');
+    const native = spec[i].items.filter((x) => x.kind === 'item').map((x) => x.label);
+    const expected = inApp.filter((l) => !(spec[i].title === 'Help' && /About|Check for updates/.test(l)));
+    eq(native, expected, spec[i].title + ' labels');
+  }
+  const find = (label) => spec.flatMap((m) => m.items).find((x) => x.label === label);
+  eq(find('Bold').accel, 'CmdOrCtrl+B'); eq(find('Clear formatting').accel, 'CmdOrCtrl+Backslash'); eq(find('Heading 2').accel, 'CmdOrCtrl+Alt+2');
+  eq(find('Zoom out').accel, 'CmdOrCtrl+Alt+Minus'); eq(find('Ruler').checked, true);
+  ok(spec[1].items.some((x) => x.kind === 'native' && x.role === 'paste'), 'native paste in Edit');
+  // choosing a Mac menu item runs the command, and check marks follow
+  await Q.evaluate(() => window.__handlers['menu-command']({ payload: 'toggleRuler' })); await settle(Q, 300);
+  eq(await Q.evaluate(() => document.querySelector('#app').dataset.ruler), 'off', 'ruler hidden');
+  const spec2 = await Q.evaluate(() => window.__menus[window.__menus.length - 1]);
+  eq(spec2.flatMap((m) => m.items).find((x) => x.label === 'Ruler').checked, false, 'check mark updated');
+  await Q.evaluate(() => window.__handlers['menu-command']({ payload: 'toggleRuler' }));
+  eq(Q.errors, [], 'page errors'); await Q.ctx.close();
+});
+
 await test('no library URL points at a file that does not exist', async () => { eq([...missing], []); });
 await test('no uncaught page errors during the whole run', async () => { eq(P.errors, []); });
 

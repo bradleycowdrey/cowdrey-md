@@ -2782,7 +2782,39 @@ function updateStyleGallery() {
 function refreshState() {
   $$('[data-cmd]').forEach((b) => { const c = C[b.dataset.cmd]; if (c && c.checked && b.classList.contains('rb')) b.setAttribute('aria-pressed', !!c.checked()); });
   $$('#sbViews button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.view === S.view));
+  updateNativeMenu();
 }
+
+/* Mac menu bar: built from the same MENUS and commands as the in-app menus, so the two always match. */
+const ACCEL_KEYS = { '\\': 'Backslash', "'": 'Quote', '.': 'Period', ',': 'Comma', '/': 'Slash', '[': 'BracketLeft', ']': 'BracketRight', '=': 'Equal', '-': 'Minus' };
+function toAccelerator(k) {
+  const m = k && /^(Mod-)?(Alt-)?(Shift-)?(.+)$/.exec(k);
+  if (!m) return null;
+  return [m[1] && 'CmdOrCtrl', m[2] && 'Alt', m[3] && 'Shift', ACCEL_KEYS[m[4]] || m[4].toUpperCase()].filter(Boolean).join('+');
+}
+function nativeMenuSpec() {
+  return MENUS.map(([title, ids]) => {
+    const items = [];
+    for (const id of ids) {
+      if (id === '-') { if (items.length && items[items.length - 1].kind !== 'sep') items.push({ kind: 'sep' }); continue; }
+      if (title === 'Help' && (id === 'about' || id === 'checkUpdates')) continue; // these live in the Cowdrey.MD app menu
+      const c = C[id];
+      if (!c || (c.hidden && c.hidden())) continue;
+      items.push({ kind: 'item', id: 'cmd:' + id, label: c.label, accel: toAccelerator(c.key || c.hint), checked: c.checked ? !!c.checked() : null });
+      if (id === 'redo') items.push({ kind: 'sep' }, { kind: 'native', role: 'cut' }, { kind: 'native', role: 'copy' }, { kind: 'native', role: 'paste' });
+    }
+    while (items.length && items[items.length - 1].kind === 'sep') items.pop();
+    return { title, items };
+  });
+}
+let lastMenuJson = '';
+const updateNativeMenu = debounce(() => {
+  if (!TAURI) return;
+  const spec = nativeMenuSpec(), json = JSON.stringify(spec);
+  if (json === lastMenuJson) return;
+  lastMenuJson = json;
+  TAURI.core.invoke('set_menu', { menus: spec }).catch(() => { lastMenuJson = ''; });
+}, 80);
 
 /* ================================================================
    Preferences → UI
@@ -3123,6 +3155,7 @@ if (TAURI) {
   setTimeout(takeOpened, 0);
   // quiet daily check at launch
   if (Date.now() - (store.get(KEY + ':updateChecked', 0) || 0) > 864e5) setTimeout(() => checkForUpdates(false), 5000);
+  TAURI.event.listen('menu-command', (e) => { if (C[e.payload]) runCmd(e.payload); });
   TAURI.event.listen('flush-and-quit', () => {
     try { flushSave(); } finally { TAURI.core.invoke('quit_app').catch(() => {}); }
   });

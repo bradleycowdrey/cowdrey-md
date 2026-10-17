@@ -32,16 +32,5 @@ html = html.replace(/<script src="(https:[^"]+)"/g, (whole, url) => {
 // MathJax loads TeX extensions on demand from beside tex-svg.js
 fs.cpSync(path.join(nm, 'mathjax/es5/input'), path.join(vendor, 'mathjax/es5/input'), { recursive: true });
 
-const doc = `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-</head>
-<body>
-${html}
-</body>
-</html>
-`;
-fs.writeFileSync(path.join(dist, 'index.html'), doc);
+fs.writeFileSync(path.join(dist, 'index.html'), html); // index.html is a complete document
 console.log('desktop/dist ready');

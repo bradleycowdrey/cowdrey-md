@@ -23,5 +23,11 @@ fonts_css = '\n'.join(
     for fam, f, w, st in FACES)
 html = html.replace('/*FONTS_CSS*/', fonts_css)
 html = html.replace('/*APP_JS*/', (root / 'src/app.js').read_text())
-(root / 'index.html').write_text(html)
-print(f'index.html written ({len(html)/1024:.0f} KB)')
+# artifact.html: the page body only (for hosts that add their own document wrapper)
+(root / 'artifact.html').write_text(html)
+# index.html: a complete standards-mode document (GitHub Pages, the Mac app, any web host)
+doc = ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
+       '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+       '<link rel="icon" href="data:,">\n</head>\n<body>\n' + html + '\n</body>\n</html>\n')
+(root / 'index.html').write_text(doc)
+print(f'index.html written ({len(doc)/1024:.0f} KB), artifact.html written')

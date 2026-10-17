@@ -5,7 +5,7 @@ name: Publish update
 on:
   push:
     branches: [main]
-    paths: [updates/latest.json]
+    paths: [updates/latest.json, .github/workflows/publish-update.yml]
   workflow_dispatch:
 
 permissions:
@@ -22,3 +22,11 @@ jobs:
         run: |
           V=$(jq -r .version updates/latest.json)
           gh release upload "v$V" updates/latest.json --clobber --repo "$GITHUB_REPOSITORY"
+      - name: Keep a fixed-name copy of the DMG (Cowdrey.MD.dmg) on the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V=$(jq -r .version updates/latest.json)
+          gh release download "v$V" --pattern "Cowdrey.MD_${V}_universal.dmg" --repo "$GITHUB_REPOSITORY" --dir /tmp/dmg
+          cp "/tmp/dmg/Cowdrey.MD_${V}_universal.dmg" /tmp/dmg/Cowdrey.MD.dmg
+          gh release upload "v$V" /tmp/dmg/Cowdrey.MD.dmg --clobber --repo "$GITHUB_REPOSITORY"

@@ -79,3 +79,11 @@ jobs:
           cd desktop/src-tauri/target/universal-apple-darwin/release/bundle/macos
           COPYFILE_DISABLE=1 tar --no-mac-metadata -czf Cowdrey.MD_universal.app.tar.gz Cowdrey.MD.app
           gh release upload "v$V" Cowdrey.MD_universal.app.tar.gz --clobber --repo "$GITHUB_REPOSITORY"
+
+      - name: Keep a fixed-name copy of the DMG (Cowdrey.MD.dmg) on the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V=$(node -p "require('./desktop/src-tauri/tauri.conf.json').version")
+          cp "desktop/src-tauri/target/universal-apple-darwin/release/bundle/dmg/Cowdrey.MD_${V}_universal.dmg" /tmp/Cowdrey.MD.dmg
+          gh release upload "v$V" /tmp/Cowdrey.MD.dmg --clobber --repo "$GITHUB_REPOSITORY"

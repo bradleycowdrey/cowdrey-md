@@ -31,7 +31,7 @@ jobs:
       - name: Check index.html is built from src/
         run: |
           python3 build.py
-          git diff --exit-code index.html
+          git diff --exit-code index.html artifact.html
 
       - name: Run the tests
         run: node tests/e2e.mjs

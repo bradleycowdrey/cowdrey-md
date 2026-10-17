@@ -11,7 +11,7 @@ const require = createRequire(import.meta.url);
 let playwright; try { playwright = require('playwright'); } catch { playwright = require('/opt/node22/lib/node_modules/playwright'); }
 const exe = fs.existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : undefined;
 const NM = path.join(root, 'desktop/node_modules');
-const DOC = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>${fs.readFileSync(path.join(root, 'index.html'), 'utf8')}</body></html>`;
+const DOC = fs.readFileSync(path.join(root, 'index.html'), 'utf8'); // a complete document
 const SIZES = (process.env.SIZES || '1440x900,1280x800,1024x768,768x1024,390x844').split(',').map((s) => s.split('x').map(Number));
 const THEMES = (process.env.THEMES || 'light,dark').split(',');
 const SAMPLE = '# Title\n\nSome text with a word here.\n\n- one\n- two\n\n| a | b |\n|---|---|\n| 1 | 2 |\n';

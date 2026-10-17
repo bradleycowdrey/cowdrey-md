@@ -15,7 +15,7 @@ const { chromium } = playwright;
 const exe = fs.existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : undefined;
 const NM = path.join(root, 'desktop/node_modules');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const DOC = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>${html}</body></html>`;
+const DOC = html; // index.html is a complete document
 
 function localFor(url) {
   const m = url.match(/^https:\/\/cdn\.jsdelivr\.net\/npm\/((?:@[^/]+\/)?[^@/]+)@[^/]+\/(.+)$/);

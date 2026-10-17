@@ -569,7 +569,7 @@ await test('Share app button copies the app link, the Mac link and a ready messa
   await P.click('#shareAppBtn'); await settle(P, 150);
   ok((await P.textContent('#popover')).includes('Share Cowdrey.MD'), 'menu');
   await P.click('#popover [data-share="web"]'); await settle(P, 200);
-  eq(await P.evaluate(() => navigator.clipboard.readText()), 'https://bradleycowdrey.github.io/cowdrey-md/');
+  eq(await P.evaluate(() => navigator.clipboard.readText()), 'https://bradcowdrey.com/cowdrey-md');
   await P.click('#shareAppBtn'); await P.click('#popover [data-share="message"]'); await settle(P, 200);
   const msg = await P.evaluate(() => navigator.clipboard.readText());
   ok(msg.includes('Free. Forever.') && msg.includes('releases/latest'), msg);

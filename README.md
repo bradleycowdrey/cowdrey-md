@@ -4,7 +4,7 @@ A Markdown editor by **Bradley Cowdrey** · [bradcowdrey.com](https://bradcowdre
 
 It combines MacDown's side-by-side writing, a Docs-style title bar, menus and paper page, and a Word-style ribbon, ruler and status bar. It is one self-contained web page with no build server and no backend.
 
-### [⬇ Download for Mac](https://github.com/bradleycowdrey/cowdrey-md/releases/latest/download/Cowdrey.MD.dmg) · [Open in your browser](https://bradleycowdrey.github.io/cowdrey-md/)
+### [⬇ Download for Mac](https://github.com/bradleycowdrey/cowdrey-md/releases/latest/download/Cowdrey.MD.dmg) · [Open in your browser](https://bradcowdrey.com/cowdrey-md)
 
 **Free. Forever.** The Mac download is a `.dmg` for Apple silicon and Intel Macs: open it and drag Cowdrey.MD into Applications. The first time, macOS asks for confirmation; open **System Settings → Privacy & Security** and click **Open Anyway**. After that, the app keeps itself up to date.
 
@@ -62,7 +62,7 @@ node tests/e2e.mjs
 
 ## Hosting on bradcowdrey.com
 
-`index.html` is static. Serve it from any web host, or turn on GitHub Pages for this repository (Settings → Pages → deploy from the `main` branch, root folder), then point a subdomain such as `md.bradcowdrey.com` at it. The app runs at `https://bradleycowdrey.github.io/cowdrey-md/` once Pages is on.
+`index.html` is static. Serve it from any web host, or turn on GitHub Pages for this repository (Settings → Pages → deploy from the `main` branch, root folder), then point a subdomain such as `md.bradcowdrey.com` at it. The live web app is at **https://bradcowdrey.com/cowdrey-md**; bradcowdrey.com serves this repo's GitHub Pages copy (`https://bradleycowdrey.github.io/cowdrey-md/`) at that address, so every push to `main` reaches it within minutes.
 
 ## Mac app
 

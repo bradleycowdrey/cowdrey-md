@@ -1,19 +1,19 @@
 {
-  "version": "1.0.8",
-  "notes": "- The sidebar can be collapsed to a slim strip of icons and expanded again, from the button in its header or View > Compact sidebar.\n- Drag the sidebar's right edge to make it wider or narrower; double-click the edge to reset it.",
-  "pub_date": "2026-10-17T03:16:55Z",
+  "version": "1.0.9",
+  "notes": "- Works better on tablets and phones: a compact sidebar strip, a sidebar that opens over the page and closes with a tap, and an even split view.\n- Undo, Redo and Select All now work inside text boxes; Quit saves your work first; New document is Cmd+N.\n- Better keyboard and screen-reader support throughout.",
+  "pub_date": "2026-10-17T04:07:45Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0haSlFuM3lXTnB0Q1pmbitWektrWGg4QjRyTHJpUVdsanVKdnN5emwyOWJQK2ZBZXI1U3JWKzNqVmpMc2JWYjhRN3Y1TE4yQXArd1NxdUNMeVE2ZXdjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjA3MDE1CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpQZzBCUnhHbHRXak5MVktVbzVpYmtuYXV1c3Q0cTNPUWFKM2Y4WmRZcGRJejRlRmdPQ2MrUmpCbnV1c3FWMCtHaklyR3N0QTkwbVRaTVhaZkNEZ2VDZz09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.8/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV01mbmFjK3dsMXNUY1dCQ2dpcmEwQk95aWZJdS9zekNjY1ZVb2hhZE8wQmxIK3Q5T2UxUjBCczFpMk5Ka3J2Y1M4aXo3OUJtcnhYT1VSaWNzbHd5c1E0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjEwMDY1CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpMZjg5VGtFOTVCckx4NnNxL3VpZVhQQ25VUmFXeDJ5MlE4VDVaL090WHJRaGdjMzhoRG53VXJ1ZlBCOERIZFBEM3VVQW5hRGtnZGZUTlFUZjZuZEZDZz09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.9/Cowdrey.MD_universal.app.tar.gz"
     },
     "darwin-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0haSlFuM3lXTnB0Q1pmbitWektrWGg4QjRyTHJpUVdsanVKdnN5emwyOWJQK2ZBZXI1U3JWKzNqVmpMc2JWYjhRN3Y1TE4yQXArd1NxdUNMeVE2ZXdjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjA3MDE1CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpQZzBCUnhHbHRXak5MVktVbzVpYmtuYXV1c3Q0cTNPUWFKM2Y4WmRZcGRJejRlRmdPQ2MrUmpCbnV1c3FWMCtHaklyR3N0QTkwbVRaTVhaZkNEZ2VDZz09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.8/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV01mbmFjK3dsMXNUY1dCQ2dpcmEwQk95aWZJdS9zekNjY1ZVb2hhZE8wQmxIK3Q5T2UxUjBCczFpMk5Ka3J2Y1M4aXo3OUJtcnhYT1VSaWNzbHd5c1E0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjEwMDY1CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpMZjg5VGtFOTVCckx4NnNxL3VpZVhQQ25VUmFXeDJ5MlE4VDVaL090WHJRaGdjMzhoRG53VXJ1ZlBCOERIZFBEM3VVQW5hRGtnZGZUTlFUZjZuZEZDZz09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.9/Cowdrey.MD_universal.app.tar.gz"
     },
     "darwin-universal": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0haSlFuM3lXTnB0Q1pmbitWektrWGg4QjRyTHJpUVdsanVKdnN5emwyOWJQK2ZBZXI1U3JWKzNqVmpMc2JWYjhRN3Y1TE4yQXArd1NxdUNMeVE2ZXdjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjA3MDE1CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpQZzBCUnhHbHRXak5MVktVbzVpYmtuYXV1c3Q0cTNPUWFKM2Y4WmRZcGRJejRlRmdPQ2MrUmpCbnV1c3FWMCtHaklyR3N0QTkwbVRaTVhaZkNEZ2VDZz09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.8/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV01mbmFjK3dsMXNUY1dCQ2dpcmEwQk95aWZJdS9zekNjY1ZVb2hhZE8wQmxIK3Q5T2UxUjBCczFpMk5Ka3J2Y1M4aXo3OUJtcnhYT1VSaWNzbHd5c1E0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjEwMDY1CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpMZjg5VGtFOTVCckx4NnNxL3VpZVhQQ25VUmFXeDJ5MlE4VDVaL090WHJRaGdjMzhoRG53VXJ1ZlBCOERIZFBEM3VVQW5hRGtnZGZUTlFUZjZuZEZDZz09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.9/Cowdrey.MD_universal.app.tar.gz"
     }
   }
 }

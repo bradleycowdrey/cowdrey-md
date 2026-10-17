@@ -1,0 +1,19 @@
+{
+  "version": "1.0.7",
+  "notes": "- The Mac menu bar now matches the menus inside the app: File, Edit, View, Insert, Format, Tools and Help, with the same shortcuts and check marks.\n- Updates now install in place and reopen the app.",
+  "pub_date": "2026-10-17T02:45:01Z",
+  "platforms": {
+    "darwin-aarch64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0V3RWlJM3pxSkhuVm1vOHdsUkkrYnVFTFVPRmNKckpJVmFwODQrNTdDcWk0OFp4NVJUMjQ4T0xVWVhqQ0JWdmNWQklLTTlBL1BoaURqUzNaRUdlZmcwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjA1MDkwCWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpnWEQ0aWMzc2lrdkQ0R3d5TjhQRW1EWExYTU1BZGFvbWN5aEVCMm9qcTRpc2wzNDMwQWIwYVA2UHJEV0pTYm12ZjdVR1NmZmlzT0h6akVCYThUTmpEUT09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.7/Cowdrey.MD_universal.app.tar.gz"
+    },
+    "darwin-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0V3RWlJM3pxSkhuVm1vOHdsUkkrYnVFTFVPRmNKckpJVmFwODQrNTdDcWk0OFp4NVJUMjQ4T0xVWVhqQ0JWdmNWQklLTTlBL1BoaURqUzNaRUdlZmcwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjA1MDkwCWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpnWEQ0aWMzc2lrdkQ0R3d5TjhQRW1EWExYTU1BZGFvbWN5aEVCMm9qcTRpc2wzNDMwQWIwYVA2UHJEV0pTYm12ZjdVR1NmZmlzT0h6akVCYThUTmpEUT09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.7/Cowdrey.MD_universal.app.tar.gz"
+    },
+    "darwin-universal": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0V3RWlJM3pxSkhuVm1vOHdsUkkrYnVFTFVPRmNKckpJVmFwODQrNTdDcWk0OFp4NVJUMjQ4T0xVWVhqQ0JWdmNWQklLTTlBL1BoaURqUzNaRUdlZmcwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjA1MDkwCWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpnWEQ0aWMzc2lrdkQ0R3d5TjhQRW1EWExYTU1BZGFvbWN5aEVCMm9qcTRpc2wzNDMwQWIwYVA2UHJEV0pTYm12ZjdVR1NmZmlzT0h6akVCYThUTmpEUT09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.7/Cowdrey.MD_universal.app.tar.gz"
+    }
+  }
+}

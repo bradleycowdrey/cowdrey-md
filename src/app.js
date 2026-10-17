@@ -430,7 +430,7 @@ function setZoom(z) {
 function updateZoomUI() {
   const pct = Math.round(scale * 100);
   $('#zoomRange').value = clamp(pct, 50, 200);
-  $('#zoomPct').textContent = S.zoom === 'fit' ? `Fit · ${pct}%` : pct + '%';
+  $('#zoomPct').textContent = S.zoom === 'fit' ? (window.innerWidth <= 760 ? 'Fit' : `Fit · ${pct}%`) : pct + '%';
 }
 
 /* ================================================================
@@ -1370,6 +1370,7 @@ function openPopover(anchor, html, onClick, opts = {}) {
 }
 function closePopover() {
   if (popover.hidden) return;
+  if (popAnchor && popAnchor.closest('#menubar')) $('#menubar').scrollLeft = 0;
   popover.hidden = true; popover.onclick = null; popover.onmouseover = null;
   popAnchor && popAnchor.setAttribute('aria-expanded', 'false'); popAnchor = null;
 }
@@ -1393,7 +1394,7 @@ popover.addEventListener('keydown', (e) => {
    ================================================================ */
 const C = {};
 const cmd = (id, o) => { C[id] = Object.assign({ id }, o); };
-const fmtKey = (k) => !k ? '' : k.split('-').map((p) => isMac
+const fmtKey = (k) => !k ? '' : k.split(/-(?=.)/).map((p) => isMac
   ? ({ Mod: '⌘', Alt: '⌥', Shift: '⇧', Ctrl: '⌃' }[p] || p.toUpperCase())
   : ({ Mod: 'Ctrl+', Alt: 'Alt+', Shift: 'Shift+' }[p] || p.toUpperCase())).join('');
 const inArtifact = () => !!(window.claude && typeof window.claude.use === 'function');
@@ -1468,8 +1469,8 @@ cmd('frontMatter', { label: 'Front matter', icon: 'file-text', run: insertFrontM
 const viewCmd = (v, label, icon) => cmd('view_' + v, { label, icon, checked: () => S.view === v, run: () => setView(v) });
 viewCmd('editor', 'Editor only', 'pencil-line'); viewCmd('split', 'Editor and preview', 'columns-2'); viewCmd('preview', 'Preview only', 'eye');
 cmd('cycleView', { label: 'Switch view', icon: 'columns-2', key: 'Mod-Shift-\\', global: true, run: () => setView({ split: 'preview', preview: 'editor', editor: 'split' }[S.view]) });
-cmd('toggleRail', { label: 'Compact sidebar', icon: 'panel-left-close', key: 'Mod-Alt-s', global: true, checked: () => S.sideRail, run: () => { if (!S.outline) toggleOutline(true); setSideRail(!S.sideRail); } });
-cmd('toggleOutline', { label: 'Sidebar', icon: 'panel-left', key: 'Mod-Alt-o', global: true, checked: () => S.outline, run: () => toggleOutline() });
+cmd('toggleRail', { label: 'Compact sidebar', icon: 'panel-left-close', key: 'Mod-Alt-s', global: true, checked: () => app.dataset.rail === 'on', run: () => { if (isNarrow()) return toggleOutline(); if (!S.outline) toggleOutline(true); setSideRail(!S.sideRail); } });
+cmd('toggleOutline', { label: 'Sidebar', icon: 'panel-left', key: 'Mod-Alt-o', global: true, checked: () => app.dataset.outline === 'on' && app.dataset.rail !== 'on', run: () => toggleOutline() });
 cmd('toggleSync', { label: 'Sync scrolling', icon: 'arrow-down-up', checked: () => S.sync, run: () => { S.sync = !S.sync; saveSettings(); refreshState(); if (S.sync) syncFromEditor(); } });
 cmd('toggleFocus', { label: 'Focus mode', icon: 'focus', key: 'Mod-Shift-f', global: true, checked: () => S.focus, run: () => { S.focus = !S.focus; applyEditorPrefs(); toast(S.focus ? 'Focus mode on: other paragraphs are dimmed' : 'Focus mode off'); } });
 cmd('toggleTypewriter', { label: 'Typewriter mode', icon: 'keyboard', checked: () => S.typewriter, run: () => { S.typewriter = !S.typewriter; applyEditorPrefs(); toast(S.typewriter ? 'Typewriter mode on: your line stays centered' : 'Typewriter mode off'); } });
@@ -1788,10 +1789,33 @@ function setView(v) {
   requestAnimationFrame(() => { cm.refresh(); sizePage(); buildLineMap(); if (v === 'split' && S.sync) syncFromEditor(); });
   if (v !== 'preview') cm.focus();
 }
+/* Sidebar layout by window size:
+   wide (over 1180px): docked, full or compact strip, as the user set it
+   tablet (761-1180px): compact strip; expanding opens it over the page
+   phone (760px and under): hidden; the title-bar button opens it over the page */
+let overlayOpen = false;
+const isNarrow = () => window.innerWidth <= 1180, isPhone = () => window.innerWidth <= 760;
+function applySidebarMode() {
+  let outline, rail, overlay = false;
+  if (!isNarrow()) { outline = S.outline; rail = S.sideRail; overlayOpen = false; }
+  else if (overlayOpen) { outline = true; rail = false; overlay = true; }
+  else { outline = !isPhone(); rail = true; }
+  app.dataset.outline = outline ? 'on' : 'off';
+  app.dataset.rail = rail ? 'on' : 'off';
+  app.dataset.overlay = overlay ? 'on' : 'off';
+  $('#sideToggle')?.setAttribute('aria-expanded', overlay);
+}
 function toggleOutline(force) {
-  S.outline = force === undefined ? !S.outline : force;
-  app.dataset.outline = S.outline ? 'on' : 'off'; saveSettings(); refreshState();
+  if (isNarrow()) overlayOpen = force === undefined ? !overlayOpen : force;
+  else { S.outline = force === undefined ? !S.outline : force; saveSettings(); }
+  applySidebarMode(); refreshState();
   requestAnimationFrame(() => { cm.refresh(); sizePage(); });
+}
+document.addEventListener('pointerdown', (e) => {
+  if (app.dataset.overlay === 'on' && !e.target.closest('#sidebar, #sideToggle, #popover, #dialog')) toggleOutline(false);
+}, true);
+for (const q of ['(max-width: 1180px)', '(max-width: 760px)']) {
+  matchMedia(q).addEventListener?.('change', () => { overlayOpen = false; applySidebarMode(); requestAnimationFrame(() => { cm.refresh(); sizePage(); buildLineMap(); updateRibbonOverflow(); }); });
 }
 function applyEditorPrefs() {
   cm.setOption('lineNumbers', S.lineNumbers);
@@ -1862,14 +1886,16 @@ $('#sidebar').addEventListener('click', (e) => {
   const b = e.target.closest('[data-cmd]'); if (b) runCmd(b.dataset.cmd, b);
 });
 $('#sideCollapse').addEventListener('click', () => setSideRail(true));
+$('#sideToggle').addEventListener('click', () => toggleOutline());
 function applySidebar() {
-  app.dataset.rail = S.sideRail ? 'on' : 'off';
+  applySidebarMode();
   $('#sidebar').style.setProperty('--side-w', clamp(S.sideWidth, 180, 440) + 'px');
   $('#sideResize').setAttribute('aria-valuenow', clamp(S.sideWidth, 180, 440));
   $('#sideCollapse').setAttribute('aria-expanded', 'true'); $('[data-rail="expand"]').setAttribute('aria-expanded', 'false');
 }
 function setSideRail(on) {
-  S.sideRail = on; saveSettings(); applySidebar(); refreshState();
+  if (isNarrow()) overlayOpen = !on; else { S.sideRail = on; saveSettings(); }
+  applySidebar(); refreshState();
   requestAnimationFrame(() => { cm.refresh(); sizePage(); buildLineMap(); });
   (on ? $('[data-rail="expand"]') : $('#sideCollapse'))?.focus({ preventScroll: true });
 }
@@ -2197,7 +2223,7 @@ if (TAURI) {
 buildMd();
 app.dataset.outline = S.outline ? 'on' : 'off';
 applySidebar();
-if (window.innerWidth < 1200 && S.outline) { S.outline = false; app.dataset.outline = 'off'; }
+applySidebarMode();
 if (window.innerWidth <= 760 && !store.get(KEY + ':settings', null)) { S.view = 'editor'; S.ribbonCollapsed = true; }
 app.dataset.view = S.view;
 renderRibbon();

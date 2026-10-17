@@ -634,6 +634,43 @@ await test('sidebar collapses to an icon strip, expands, resizes and remembers',
   await P.dblclick('#sideResize'); await settle(P, 300); eq(await w(), 248, 'double-click resets');
 });
 
+
+await test('tablet: compact strip by default, expands over the page, tap outside closes', async () => {
+  const Q = await newPage({ width: 1024, height: 768 });
+  const w = () => Q.evaluate(() => Math.round(document.querySelector('#sidebar').getBoundingClientRect().width));
+  eq(await w(), 52, 'strip visible');
+  await Q.click('[data-rail="expand"]'); await settle(Q, 200);
+  eq([await w(), await Q.evaluate(() => document.querySelector('#app').dataset.overlay)], [248, 'on'], 'overlay open');
+  await Q.mouse.click(800, 500); await settle(Q, 200);
+  eq([await w(), await Q.evaluate(() => document.querySelector('#app').dataset.overlay)], [52, 'off'], 'tap outside closes');
+  eq(Q.errors, [], 'page errors'); await Q.ctx.close();
+});
+
+await test('phone: title-bar button opens the sidebar, split view shares the height, zoom stays reachable', async () => {
+  const Q = await newPage({ width: 390, height: 844 });
+  ok(await Q.evaluate(() => getComputedStyle(document.querySelector('#sidebar')).display === 'none'), 'sidebar hidden');
+  await Q.click('#sideToggle'); await settle(Q, 200);
+  ok(await Q.evaluate(() => document.querySelector('#sidebar').getBoundingClientRect().width >= 240), 'sidebar opened');
+  await Q.mouse.click(370, 600); await settle(Q, 200);
+  ok(await Q.evaluate(() => getComputedStyle(document.querySelector('#sidebar')).display === 'none'), 'closed again');
+  await Q.click('#sbViews [data-view="split"]'); await settle(Q, 300);
+  const [e, p] = await Q.evaluate(() => ['.editor-pane', '.preview-pane'].map((x) => document.querySelector(x).getBoundingClientRect().height));
+  ok(Math.abs(e - p) < 40, `equal halves: ${e} vs ${p}`);
+  ok(await Q.evaluate(() => document.querySelector('#zoomPct').offsetWidth > 0), 'zoom label visible');
+  eq(Q.errors, [], 'page errors'); await Q.ctx.close();
+});
+
+await test('resizing from desktop to phone and back recovers the layout', async () => {
+  const Q = await newPage({ width: 1440, height: 900 });
+  await Q.setViewportSize({ width: 390, height: 844 }); await settle(Q, 400);
+  ok(await Q.evaluate(() => document.documentElement.scrollWidth <= innerWidth && getComputedStyle(document.querySelector('#sidebar')).display === 'none'), 'phone layout after shrinking');
+  await Q.setViewportSize({ width: 1440, height: 900 }); await settle(Q, 400);
+  eq(await Q.evaluate(() => Math.round(document.querySelector('#sidebar').getBoundingClientRect().width)), 248, 'desktop sidebar back');
+  await Q.click('[data-menu="2"]');
+  ok((await Q.textContent('#popover')).includes(process.platform === 'darwin' ? '⌘⌥-' : 'Ctrl+Alt+-'), 'zoom out shortcut shows its key');
+  await Q.keyboard.press('Escape'); eq(Q.errors, [], 'page errors'); await Q.ctx.close();
+});
+
 await test('no library URL points at a file that does not exist', async () => { eq([...missing], []); });
 await test('no uncaught page errors during the whole run', async () => { eq(P.errors, []); });
 

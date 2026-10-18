@@ -6,6 +6,8 @@ It combines MacDown's side-by-side writing, a Docs-style title bar, menus and pa
 
 ### [⬇ Download for Mac](https://github.com/bradleycowdrey/cowdrey-md/releases/latest/download/Cowdrey.MD.dmg) · [Open in your browser](https://bradcowdrey.com/cowdrey-md)
 
+[![The Cowdrey.MD page at bradcowdrey.com/cowdrey-md, with the editor running in a Mac window. Click to open it.](docs/product-page.png)](https://bradcowdrey.com/cowdrey-md)
+
 **Free. Forever.** The Mac download is a `.dmg` for Apple silicon and Intel Macs: open it and drag Cowdrey.MD into Applications. The first time, macOS asks for confirmation; open **System Settings → Privacy & Security** and click **Open Anyway**. After that, the app keeps itself up to date.
 
 [![Latest release](https://img.shields.io/github/v/release/bradleycowdrey/cowdrey-md?label=latest%20version)](https://github.com/bradleycowdrey/cowdrey-md/releases/latest)

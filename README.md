@@ -12,6 +12,15 @@ It combines MacDown's side-by-side writing, a Docs-style title bar, menus and pa
 
 [![Latest release](https://img.shields.io/github/v/release/bradleycowdrey/cowdrey-md?label=latest%20version)](https://github.com/bradleycowdrey/cowdrey-md/releases/latest)
 
+## What's new
+
+- **Cowdrey.MD has a home on bradcowdrey.com.** [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) shows the editor running live in a Mac window, with features, install steps and a Share button. The full-screen editor is at [bradcowdrey.com/cowdrey-md/app](https://bradcowdrey.com/cowdrey-md/app).
+- **1.0.9:** better layouts for phones and tablets. In the Mac app, Quit saves your work first, the Edit menu uses the standard Mac items, and keyboard and screen-reader support is better.
+- **1.0.8:** a collapsible, resizable sidebar.
+- **1.0.6 and 1.0.7:** one-click updates that install and restart, a Share app button, and a Mac menu bar that matches the in-app menus.
+
+See the [changelog](CHANGELOG.md) for every release.
+
 ## Features
 
 **Writing**
@@ -64,7 +73,10 @@ node tests/e2e.mjs
 
 ## Hosting on bradcowdrey.com
 
-`index.html` is static. Serve it from any web host, or turn on GitHub Pages for this repository (Settings → Pages → deploy from the `main` branch, root folder), then point a subdomain such as `md.bradcowdrey.com` at it. The live web app is at **https://bradcowdrey.com/cowdrey-md**; bradcowdrey.com serves this repo's GitHub Pages copy (`https://bradleycowdrey.github.io/cowdrey-md/`) at that address, so every push to `main` reaches it within minutes.
+- **https://bradcowdrey.com/cowdrey-md** is the product page, with the live editor embedded.
+- **https://bradcowdrey.com/cowdrey-md/app** is the full-screen editor.
+
+bradcowdrey.com serves this repository's GitHub Pages copy (`https://bradleycowdrey.github.io/cowdrey-md/`, deployed from `main`, root folder) at `/cowdrey-md/app`, so every push to `main` reaches it within minutes. Keep that Pages address working: bradcowdrey.com loads the app from it. `index.html` is static, so any other web host works too.
 
 ## Mac app
 

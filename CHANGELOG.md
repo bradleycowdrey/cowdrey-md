@@ -2,11 +2,14 @@
 
 Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.11
+
+- **Terms of Use and Privacy:** asked once when the app first opens, and always under **Help → Terms & Privacy** and in About.
+
 ## 1.0.10
 
 - **Signed and notarized by Apple.** The Mac app is signed with a Developer ID and checked by Apple, so it opens with a double-click: no "Open Anyway" step.
 - **Share app** copies the bradcowdrey.com/cowdrey-md link.
-- **Terms of Use and Privacy:** asked once when the app first opens, and always under **Help → Terms & Privacy** and in About.
 
 ## Web: bradcowdrey.com, October 2026
 

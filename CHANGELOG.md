@@ -2,6 +2,11 @@
 
 Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.10
+
+- **Signed and notarized by Apple.** The Mac app is signed with a Developer ID and checked by Apple, so it opens with a double-click: no "Open Anyway" step.
+- **Share app** copies the bradcowdrey.com/cowdrey-md link.
+
 ## Web: bradcowdrey.com, October 2026
 
 - **Product page at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md).** It has the editor running live in a Mac window, plus the features, install steps and a Share button.

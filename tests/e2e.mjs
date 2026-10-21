@@ -26,11 +26,13 @@ const browser = await chromium.launch({ executablePath: exe });
 const results = [];
 const missing = new Set();
 
-async function newPage({ width = 1440, height = 900, scheme = 'light', block = [], init } = {}) {
+async function newPage({ width = 1440, height = 900, scheme = 'light', block = [], init, fresh = false } = {}) {
   const ctx = await browser.newContext({ viewport: { width, height }, colorScheme: scheme, acceptDownloads: true, permissions: ['clipboard-read', 'clipboard-write'] });
   const page = await ctx.newPage();
   page.errors = [];
   page.on('pageerror', (e) => page.errors.push(e.message));
+  // Tests start with the terms already agreed, unless they ask for a first visit.
+  if (!fresh) await page.addInitScript(() => { if (!localStorage.getItem('cowdrey.md:terms')) localStorage.setItem('cowdrey.md:terms', JSON.stringify('2026-10-21')); });
   if (init) await page.addInitScript(init);
   await ctx.route('**/*', async (route) => {
     const u = route.request().url();
@@ -671,6 +673,19 @@ await test('resizing from desktop to phone and back recovers the layout', async 
   await Q.keyboard.press('Escape'); eq(Q.errors, [], 'page errors'); await Q.ctx.close();
 });
 
+await test('first visit asks to agree to the terms once; Help links to them', async () => {
+  const T = await newPage({ fresh: true });
+  ok(await T.$('#dialog[open]'), 'dialog shown on first visit');
+  ok((await T.textContent('#dialog')).includes('Terms of Use and Privacy'), 'titled');
+  eq(await T.$eval('#dialog .dlg-body a', (a) => a.href), 'https://bradcowdrey.com/legal');
+  await T.click('#dialog [data-a="1"]'); await settle(T, 150);
+  eq(await T.evaluate(() => JSON.parse(localStorage.getItem('cowdrey.md:terms'))), '2026-10-21');
+  await T.reload(); await settle(T, 800);
+  ok(!(await T.$('#dialog[open]')), 'not asked again after agreeing');
+  await T.click('[data-menu="6"]');
+  ok(await T.$('#popover [data-cmd="legal"]'), 'Help → Terms & Privacy'); await T.keyboard.press('Escape');
+  await T.ctx.close();
+});
 await test('no library URL points at a file that does not exist', async () => { eq([...missing], []); });
 await test('no uncaught page errors during the whole run', async () => { eq(P.errors, []); });
 

@@ -28,6 +28,7 @@ async function open(w, h, scheme) {
     if (m && fs.existsSync(path.join(NM, m[1], m[2]))) return r.fulfill({ body: fs.readFileSync(path.join(NM, m[1], m[2])), contentType: 'application/javascript' });
     return r.abort();
   });
+  await ctx.addInitScript(() => { if (!localStorage.getItem('cowdrey.md:terms')) localStorage.setItem('cowdrey.md:terms', JSON.stringify('2026-10-21')); });
   const p = await ctx.newPage();
   p.errors = []; p.downloads = 0; p.choosers = 0;
   p.on('pageerror', (e) => p.errors.push(e.message));

@@ -2619,6 +2619,7 @@ cmd('toggleDiagrams', { label: 'Diagrams (Mermaid)', icon: 'workflow', checked: 
 
 cmd('shortcuts', { label: 'Keyboard shortcuts', icon: 'keyboard', key: 'Mod-/', global: true, run: showShortcuts });
 cmd('guide', { label: 'Markdown guide', icon: 'book-open-text', run: () => newDoc(WELCOME, 'Markdown guide') });
+cmd('legal', { label: 'Terms & Privacy', icon: 'scale', run: openLegal });
 cmd('about', { label: 'About Cowdrey.MD', icon: 'info', run: showAbout });
 cmd('checkUpdates', { label: 'Check for updates…', icon: 'refresh-cw', hidden: () => !TAURI, run: () => checkForUpdates(true) });
 cmd('wordCount', { label: 'Word count', icon: 'file-digit', key: 'Mod-Alt-w', global: true, run: showStats });
@@ -2665,7 +2666,7 @@ const MENUS = [
   ['Insert', ['image', 'imageUrl', 'table', 'link', '-', 'codeBlock', 'math', 'diagram', 'callout', 'details', '-', 'footnote', 'deflist', 'hr', 'toc', 'date', 'frontMatter']],
   ['Format', ['bold', 'italic', 'underline', 'strike', 'highlight', 'code', 'sup', 'sub', '-', 'normal', 'h1', 'h2', 'h3', 'h4', '-', 'ul', 'ol', 'task', 'quote', 'indent', 'outdent', '-', 'clearFormat']],
   ['Tools', ['wordCount', 'formatTable', '-', 'typographer', 'breaks', 'toggleMath', 'toggleDiagrams']],
-  ['Help', ['shortcuts', 'guide', '-', 'checkUpdates', 'about']],
+  ['Help', ['shortcuts', 'guide', 'legal', '-', 'checkUpdates', 'about']],
 ];
 function menuHtml(ids) {
   return ids.filter((id) => id === '-' || !(C[id].hidden && C[id].hidden())).map((id) => {
@@ -3098,6 +3099,22 @@ function showShortcuts() {
     actions: [{ label: 'Done', primary: true }],
   });
 }
+const LEGAL_URL = 'https://bradcowdrey.com/legal';
+const TERMS_VERSION = '2026-10-21'; // bump when the terms change materially, so everyone is asked again
+function openLegal() {
+  if (TAURI) TAURI.opener.openUrl(LEGAL_URL).catch(() => {});
+  else window.open(LEGAL_URL, '_blank', 'noopener');
+}
+// Asked once (and again after a material change). Closing without agreeing asks again next time.
+function askTermsOnce() {
+  if (store.get(KEY + ':terms', null) === TERMS_VERSION) return;
+  openDialog({
+    title: 'Terms of Use and Privacy',
+    body: `<p>Cowdrey.MD is free and provided as is, without warranty. You use it at your own risk, and you are responsible for keeping copies of your work.</p>
+      <p>Your documents stay on your device. By choosing <b>I agree</b> and using Cowdrey.MD, you agree to the <a href="${LEGAL_URL}" target="_blank" rel="noopener">Terms of Use and Privacy</a>.</p>`,
+    actions: [{ label: 'Read the terms', run: () => { openLegal(); return false; } }, { label: 'I agree', primary: true, run: () => { store.set(KEY + ':terms', TERMS_VERSION); } }],
+  });
+}
 async function showAbout() {
   let version = '';
   if (TAURI) { try { version = ' ' + await TAURI.app.getVersion(); } catch {} }
@@ -3106,6 +3123,7 @@ async function showAbout() {
     body: `<div class="about-mark"><a class="logo" href="https://bradcowdrey.com" target="_blank" rel="noopener" aria-label="bradcowdrey.com">${$('.titlebar .logo').innerHTML}</a><div><b>Cowdrey.MD${esc(version)}</b>by Bradley Cowdrey · <a href="https://bradcowdrey.com" target="_blank" rel="noopener">bradcowdrey.com</a></div></div>
       <p>A Markdown editor with MacDown’s side-by-side writing, a Docs-style page and menus, and a Word-style ribbon, ruler and status bar.</p>
       <p>Supports GitHub Flavored Markdown, tables, task lists, footnotes, callouts, LaTeX math, Mermaid diagrams, emoji, front matter and highlighted code.</p>
+      <p>Free and provided as is. <a href="${LEGAL_URL}" target="_blank" rel="noopener">Terms of Use and Privacy</a></p>
       <p style="font-size:12px">Built with CodeMirror, markdown-it, highlight.js, MathJax, Mermaid, DOMPurify and Lucide. Feature ideas drawn from MacDown, MarkText, Zettlr, StackEdit, Dillinger and ghostwriter.</p>`,
     actions: [{ label: 'Close', primary: true }],
   });
@@ -3358,6 +3376,7 @@ openDoc(currentId);
 refreshState(); refreshIcons();
 if (window.innerWidth > 760) cm.focus();
 if (firstRun) persist(); else setSaveState('saved');
+askTermsOnce();
 window.addEventListener('resize', debounce(() => { cm.refresh(); sizePage(); buildLineMap(); }, 120));
 document.fonts && document.fonts.ready.then(() => { cm.refresh(); sizePage(); buildLineMap(); });
 })();

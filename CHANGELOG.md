@@ -6,6 +6,7 @@ Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowd
 
 - **Signed and notarized by Apple.** The Mac app is signed with a Developer ID and checked by Apple, so it opens with a double-click: no "Open Anyway" step.
 - **Share app** copies the bradcowdrey.com/cowdrey-md link.
+- **Terms of Use and Privacy:** asked once when the app first opens, and always under **Help → Terms & Privacy** and in About.
 
 ## Web: bradcowdrey.com, October 2026
 

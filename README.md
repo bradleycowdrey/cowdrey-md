@@ -92,6 +92,10 @@ Instrument Sans, JetBrains Mono, Source Serif 4 and Tinos are bundled in `fonts/
 
 Built with CodeMirror 5, markdown-it, highlight.js, MathJax 3, Mermaid, DOMPurify and Lucide icons. Feature ideas came from studying the open-source editors MacDown, MarkText, Zettlr, StackEdit, Dillinger and ghostwriter, along with Markdot.
 
+## Terms and privacy
+
+Using Cowdrey.MD means agreeing to the [Terms of Use and Privacy](TERMS.md) (also at [bradcowdrey.com/legal](https://bradcowdrey.com/legal)). In short: it's free and provided as is, you use it at your own risk, and your documents stay on your device. The app asks you to agree the first time it opens, and **Help → Terms & Privacy** opens them any time.
+
 ## License
 
 MIT © Bradley Cowdrey. See [LICENSE](LICENSE).

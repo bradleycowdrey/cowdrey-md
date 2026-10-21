@@ -1,7 +1,7 @@
 # Terms of Use and Privacy
 
-**bradcowdrey.com and every app by Bradley Cowdrey**
-Last updated: October 21, 2026 · Applies to: bradcowdrey.com, Cowdrey.MD, Meridian, Two Degrees, and future apps
+**bradcowdrey.com and everything Bradley Cowdrey publishes: apps, AI skills, books, lessons and more**
+Last updated: October 21, 2026 · Applies to: bradcowdrey.com, Cowdrey.MD, Meridian, Two Degrees, AI skills, books, lessons, articles, and anything I publish in the future
 
 ---
 
@@ -9,11 +9,12 @@ Last updated: October 21, 2026 · Applies to: bradcowdrey.com, Cowdrey.MD, Merid
 
 This summary is for convenience only. The full terms below are what count.
 
-- **Everything here is free and offered as a gift, as is.** No guarantees of any kind.
+- **Everything here is offered as is.** Most of it is free. Some products, such as books, are sold through stores like Amazon and Gumroad. No guarantees of any kind.
+- **AI skills, lessons and books are for information only.** AI makes mistakes; check its output before you rely on it. Results aren't guaranteed.
 - **You use it at your own risk.** You are responsible for what you do with it, and for backing up your work.
 - **I am not liable for anything that goes wrong**, to the fullest extent the law allows.
 - **If your use causes a claim against me, you cover it.**
-- **I don't collect your personal information beyond basic website statistics.** No accounts, no ads, no tracking, nothing sold.
+- **I collect almost nothing about you:** basic website statistics, and your name and email only if a store like Gumroad shares them when you buy. No accounts, no ads, no tracking, nothing sold.
 - **Any data that reaches me is mine,** free and royalty-free. Your privacy rights still apply.
 - **Two Degrees is not a safety tool.** Follow official weather warnings.
 - **Meridian's times can be wrong.** Confirm meetings and travel.
@@ -29,9 +30,13 @@ This summary is for convenience only. The full terms below are what count.
 These terms cover the "Services":
 - the website **bradcowdrey.com** and every page on it;
 - the apps **Cowdrey.MD**, **Meridian** and **Two Degrees**, in every form: Mac apps, widgets, menu-bar items, and web versions;
-- **every app, website, widget or other software I publish in the future**, unless it comes with its own terms.
+- **all content and products on or linked from bradcowdrey.com**, including:
+  - AI skills, prompts, templates, workflows and checklists;
+  - lessons, articles, guides and videos;
+  - books such as the *AI Skills Bible*, and any courses, downloads, newsletters or other materials;
+- **every app, website, skill, book or other product I publish in the future**, unless it comes with its own terms.
 
-App-specific notices are in Section 6. When I publish a new app, I may add a notice for it there.
+Notices for each app and for AI content are in Section 6. When I publish something new, I may add a notice for it there.
 
 ## 2. Agreeing to these terms
 
@@ -39,9 +44,11 @@ App-specific notices are in Section 6. When I publish a new app, I may add a not
 
 You must be at least 13 years old to use the Services. You must also be old enough to agree to a contract where you live, or have a parent or guardian agree for you. If you use the Services for an organization, you agree for that organization too, and confirm you have authority to do so.
 
-## 3. Free, as a gift
+## 3. Free, as a gift, and paid products
 
-The Services are free. I make them available as a gift, and you pay nothing for them. That is why I can offer them only on these terms: without the disclaimers and limits below, I could not offer them for free.
+Most of the Services are free. I make them available as a gift, and you pay nothing for them. That is why I can offer them only on these terms: without the disclaimers and limits below, I could not offer them for free.
+
+Some products, such as books, are paid and are sold through stores such as Amazon and Gumroad. The store's own terms govern the purchase, including payment, delivery, refunds and taxes. These terms govern everything else about the product, including what it says and how you use it.
 
 The source code of each app is also released under the MIT License, in each app's repository on GitHub. If you only use the apps, these terms apply. If you copy, change or redistribute the code, the MIT License also applies to that code. If the two conflict, the MIT License governs your rights to the code, and these terms govern everything else.
 
@@ -69,7 +76,7 @@ You alone are responsible for:
 
 You accept every risk of using the Services. That includes losing data or work, wrong or out-of-date information, missed appointments, interruptions, and damage to your device or files. I have no liability for any loss or corruption of your data, and you waive any right of action against me for it.
 
-## 6. App-specific notices
+## 6. Notices for each app and for AI content
 
 **Cowdrey.MD** is a text editor. In a web browser, your documents are stored only in that browser's storage. Clearing the browser's data, using a private window, switching browsers or devices, or an update can erase them. What you see in the preview, PDF, HTML or copied text may not match what you expect. Check anything important before you rely on it, send it or print it.
 
@@ -77,7 +84,14 @@ You accept every risk of using the Services. That includes losing data or work, 
 
 **Two Degrees** shows weather from Open-Meteo, an independent service, and converts between °F and °C. Forecasts are often wrong. **Two Degrees is not a safety tool.** Never use it to make decisions that affect anyone's health, safety or property. For severe weather, follow official warnings from your national weather service (in the US, the National Weather Service at weather.gov) and local authorities.
 
-None of the Services gives professional, legal, medical, financial, safety or other advice.
+**AI skills, lessons, books and other content** are for general information and education only. AI tools can produce output that is wrong, biased, outdated, unsafe or infringing, and the same skill can give different results each time. In particular:
+- **Check the output.** You are responsible for reviewing and fact-checking anything an AI tool produces before you use, publish or rely on it.
+- **Mind what you share.** You are responsible for what you put into an AI tool, including confidential, personal or client information.
+- **Follow the AI tools' terms.** You must follow the terms of every AI tool you use (such as Claude, ChatGPT or Gemini). I don't control those tools and I'm not responsible for them or their output.
+- **No guaranteed results.** Examples and results described in my content are not guarantees of yours. Your results depend on many things I don't control.
+- **Content goes out of date.** AI tools, laws and best practices change quickly. Content may be out of date when you read it.
+
+None of the Services gives professional, legal, medical, financial, tax, investment, safety or other advice. Get advice from a qualified professional before you act on anything important.
 
 ## 7. Ownership of data and content
 
@@ -94,6 +108,12 @@ My ownership of personal information is subject to the privacy rights that the l
 
 **My content is mine.** I own everything else about the Services: the website's text, images and design, the names, icons and logos of the apps, and the data in the paragraph above. You may link to the Services and share their pages. Don't use my names or logos in a way that suggests I endorse you or your product. The apps' source code is licensed to you under the MIT License.
 
+**Using my AI skills, books and other content.** Unless a product says otherwise:
+- **Your licence.** I give you a personal, non-exclusive, non-transferable, revocable licence to use my AI skills, prompts, templates, lessons and books for your own work and your organization's internal work.
+- **What you may not do.** You may not resell, sublicense, republish or redistribute them, whether as they are or lightly changed. Nor may you present them as your own or use them to build a competing product.
+- **Quoting.** You may quote short passages with credit and a link to bradcowdrey.com.
+- **Your output.** Output you create with my AI skills is yours to use. You remain responsible for it under Section 5.
+
 ## 8. Rules for using the Services
 
 Don't use the Services to break the law, or to harm or deceive anyone. Don't try to disrupt, overload or gain unauthorized access to the website or anything it connects to. Don't misrepresent a modified copy of an app as my official release.
@@ -106,7 +126,10 @@ The Services rely on services and code I don't control. These include:
 - **Open-Meteo**, for weather and place search;
 - **jsDelivr**, for web code libraries;
 - **Google Fonts**, for web fonts;
-- **Apple**, for macOS, notarization and widgets.
+- **Apple**, for macOS, notarization and widgets;
+- **Amazon, Gumroad** and other stores that sell my books and products;
+- **AI tools** (such as Claude, ChatGPT and Gemini) that you use with my AI skills;
+- websites I link to, such as those of companies I work with.
 
 These services have their own terms and privacy policies. I am not responsible for them, for what they do with information they receive, or for their outages, errors or changes.
 
@@ -125,11 +148,11 @@ This includes:
 
 It applies however the claim is framed: in contract, warranty, tort (including negligence), strict liability or any other theory. It applies even if I was told such damages were possible, and even if a remedy fails of its essential purpose.
 
-BECAUSE THE SERVICES ARE FREE, MY TOTAL LIABILITY FOR ALL CLAIMS COMBINED IS LIMITED TO THE AMOUNT YOU PAID ME FOR THE SERVICES, WHICH IS ZERO (US$0). IF A COURT DECIDES THAT LIMIT CANNOT BE ENFORCED, MY TOTAL LIABILITY IS LIMITED TO THE SMALLEST AMOUNT THE APPLICABLE LAW ALLOWS.
+MY TOTAL LIABILITY FOR ALL CLAIMS COMBINED IS LIMITED TO THE AMOUNT YOU ACTUALLY PAID FOR THE SPECIFIC PRODUCT THE CLAIM RELATES TO IN THE 12 MONTHS BEFORE THE CLAIM AROSE. FOR ANYTHING FREE, INCLUDING THE APPS AND THE WEBSITE, THAT AMOUNT IS ZERO (US$0). IF A COURT DECIDES THAT LIMIT CANNOT BE ENFORCED, MY TOTAL LIABILITY IS LIMITED TO THE SMALLEST AMOUNT THE APPLICABLE LAW ALLOWS.
 
 ## 12. Release
 
-In exchange for free use of the Services, and to the fullest extent permitted by law, you release me from all claims, demands and damages, known and unknown, arising from or related to the Services.
+In exchange for access to the Services, and to the fullest extent permitted by law, you release me from all claims, demands and damages, known and unknown, arising from or related to the Services.
 
 If you are a California resident, you waive California Civil Code § 1542, which says: "A general release does not extend to claims that the creditor or releasing party does not know or suspect to exist in his or her favor at the time of executing the release and that, if known by him or her, would have materially affected his or her settlement with the debtor or released party." You also waive any similar law in any other place.
 
@@ -152,7 +175,7 @@ Some places also give consumers rights that no contract can take away. In those 
 
 ## 15. Privacy
 
-**The short version:** The apps have no accounts, no ads, no analytics and no tracking. The website gathers basic visitor statistics through its host. I don't sell or share personal information.
+**The short version:** The apps have no accounts, no ads, no analytics and no tracking. The website gathers basic visitor statistics through its host. Some stores share buyers' names and emails with me. I don't sell or share personal information.
 
 What each Service does:
 - **bradcowdrey.com:**
@@ -172,6 +195,11 @@ What each Service does:
   - The web version can use your location only if you choose "Use My Location" and your browser asks your permission.
 - **Updates:**
   - The Mac apps contact GitHub to check for and download updates.
+- **Book and product purchases:**
+  - The store you buy from handles your payment and personal details under its own privacy policy.
+  - Some stores, such as Gumroad, share your name and email address with me as the seller. That information is covered by Sections 7, 15 and 16.
+- **AI skills:**
+  - My skills run inside AI tools you choose. What you type into those tools goes to the tool's provider, not to me.
 
 Each of these services receives the technical information any connection reveals, such as your IP address, and handles it under its own privacy policy.
 
@@ -180,7 +208,7 @@ Each of these services receives the technical information any connection reveals
 - anything you send me directly;
 - where it identifies you, any personal information in either of those.
 
-I use it only to run, secure, fix and improve the Services, and to answer you. I keep it only as long as I need it for those purposes, and no longer than 36 months after it was last needed, unless the law requires me to keep it longer. I protect it with reasonable safeguards, but no system is perfectly secure.
+I use it only to run, secure, fix and improve the Services, to deliver and support what you buy, and to answer you. I keep it only as long as I need it for those purposes, and no longer than 36 months after it was last needed, unless the law requires me to keep it longer. I protect it with reasonable safeguards, but no system is perfectly secure.
 
 **No selling, no sharing, no profiling.** I do not:
 - sell personal information or share it for targeted advertising;
@@ -210,7 +238,10 @@ I will answer within the time your law sets (usually 30 to 45 days) and won't tr
 - My providers may process information in the United States and elsewhere, under the safeguards they provide, such as the EU-US Data Privacy Framework or standard contractual clauses.
 
 **California (CCPA/CPRA, CalOPPA, Shine the Light).**
-- In the last 12 months I have held two categories of information: identifiers (such as IP addresses) and internet activity (pages viewed, device type and approximate country), for the purposes above.
+- In the last 12 months I have held these categories of information, for the purposes above:
+  - identifiers, such as IP addresses, and, for some purchases, names and email addresses;
+  - commercial information, such as which product you bought;
+  - internet activity, such as pages viewed, device type and approximate country.
 - I have not sold or shared personal information, as the CCPA defines those terms.
 - I do not disclose personal information to third parties for their direct marketing.
 - You have the rights listed above, and you can use an authorized agent to make a request.

@@ -57,7 +57,8 @@ for (const d of docs) if (d.title === 'Welcome to Cowdrey' + '.md') { d.title = 
 let currentId = store.get(KEY + ':current', null);
 if (!docs.some((d) => d.id === currentId)) currentId = docs[0].id;
 S.openTabs = (S.openTabs || []).filter((id) => docs.some((d) => d.id === id));
-if (!S.openTabs.includes(currentId)) S.openTabs.push(currentId);
+// After closing every tab, the app opens with no documents, as most apps do.
+if (!S.allClosed && !S.openTabs.includes(currentId)) S.openTabs.push(currentId);
 const cur = () => docs.find((d) => d.id === currentId);
 const cmDocs = new Map();
 
@@ -894,6 +895,7 @@ function typewriterScroll() {
    ================================================================ */
 function updateOutline() {
   const el = $('#outlinePanel');
+  if (isEmpty()) { el.innerHTML = '<p class="empty-note">No document is open. Open one to see its outline here.</p>'; return; }
   if (!headings.length) { el.innerHTML = '<p class="empty-note">Headings you add to the document appear here. Start a line with <b>#</b> to make one.</p>'; return; }
   el.innerHTML = headings.map((h, i) =>
     `<button type="button" class="ol-item l${h.level}" data-i="${i}" style="padding-left:${8 + (h.level - 1) * 12}px" title="${esc(h.text)}">${esc(h.text || 'Untitled heading')}</button>`).join('');
@@ -1076,6 +1078,7 @@ titleInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key =
 
 function openDoc(id) {
   const d = docs.find((x) => x.id === id); if (!d) return;
+  if (isEmpty()) setEmpty(false);
   flushSave();
   currentId = id;
   if (!S.openTabs.includes(id)) S.openTabs.push(id);
@@ -1094,12 +1097,100 @@ function newDoc(content = '', title) {
   docs.unshift(d); markDirty(d.id); persist(); openDoc(d.id); cm.focus();
   return d;
 }
-function closeTab(id) {
-  const i = S.openTabs.indexOf(id); if (i < 0) return;
+// A file opened from disk whose edits haven't been saved back to it (the Mac app only; the web saves to the browser).
+const isUnsaved = (d) => !!(TAURI && d && d.path && d.diskContent != null && d.content !== d.diskContent);
+// In the Mac app, a document that was never saved to a file is offered a Save when its tab closes.
+const neverSaved = (d) => !!(TAURI && d && !d.path && d.content.trim() && d.content !== WELCOME);
+const closedTabs = []; // most recent last, for Reopen closed tab
+// Ask before closing a file with unsaved changes. Resolves true when it's fine to close.
+function confirmClose(id) {
+  const d = docs.find((x) => x.id === id);
+  if (!isUnsaved(d) && !neverSaved(d)) return Promise.resolve(true);
+  const file = isUnsaved(d);
+  return new Promise((resolve) => {
+    let answered = false, saving = false;
+    const done = (v) => { if (!answered) { answered = true; resolve(v); } };
+    openDialog({
+      title: file ? `Save changes to “${baseName(d.path)}”?` : `Save “${d.title}” as a file?`,
+      body: file ? '<p>Your changes will be lost if you don’t save them.</p>'
+        : '<p>It stays in the Documents list in the sidebar either way, so you can reopen it later.</p>',
+      actions: [
+        { label: 'Cancel', run: () => done(false) },
+        { label: 'Don’t save', run: () => { if (file) revertToDisk(d); done(true); } },
+        { label: file ? 'Save' : 'Save…', primary: true, run: () => { saving = true; saveDoc(d).then((ok) => done(ok), () => done(false)); } },
+      ],
+    });
+    // The close event of an earlier dialog can arrive after this one opened (Close all); only react once this one closes.
+    const onClose = () => { if (dialog.open) return; dialog.removeEventListener('close', onClose); setTimeout(() => { if (!saving) done(false); }, 0); };
+    dialog.addEventListener('close', onClose);
+  });
+}
+function revertToDisk(d) {
+  d.content = d.diskContent; d.updated = Date.now();
+  cmDocs.get(d.id)?.setValue(d.diskContent);
+  markDirty(d.id); scheduleSave();
+}
+async function closeTab(id, { force = false } = {}) {
+  if (!force && !(await confirmClose(id))) return false;
+  const i = S.openTabs.indexOf(id); if (i < 0) return true;
+  closedTabs.push(id); if (closedTabs.length > 20) closedTabs.shift();
   S.openTabs.splice(i, 1);
-  if (!S.openTabs.length) S.openTabs.push(id === currentId ? (docs.find((d) => d.id !== id) || newDocSilently()).id : currentId);
+  if (!S.openTabs.length) { flushSave(); setEmpty(true); return true; }
   if (id === currentId) openDoc(S.openTabs[Math.min(i, S.openTabs.length - 1)]);
   saveSettings(); renderTabs();
+  return true;
+}
+async function closeTabs(ids) {
+  for (const id of ids) if (!(await closeTab(id))) return false;
+  return true;
+}
+// No open documents: hide the editor and preview and offer New, Open and recent documents.
+const isEmpty = () => app.dataset.empty === 'on';
+function setEmpty(on) {
+  app.dataset.empty = on ? 'on' : 'off';
+  $('#noDocs').hidden = !on;
+  S.allClosed = on; saveSettings();
+  if (on) {
+    closeFind();
+    cm.swapDoc(CodeMirror.Doc('', MODE)); // keeps anything typed by accident away from real documents
+    cm.setOption('readOnly', 'nocursor');
+    titleInput.value = ''; titleInput.disabled = true;
+    renderTabs(); renderDocsList(); renderNoDocs(); updateOutline();
+    document.title = 'Cowdrey.MD';
+    setTimeout(() => $('#noDocs .btn.primary')?.focus(), 0);
+  } else {
+    cm.setOption('readOnly', false); titleInput.disabled = false;
+  }
+}
+function renderNoDocs() {
+  const recent = [...docs].sort((a, b) => b.updated - a.updated).slice(0, 6);
+  $('#noDocsRecent').innerHTML = recent.length ? `<div class="side-heading">Recent documents</div>` + recent.map((d) =>
+    `<button type="button" class="doc-open" data-open="${d.id}">${ic('file-text')}<span><span class="t">${esc(d.title)}</span><span class="m">${rel(d.updated)}${d.path ? ' · ' + esc(baseName(d.path)) : ''}</span></span></button>`).join('') : '';
+  refreshIcons();
+}
+$('#noDocs').addEventListener('click', (e) => {
+  const o = e.target.closest('[data-open]'); if (o) { openDoc(o.dataset.open); return; }
+  const c = e.target.closest('[data-cmd]'); if (c) runCmd(c.dataset.cmd, c);
+});
+function reopenClosedTab() {
+  while (closedTabs.length) {
+    const id = closedTabs.pop();
+    if (docs.some((d) => d.id === id)) { openDoc(id); return; }
+  }
+  toast('No recently closed tabs');
+}
+function cycleTab(step) {
+  const n = S.openTabs.length; if (n < 2) return;
+  const i = S.openTabs.indexOf(currentId);
+  openDoc(S.openTabs[(i + step + n) % n]);
+}
+function selectTab(n) { // 1-based; 9 means the last tab, as in most apps
+  const id = n === 9 ? S.openTabs[S.openTabs.length - 1] : S.openTabs[n - 1];
+  if (id && id !== currentId) openDoc(id);
+}
+function duplicateDoc(id) {
+  const d = docs.find((x) => x.id === id); if (!d) return;
+  newDoc(d.content, d.title + ' copy');
 }
 function newDocSilently() { const d = makeDoc(); docs.unshift(d); markDirty(d.id); persist(); return d; }
 function deleteDoc(id) {
@@ -1115,18 +1206,86 @@ function deleteDoc(id) {
 function renderTabs() {
   const el = $('#docTabs');
   el.setAttribute('role', 'tablist'); el.setAttribute('aria-label', 'Open documents');
-  el.innerHTML = S.openTabs.map((id) => {
-    const d = docs.find((x) => x.id === id); if (!d) return '';
-    const curTab = id === currentId;
-    return `<div class="doc-tab${curTab ? ' current' : ''}" data-id="${id}" role="tab" aria-selected="${curTab}"><button type="button" class="open" title="${esc(d.title)}"${curTab ? ' aria-current="page"' : ''}>${ic('file-text')}<span>${esc(d.title)}</span></button><button type="button" class="x" data-close="${id}" aria-label="Close ${esc(d.title)}">${ic('x')}</button></div>`;
+  const open = S.openTabs.map((id) => docs.find((x) => x.id === id)).filter(Boolean);
+  const titleCount = {};
+  for (const d of open) titleCount[d.title] = (titleCount[d.title] || 0) + 1;
+  el.innerHTML = open.map((d) => {
+    const id = d.id, curTab = id === currentId, unsaved = isUnsaved(d);
+    // Two tabs with the same name show their folder, as most editors do.
+    const folder = d.path && titleCount[d.title] > 1 ? baseName(dirName(d.path)) : '';
+    const tip = (d.path || d.title) + (unsaved ? ' (unsaved changes)' : '');
+    return `<div class="doc-tab${curTab ? ' current' : ''}${unsaved ? ' unsaved' : ''}" data-id="${id}" role="tab" aria-selected="${curTab}" draggable="true"><button type="button" class="open" title="${esc(tip)}"${curTab ? ' aria-current="page"' : ''}>${ic('file-text')}<span>${esc(d.title)}</span>${folder ? `<span class="tab-dir">${esc(folder)}</span>` : ''}</button><button type="button" class="x" data-close="${id}" aria-label="Close ${esc(d.title)}${unsaved ? ', unsaved changes' : ''}">${unsaved ? '<i class="dot" aria-hidden="true"></i>' : ''}${ic('x')}</button></div>`;
   }).join('') + `<button type="button" class="new-tab" data-cmd="newDoc" title="New document" aria-label="New document">${ic('plus')}</button>`;
   refreshIcons();
+  const curEl = el.querySelector('.doc-tab.current');
+  if (curEl) { const l = curEl.offsetLeft, r = l + curEl.offsetWidth; if (l < el.scrollLeft) el.scrollLeft = l - 8; else if (r > el.scrollLeft + el.clientWidth) el.scrollLeft = r - el.clientWidth + 8; }
 }
 $('#docTabs').addEventListener('click', (e) => {
   const x = e.target.closest('[data-close]'); if (x) { e.stopPropagation(); closeTab(x.dataset.close); return; }
   const t = e.target.closest('.doc-tab'); if (t && t.dataset.id !== currentId) openDoc(t.dataset.id);
 });
 $('#docTabs').addEventListener('auxclick', (e) => { const t = e.target.closest('.doc-tab'); if (t && e.button === 1) closeTab(t.dataset.id); });
+// Right-click (or Shift+F10 / the context-menu key) on a tab: the usual tab actions.
+function tabMenu(tab) {
+  const id = tab.dataset.id, d = docs.find((x) => x.id === id); if (!d) return;
+  const i = S.openTabs.indexOf(id);
+  const item = (a, icon, label, off) => `<button type="button" class="mi" data-ta="${a}"${off ? ' disabled' : ''}>${ic(icon)}<span>${label}</span><span class="k"></span></button>`;
+  const html = item('close', 'x', 'Close tab') + item('others', 'copy-x', 'Close other tabs', S.openTabs.length < 2)
+    + item('right', 'arrow-right-to-line', 'Close tabs to the right', i === S.openTabs.length - 1) + item('all', 'circle-x', 'Close all tabs')
+    + '<div class="msep"></div>' + item('rename', 'pencil-line', 'Rename') + item('dup', 'files', 'Duplicate')
+    + (TAURI && d.path ? '<div class="msep"></div>' + item('reveal', 'folder-search', 'Show in Finder') + item('path', 'clipboard-copy', 'Copy file path') : '');
+  openPopover(tab.querySelector('.open'), html, (e) => {
+    const b = e.target.closest('[data-ta]'); if (!b || b.disabled) return;
+    closePopover();
+    const a = b.dataset.ta;
+    if (a === 'close') closeTab(id);
+    if (a === 'others') closeTabs(S.openTabs.filter((x) => x !== id));
+    if (a === 'right') closeTabs(S.openTabs.slice(i + 1));
+    if (a === 'all') closeTabs([...S.openTabs]);
+    if (a === 'rename') { openDoc(id); runCmd('renameDoc'); }
+    if (a === 'dup') duplicateDoc(id);
+    if (a === 'reveal') TAURI.opener.revealItemInDir(d.path).catch((err) => toast(`Could not show the file: ${err}`));
+    if (a === 'path') navigator.clipboard.writeText(d.path).then(() => toast('File path copied'), () => toast(d.path));
+  }, { label: `${d.title} tab` });
+}
+$('#docTabs').addEventListener('contextmenu', (e) => { const t = e.target.closest('.doc-tab'); if (!t) return; e.preventDefault(); tabMenu(t); });
+$('#docTabs').addEventListener('keydown', (e) => {
+  const t = e.target.closest('.doc-tab'); if (!t) return;
+  if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) { e.preventDefault(); tabMenu(t); return; }
+  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+    const tabs = $$('.doc-tab .open', $('#docTabs')); const k = tabs.indexOf(t.querySelector('.open'));
+    const next = tabs[clamp(k + (e.key === 'ArrowRight' ? 1 : -1), 0, tabs.length - 1)];
+    if (next) { e.preventDefault(); next.focus(); }
+  }
+});
+// A vertical mouse wheel scrolls a crowded tab bar sideways.
+$('#docTabs').addEventListener('wheel', (e) => {
+  const el = $('#docTabs');
+  if (el.scrollWidth <= el.clientWidth || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+  el.scrollLeft += e.deltaY; e.preventDefault();
+}, { passive: false });
+// Drag a tab to reorder.
+let dragTab = null;
+$('#docTabs').addEventListener('dragstart', (e) => {
+  const t = e.target.closest && e.target.closest('.doc-tab'); if (!t) return;
+  dragTab = t; t.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('application/x-cowdrey-tab', t.dataset.id);
+});
+$('#docTabs').addEventListener('dragover', (e) => {
+  if (!dragTab) return;
+  e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+  const t = e.target.closest('.doc-tab'); if (!t || t === dragTab) return;
+  const r = t.getBoundingClientRect();
+  t.parentNode.insertBefore(dragTab, e.clientX > r.left + r.width / 2 ? t.nextSibling : t); // move the tab itself while dragging
+});
+$('#docTabs').addEventListener('drop', (e) => { if (dragTab) { e.preventDefault(); e.stopPropagation(); } });
+// The drag ends here whether it was dropped on the bar, elsewhere, or cancelled with Esc.
+document.addEventListener('dragend', () => {
+  if (!dragTab) return;
+  dragTab = null;
+  S.openTabs = $$('.doc-tab', $('#docTabs')).map((x) => x.dataset.id);
+  saveSettings(); renderTabs();
+});
 
 const rel = (t) => {
   const s = (Date.now() - t) / 1000;
@@ -1177,6 +1336,7 @@ async function openFiles(files) {
     const text = await readTextFile(f);
     last = makeDoc(text, f.name.replace(/\.(md|markdown|mdown|mkdn?|txt)$/i, ''), false);
     docs.unshift(last); markDirty(last.id); opened++;
+    if (!S.openTabs.includes(last.id)) S.openTabs.push(last.id); // each file gets its own tab
   }
   if (last) { persist(); openDoc(last.id); toast(opened > 1 ? `Opened ${opened} files` : `Opened ${last.title}`); }
 }
@@ -1402,6 +1562,14 @@ const inArtifact = () => !!(window.claude && typeof window.claude.use === 'funct
 cmd('newDoc', { label: 'New document', icon: 'file-plus', key: TAURI ? 'Mod-n' : 'Mod-Alt-n', global: true, run: () => newDoc() });
 cmd('openFile', { label: 'Open…', icon: 'folder-open', key: 'Mod-o', global: true, run: () => TAURI ? openNative() : $('#fileInput').click() });
 cmd('pasteDoc', { label: 'Paste as new document', icon: 'clipboard-paste', run: pasteAsNew });
+cmd('openRecent', { label: 'Open recent…', icon: 'history', hidden: () => !TAURI, run: showRecent });
+cmd('closeTab', { label: 'Close tab', icon: 'x', key: TAURI ? 'Mod-w' : undefined, global: true, run: () => closeTab(currentId) });
+cmd('closeOtherTabs', { label: 'Close other tabs', icon: 'copy-x', run: () => closeTabs(S.openTabs.filter((x) => x !== currentId)) });
+cmd('closeAllTabs', { label: 'Close all tabs', icon: 'circle-x', run: () => closeTabs([...S.openTabs]) });
+cmd('reopenTab', { label: 'Reopen closed tab', icon: 'rotate-ccw', key: TAURI ? 'Mod-Shift-t' : 'Mod-Alt-Shift-t', global: true, run: reopenClosedTab });
+cmd('nextTab', { label: 'Next tab', icon: 'chevron-right', key: TAURI ? 'Mod-Shift-]' : 'Mod-Alt-]', global: true, run: () => cycleTab(1) });
+cmd('prevTab', { label: 'Previous tab', icon: 'chevron-left', key: TAURI ? 'Mod-Shift-[' : 'Mod-Alt-[', global: true, run: () => cycleTab(-1) });
+cmd('saveAll', { label: 'Save all', icon: 'save-all', key: 'Mod-Alt-Shift-s', global: true, hidden: () => !TAURI, run: saveAll });
 cmd('saveNow', { label: 'Save', icon: 'save', key: 'Mod-s', global: true, run: () => { markDirty(); if (TAURI) return saveToDisk(false); if (persist()) toast('Saved to this browser'); } });
 cmd('saveAs', { label: 'Save as…', icon: 'save', key: 'Mod-Shift-s', global: true, hidden: () => !TAURI, run: () => saveToDisk(true) });
 cmd('saveMd', { label: 'Download Markdown (.md)', icon: 'file-down', run: () => saveFile(slugFile(cur().title) + '.md', cm.getValue(), 'text/markdown') });
@@ -1502,7 +1670,9 @@ cmd('wordCount', { label: 'Word count', icon: 'file-digit', key: 'Mod-Alt-w', gl
 function rebuild() { saveSettings(); buildMd(); render(); refreshState(); }
 // read-only hook for the automated tests: list and run commands like a menu click would
 window.__cowdreyTest = Object.freeze({ commands: () => Object.keys(C), label: (id) => C[id] && C[id].label, hidden: (id) => !!(C[id] && C[id].hidden && C[id].hidden()), run: (id) => runCmd(id), settings: () => JSON.parse(JSON.stringify(S)) });
-function runCmd(id, anchor) { const c = C[id]; if (!c) return; closePopover(); c.run(anchor); refreshState(); }
+// With no document open, only commands that don't act on a document run.
+const WORKS_WITHOUT_DOC = new Set(['newDoc', 'openFile', 'openRecent', 'pasteDoc', 'reopenTab', 'saveAll', 'guide', 'shortcuts', 'legal', 'about', 'checkUpdates', 'toggleOutline', 'toggleRail', 'fullscreen']);
+function runCmd(id, anchor) { const c = C[id]; if (!c) return; closePopover(); if (isEmpty() && !WORKS_WITHOUT_DOC.has(id)) return; c.run(anchor); refreshState(); }
 
 /* key handling */
 const KEYMAP = {};
@@ -1518,6 +1688,9 @@ const codeKey = (e) => {
 document.addEventListener('keydown', (e) => {
   const mod = isMac ? e.metaKey : e.ctrlKey;
   if (!isMac && e.getModifierState && e.getModifierState('AltGraph')) return; // AltGr types characters, it is not a shortcut
+  // Ctrl+Tab / Ctrl+Shift+Tab cycle tabs, and in the Mac app Cmd+1…9 pick one (browsers keep these for their own tabs).
+  if (e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Tab') { e.preventDefault(); e.stopPropagation(); cycleTab(e.shiftKey ? -1 : 1); return; }
+  if (TAURI && mod && !e.altKey && !e.shiftKey && /^Digit[1-9]$/.test(e.code || '')) { e.preventDefault(); e.stopPropagation(); selectTab(+e.code.slice(5)); return; }
   if (!mod) { if (e.key === 'Escape' && !popover.hidden) { const a = popAnchor; closePopover(); a && a.focus(); } return; }
   const combo = ['mod', e.altKey && 'alt', e.shiftKey && 'shift', codeKey(e)].filter(Boolean).join('-');
   const id = KEYMAP[combo]; if (!id) return;
@@ -1535,9 +1708,9 @@ document.addEventListener('keydown', (e) => {
    Menubar (Docs)
    ================================================================ */
 const MENUS = [
-  ['File', ['newDoc', 'openFile', 'pasteDoc', '-', 'saveNow', 'saveAs', 'renameDoc', '-', 'saveMd', 'exportHtml', 'copyRich', 'copyMd', 'copyHtml', 'print', '-', 'deleteDoc']],
+  ['File', ['newDoc', 'openFile', 'openRecent', 'pasteDoc', '-', 'saveNow', 'saveAs', 'saveAll', 'renameDoc', '-', 'closeTab', 'closeOtherTabs', 'closeAllTabs', 'reopenTab', '-', 'saveMd', 'exportHtml', 'copyRich', 'copyMd', 'copyHtml', 'print', '-', 'deleteDoc']],
   ['Edit', ['undo', 'redo', '-', 'selectAll', 'find', 'replace', '-', 'formatTable', 'clearFormat']],
-  ['View', ['view_editor', 'view_split', 'view_preview', '-', 'toggleOutline', 'toggleRail', 'toggleRuler', 'toggleGuides', 'toggleLineNumbers', 'toggleWrap', '-', 'toggleFocus', 'toggleTypewriter', 'toggleSync', '-', 'zoomIn', 'zoomOut', 'zoomFit', 'zoom100', 'fullscreen']],
+  ['View', ['view_editor', 'view_split', 'view_preview', '-', 'toggleOutline', 'toggleRail', 'toggleRuler', 'toggleGuides', 'toggleLineNumbers', 'toggleWrap', '-', 'toggleFocus', 'toggleTypewriter', 'toggleSync', '-', 'zoomIn', 'zoomOut', 'zoomFit', 'zoom100', 'fullscreen', '-', 'nextTab', 'prevTab']],
   ['Insert', ['image', 'imageUrl', 'table', 'link', '-', 'codeBlock', 'math', 'diagram', 'callout', 'details', '-', 'footnote', 'deflist', 'hr', 'toc', 'date', 'frontMatter']],
   ['Format', ['bold', 'italic', 'underline', 'strike', 'highlight', 'code', 'sup', 'sub', '-', 'normal', 'h1', 'h2', 'h3', 'h4', '-', 'ul', 'ol', 'task', 'quote', 'indent', 'outdent', '-', 'clearFormat']],
   ['Tools', ['wordCount', 'formatTable', '-', 'typographer', 'breaks', 'toggleMath', 'toggleDiagrams']],
@@ -2020,6 +2193,9 @@ cm.on('change', () => {
   if (applyingRemote) { d.content = cm.getValue(); scheduleRender(); return; }
   d.content = cm.getValue(); d.updated = Date.now();
   markDirty(d.id); setSaveState('saving'); scheduleSave(); scheduleRender();
+  // show or clear the tab's unsaved-changes dot as soon as it changes
+  const tab = document.querySelector(`.doc-tab[data-id="${d.id}"]`);
+  if (tab && tab.classList.contains('unsaved') !== isUnsaved(d)) renderTabs();
 });
 cm.on('blur', () => { tabEscape = false; });
 cm.on('cursorActivity', () => {
@@ -2123,12 +2299,55 @@ async function checkForUpdates(manual) {
   });
 }
 const stripExt = (n) => n.replace(/\.(md|markdown|mdown|mkdn?|txt)$/i, '');
+// Recently opened or saved files (Mac app), newest first.
+function rememberRecent(path) {
+  const list = (store.get(KEY + ':recent', []) || []).filter((p) => p !== path);
+  list.unshift(path); store.set(KEY + ':recent', list.slice(0, 12));
+}
+function showRecent(anchor) {
+  const list = store.get(KEY + ':recent', []) || [];
+  if (!list.length) { toast('No recent files yet'); return; }
+  openDialog({
+    title: 'Open recent',
+    body: `<div class="recent-list">${list.map((p, i) => `<button type="button" class="recent" data-r="${i}">${ic('file-text')}<span><b>${esc(stripExt(baseName(p)))}</b><small>${esc(dirName(p))}</small></span></button>`).join('')}</div>`,
+    actions: [{ label: 'Clear list', run: () => { store.set(KEY + ':recent', []); } }, { label: 'Close', primary: true }],
+    onOpen: (dlg) => {
+      $('.recent-list', dlg).addEventListener('click', (e) => {
+        const b = e.target.closest('[data-r]'); if (!b) return;
+        closeDialog();
+        const path = list[+b.dataset.r];
+        TAURI.core.invoke('read_text_file', { path }).then((f) => openPathsAsDocs([f])).catch(() => {
+          store.set(KEY + ':recent', list.filter((p) => p !== path));
+          toast(`${baseName(path)} isn't there any more`);
+        });
+      });
+      $('.recent', dlg)?.focus();
+    },
+  });
+}
+// Save one document back to its file, or ask where to save it. Resolves true when saved.
+async function saveDoc(d) {
+  if (d.id !== currentId) openDoc(d.id);
+  await saveToDisk(false);
+  return !isUnsaved(d) && !!d.path;
+}
+async function saveAll() {
+  const unsaved = docs.filter(isUnsaved);
+  if (!unsaved.length) { toast('All files are saved'); return true; }
+  let ok = true;
+  for (const d of unsaved) {
+    try { await writeToPath(d, d.path, d.content); } catch (e) { ok = false; toast(`Could not save ${baseName(d.path)}: ${e}`); }
+  }
+  renderTabs();
+  if (ok) toast(unsaved.length === 1 ? `Saved ${baseName(unsaved[0].path)}` : `Saved ${unsaved.length} files`);
+  return ok;
+}
 function openPathsAsDocs(files) {
   let last;
   for (const f of files) {
     const existing = docs.find((d) => d.path === f.path);
     if (existing) {
-      last = existing;
+      last = existing; rememberRecent(f.path);
       if (f.content !== existing.diskContent) {
         if (existing.content === existing.diskContent) {
           // no unsaved edits here, so take the newer copy from disk
@@ -2143,9 +2362,14 @@ function openPathsAsDocs(files) {
     }
     last = makeDoc(f.content, stripExt(f.name), false);
     last.path = f.path; last.diskContent = f.content;
+    rememberRecent(f.path);
     docs.unshift(last); markDirty(last.id);
   }
-  if (last) { persist(); openDoc(last.id); }
+  if (last) {
+    // Every file opened gets a tab, not just the last one; the last is shown.
+    for (const f of files) { const d = docs.find((x) => x.path === f.path); if (d && !S.openTabs.includes(d.id)) S.openTabs.push(d.id); }
+    persist(); openDoc(last.id);
+  }
 }
 async function openNative() {
   try {
@@ -2160,6 +2384,7 @@ async function openNative() {
 async function writeToPath(d, path, contents) {
   await TAURI.core.invoke('write_text_file', { path, contents });
   d.path = path; d.diskContent = contents; markDirty(d.id); persist();
+  rememberRecent(path); renderTabs();
   toast(`Saved ${baseName(path)}`);
 }
 async function saveToDisk(saveAs) {
@@ -2212,8 +2437,27 @@ if (TAURI) {
     if (inField && !c.global) { updateNativeMenu(); return; } // a shortcut typed in a text field must not edit the document
     runCmd(e.payload); updateNativeMenu();
   });
+  let quitAsked = false;
   TAURI.event.listen('flush-and-quit', () => {
-    try { flushSave(); } finally { TAURI.core.invoke('quit_app').catch(() => {}); }
+    const quit = () => { try { flushSave(); } finally { TAURI.core.invoke('quit_app').catch(() => {}); } };
+    const unsaved = docs.filter(isUnsaved);
+    if (!unsaved.length) return quit();
+    TAURI.core.invoke('hold_quit', { hold: true }).catch(() => {}); // keep the app open while we ask
+    flushSave();
+    if (quitAsked) return; quitAsked = true;
+    const one = unsaved.length === 1;
+    openDialog({
+      title: one ? `Save changes to “${baseName(unsaved[0].path)}” before quitting?` : `You have unsaved changes in ${unsaved.length} files`,
+      body: (one ? '' : `<ul class="unsaved-list">${unsaved.map((d) => `<li>${esc(baseName(d.path))}</li>`).join('')}</ul>`) + '<p>Your changes will be lost if you don’t save them.</p>',
+      actions: [
+        { label: 'Cancel' },
+        { label: 'Don’t save', run: () => { unsaved.forEach(revertToDisk); quit(); } },
+        { label: one ? 'Save' : 'Save all', primary: true, run: () => { saveAll().then((ok) => { if (ok) quit(); }); } },
+      ],
+    });
+    // However the prompt closes, quitting is allowed again; a choice above that quits does so itself.
+    const onClose = () => { if (dialog.open) return; dialog.removeEventListener('close', onClose); quitAsked = false; TAURI.core.invoke('hold_quit', { hold: false }).catch(() => {}); };
+    dialog.addEventListener('close', onClose);
   });
   document.addEventListener('click', (e) => {
     const a = e.target.closest && e.target.closest('a[href]');
@@ -2247,7 +2491,7 @@ app.dataset.view = S.view;
 renderRibbon();
 applyTheme(); applyEditorPrefs(); applyPagePrefs();
 setSideTab(S.sideTab);
-openDoc(currentId);
+if (S.allClosed && !S.openTabs.length) setEmpty(true); else openDoc(currentId);
 refreshState(); refreshIcons();
 if (window.innerWidth > 760) cm.focus();
 if (firstRun) persist(); else setSaveState('saved');

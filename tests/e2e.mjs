@@ -55,6 +55,7 @@ const cmv = (p) => p.evaluate(() => document.querySelector('.CodeMirror').CodeMi
 const setDoc = (p, text) => p.evaluate((t) => { const cm = document.querySelector('.CodeMirror').CodeMirror; cm.setValue(t); cm.focus(); }, text);
 const sel = (p, a, b) => p.evaluate(([a, b]) => { const cm = document.querySelector('.CodeMirror').CodeMirror; cm.setSelection(a, b || a); cm.focus(); }, [a, b]);
 const settle = (p, ms = 250) => p.waitForTimeout(ms);
+const isMacTest = process.platform === 'darwin'; // the app uses Cmd on a Mac and Ctrl elsewhere
 const menu = async (p, id) => {
   for (let i = 0; i < 7; i++) {
     await p.click(`[data-menu="${i}"]`);
@@ -616,6 +617,120 @@ await test('Mac menu bar mirrors the in-app menus, shortcuts and check marks', a
 });
 
 
+await test('Mac app: files as tabs, unsaved dot, save prompts on close and quit, Save all, Open recent', async () => {
+  const Q = await newPage({ init: () => {
+    window.__menus = []; window.__handlers = {}; window.__calls = [];
+    window.__fs = { '/docs/a.md': '# A\n\nfrom disk', '/docs/b.md': '# B\n\nfrom disk', '/other/a.md': '# Other A' };
+    window.__pending = [];
+    localStorage.setItem('cowdrey.md:updateChecked', String(Date.now()));
+    const file = (path) => ({ path, name: path.split('/').pop(), content: window.__fs[path] });
+    window.__TAURI__ = {
+      core: { invoke: async (cmd, args) => {
+        window.__calls.push([cmd, args]);
+        if (cmd === 'set_menu') { window.__menus.push(args.menus); return null; }
+        if (cmd === 'take_opened_files') { const f = window.__pending.map(file); window.__pending = []; return f; }
+        if (cmd === 'read_text_file') { if (!(args.path in window.__fs)) throw new Error('missing'); return file(args.path); }
+        if (cmd === 'write_text_file') { window.__fs[args.path] = args.contents; return null; }
+        return null;
+      } },
+      app: { getVersion: async () => '1.0.11' },
+      dialog: { open: async () => null, save: async () => '/docs/new.md' },
+      opener: { openUrl: async () => {}, revealItemInDir: async (p) => { window.__calls.push(['reveal', p]); } },
+      event: { listen: async (name, fn) => { window.__handlers[name] = fn; } },
+    };
+  } });
+  await settle(Q, 400);
+  const openFiles = async (...paths) => { await Q.evaluate((p) => { window.__pending.push(...p); window.__handlers['open-files'](); }, paths); await settle(Q, 400); };
+  const tabs = () => Q.$$eval('.doc-tab', (els) => els.map((e) => e.querySelector('.open span').textContent + (e.classList.contains('unsaved') ? '*' : '') + (e.querySelector('.tab-dir') ? '@' + e.querySelector('.tab-dir').textContent : '')));
+  const calls = (name) => Q.evaluate((n) => window.__calls.filter((c) => c[0] === n), name);
+  await openFiles('/docs/a.md', '/docs/b.md', '/other/a.md');
+  const t1 = await tabs();
+  ok(t1.includes('a@docs') && t1.includes('a@other') && t1.includes('b'), 'three files as tabs, same names show their folder: ' + t1.join(', '));
+  // the Mac menu has the tab items with the usual shortcuts, and no shortcut is used twice
+  const spec = await Q.evaluate(() => window.__menus[window.__menus.length - 1]);
+  const find = (label) => spec.flatMap((m) => m.items).find((x) => x.label === label);
+  eq(find('Close tab').accel, 'CmdOrCtrl+W'); eq(find('Reopen closed tab').accel, 'CmdOrCtrl+Shift+T');
+  eq(find('Next tab').accel, 'CmdOrCtrl+Shift+BracketRight'); eq(find('Save all').accel, 'CmdOrCtrl+Alt+Shift+S');
+  ok(find('Open recent…'), 'Open recent in File');
+  const accels = spec.flatMap((m) => m.items).map((x) => x.accel).filter(Boolean);
+  eq(accels.length, new Set(accels).size, 'no duplicate shortcuts');
+  // edit b.md: its tab shows the unsaved dot
+  await Q.click('.doc-tab:has(.open span:text-is("b"))'); await settle(Q, 200);
+  await setDoc(Q, '# B\n\nedited'); await settle(Q, 300);
+  ok((await tabs()).includes('b*'), 'unsaved dot on b');
+  // closing it asks; Cancel keeps it open
+  await Q.click('.doc-tab.unsaved .x'); await settle(Q, 200);
+  ok((await Q.textContent('#dialog')).includes('Save changes to “b.md”?'), 'asked to save');
+  await Q.click('#dialog [data-a="0"]'); await settle(Q, 200);
+  ok((await tabs()).includes('b*'), 'Cancel keeps the tab');
+  // Save writes the file and closes the tab
+  await Q.click('.doc-tab.unsaved .x'); await settle(Q, 200);
+  await Q.click('#dialog [data-a="2"]'); await settle(Q, 500);
+  eq(await Q.evaluate(() => window.__fs['/docs/b.md']), '# B\n\nedited');
+  ok(!(await tabs()).some((x) => x.startsWith('b')), 'saved and closed');
+  // Don't save throws the edit away
+  await Q.click('.doc-tab:has(.tab-dir:text-is("other"))'); await settle(Q, 200);
+  await setDoc(Q, '# Other A\n\nthrow away'); await settle(Q, 300);
+  await Q.keyboard.press('Control+w'); await settle(Q, 200);
+  ok((await Q.textContent('#dialog')).includes('Save changes'), 'Ctrl/Cmd+W asks too');
+  await Q.click('#dialog [data-a="1"]'); await settle(Q, 300);
+  eq(await Q.evaluate(() => window.__fs['/other/a.md']), '# Other A', 'file untouched');
+  const kept = await Q.evaluate(() => JSON.parse(localStorage.getItem('cowdrey.md:index')).find((m) => m.path === '/other/a.md'));
+  eq(await Q.evaluate((id) => JSON.parse(localStorage.getItem('cowdrey.md:doc:' + id)), kept.id), '# Other A', 'edit discarded');
+  // a never-saved document asks whether to save it as a file
+  await Q.evaluate(() => window.__handlers['menu-command']({ payload: 'newDoc' })); await settle(Q, 300);
+  await setDoc(Q, '# Fresh idea'); await settle(Q, 400);
+  await Q.click('.doc-tab.current .x'); await settle(Q, 200);
+  ok((await Q.textContent('#dialog')).includes('as a file?'), 'asked to save the new document');
+  await Q.click('#dialog [data-a="2"]'); await settle(Q, 500);
+  eq(await Q.evaluate(() => window.__fs['/docs/new.md']), '# Fresh idea', 'Save… wrote it via Save as');
+  // Save all saves every edited file
+  await openFiles('/docs/a.md', '/docs/b.md');
+  await Q.click('.doc-tab:has(.open span:text-is("a"))'); await settle(Q, 200);
+  await setDoc(Q, '# A\n\nall 1'); await settle(Q, 300);
+  await Q.click('.doc-tab:has(.open span:text-is("b"))'); await settle(Q, 200);
+  await setDoc(Q, '# B\n\nall 2'); await settle(Q, 300);
+  await Q.evaluate(() => window.__handlers['menu-command']({ payload: 'saveAll' })); await settle(Q, 500);
+  eq(await Q.evaluate(() => [window.__fs['/docs/a.md'], window.__fs['/docs/b.md']]), ['# A\n\nall 1', '# B\n\nall 2']);
+  ok(!(await tabs()).some((x) => x.includes('*')), 'no unsaved dots after Save all');
+  // quitting with an unsaved file holds the quit and asks; Save saves, then quits
+  await setDoc(Q, '# B\n\nat quit'); await settle(Q, 300);
+  await Q.evaluate(() => window.__handlers['flush-and-quit']()); await settle(Q, 300);
+  eq((await calls('hold_quit')).at(-1)[1], { hold: true }, 'quit held');
+  ok((await Q.textContent('#dialog')).includes('before quitting'), 'asked before quitting');
+  await Q.click('#dialog [data-a="2"]'); await settle(Q, 500);
+  eq(await Q.evaluate(() => window.__fs['/docs/b.md']), '# B\n\nat quit');
+  ok((await calls('quit_app')).length === 1, 'quit after saving');
+  // quitting with nothing unsaved just quits
+  await Q.evaluate(() => window.__handlers['flush-and-quit']()); await settle(Q, 200);
+  eq((await calls('quit_app')).length, 2);
+  // Escape on the quit prompt cancels and lets the app quit later
+  await setDoc(Q, '# B\n\nagain'); await settle(Q, 300);
+  await Q.evaluate(() => window.__handlers['flush-and-quit']()); await settle(Q, 300);
+  await Q.keyboard.press('Escape'); await settle(Q, 200);
+  eq((await calls('hold_quit')).at(-1)[1], { hold: false }, 'hold released');
+  eq((await calls('quit_app')).length, 2, 'did not quit');
+  // Close all with two unsaved files asks about each in turn
+  await openFiles('/docs/a.md');
+  await Q.click('.doc-tab:has(.open span:text-is("a"))'); await settle(Q, 200); await setDoc(Q, '# A\n\nca1'); await settle(Q, 300);
+  await Q.click('.doc-tab:has(.open span:text-is("b"))'); await settle(Q, 200); await setDoc(Q, '# B\n\ncb1'); await settle(Q, 300);
+  await Q.evaluate(() => window.__handlers['menu-command']({ payload: 'closeAllTabs' })); await settle(Q, 300);
+  for (let k = 0; k < 6 && await Q.$('#dialog[open]'); k++) { await Q.click('#dialog [data-a="1"]'); await settle(Q, 300); }
+  eq(await Q.$$eval('.doc-tab', (els) => els.length), 0, 'all tabs closed after answering each prompt');
+  ok(await Q.$eval('#noDocs', (e) => !e.hidden), 'empty state');
+  await Q.evaluate(() => window.__handlers['menu-command']({ payload: 'reopenTab' })); await settle(Q, 300);
+  // Open recent lists the files, newest first
+  await Q.evaluate(() => window.__handlers['menu-command']({ payload: 'openRecent' })); await settle(Q, 200);
+  const recent = await Q.$$eval('#dialog .recent b', (els) => els.map((e) => e.textContent));
+  ok(recent.includes('a') && recent.includes('b') && recent.includes('new'), 'recent files: ' + recent.join(', '));
+  await Q.keyboard.press('Escape');
+  // Show in Finder from the tab menu
+  await Q.click('.doc-tab.current', { button: 'right' }); await settle(Q, 150);
+  await Q.click('#popover [data-ta="reveal"]'); await settle(Q, 200);
+  ok((await calls('reveal')).length === 1, 'revealed in Finder');
+  eq(Q.errors, [], 'page errors'); await Q.ctx.close();
+});
+
 await test('sidebar collapses to an icon strip, expands, resizes and remembers', async () => {
   const w = () => P.evaluate(() => Math.round(document.querySelector('#sidebar').getBoundingClientRect().width));
   eq(await w(), 248, 'default width');
@@ -685,6 +800,110 @@ await test('first visit asks to agree to the terms once; Help links to them', as
   await T.click('[data-menu="6"]');
   ok(await T.$('#popover [data-cmd="legal"]'), 'Help → Terms & Privacy'); await T.keyboard.press('Escape');
   await T.ctx.close();
+});
+await test('tabs sit above both panes, not inside the editor', async () => {
+  const T = await newPage();
+  ok(await T.$eval('#docTabs', (el) => el.parentElement.id === 'docArea'), 'tab bar is in the document area');
+  const tb = await T.$eval('#docTabs', (el) => el.getBoundingClientRect().toJSON());
+  const ed = await T.$eval('#editorPane', (el) => el.getBoundingClientRect().toJSON());
+  const pv = await T.$eval('#previewPane', (el) => el.getBoundingClientRect().toJSON());
+  ok(tb.bottom <= ed.top + 1 && tb.bottom <= pv.top + 1, 'above editor and preview');
+  ok(tb.left <= ed.left + 1 && tb.right >= pv.right - 1, 'spans both panes');
+  await T.ctx.close();
+});
+await test('several documents open as tabs; next, previous and reopen work', async () => {
+  const T = await newPage();
+  for (const n of ['Alpha', 'Beta', 'Gamma']) { await T.evaluate(() => document.querySelector('.new-tab').click()); await settle(T, 150); await setDoc(T, `# ${n}\n\ntext`); await settle(T, 500); }
+  const titles = async () => T.$$eval('.doc-tab .open span:first-of-type', (els) => els.map((e) => e.textContent));
+  const t0 = await titles();
+  ok(['Alpha', 'Beta', 'Gamma'].every((n) => t0.includes(n)), 'three tabs: ' + t0.join(', '));
+  const curTitle = () => T.$eval('.doc-tab.current .open span', (e) => e.textContent);
+  eq(await curTitle(), 'Gamma');
+  await T.keyboard.press(isMacTest ? 'Meta+Alt+BracketLeft' : 'Control+Alt+BracketLeft'); await settle(T, 200);
+  eq(await curTitle(), 'Beta');
+  await T.keyboard.press(isMacTest ? 'Meta+Alt+BracketRight' : 'Control+Alt+BracketRight'); await settle(T, 200);
+  eq(await curTitle(), 'Gamma');
+  await T.keyboard.press('Control+Tab'); await settle(T, 200);
+  ok((await curTitle()) !== 'Gamma', 'Ctrl+Tab moves on');
+  // close Beta with its ×, then reopen it
+  await T.click('.doc-tab:has(.open span:text-is("Beta")) .x'); await settle(T, 200);
+  ok(!(await titles()).includes('Beta'), 'Beta closed');
+  await T.keyboard.press(isMacTest ? 'Meta+Alt+Shift+KeyT' : 'Control+Alt+Shift+KeyT'); await settle(T, 300);
+  eq(await curTitle(), 'Beta');
+  await T.ctx.close();
+});
+await test('choosing several files in Open opens each one in its own tab', async () => {
+  const T = await newPage();
+  const before = await T.$$eval('.doc-tab', (els) => els.length);
+  await T.setInputFiles('#fileInput', [1, 2, 3].map((n) => ({ name: `note${n}.md`, mimeType: 'text/markdown', buffer: Buffer.from(`# Note ${n}\n`) })));
+  await settle(T, 600);
+  const titles = await T.$$eval('.doc-tab .open span:first-of-type', (els) => els.map((e) => e.textContent));
+  eq(titles.length, before + 3, 'three new tabs: ' + titles.join(', '));
+  ok(['note1', 'note2', 'note3'].every((n) => titles.includes(n)), 'each file has a tab');
+  eq(await T.$eval('.doc-tab.current .open span', (e) => e.textContent), 'note3');
+  await T.ctx.close();
+});
+await test('right-click a tab: close others, close to the right, duplicate', async () => {
+  const T = await newPage();
+  for (const n of ['One', 'Two', 'Three']) { await T.evaluate(() => document.querySelector('.new-tab').click()); await settle(T, 150); await setDoc(T, `# ${n}`); await settle(T, 500); }
+  const titles = async () => T.$$eval('.doc-tab .open span:first-of-type', (els) => els.map((e) => e.textContent));
+  await T.click('.doc-tab:has(.open span:text-is("Two"))', { button: 'right' }); await settle(T, 150);
+  ok(await T.$('#popover [data-ta="others"]'), 'menu opened');
+  await T.click('#popover [data-ta="dup"]'); await settle(T, 300);
+  ok((await titles()).includes('Two copy'), 'duplicated');
+  await T.click('.doc-tab:has(.open span:text-is("Two"))', { button: 'right' }); await settle(T, 150);
+  await T.click('#popover [data-ta="others"]'); await settle(T, 300);
+  eq(await titles(), ['Two']);
+  ok(await T.$('.doc-tab.current'), 'one tab left and selected');
+  await T.ctx.close();
+});
+await test('drag a tab to reorder it, and the order is kept after reload', async () => {
+  const T = await newPage();
+  for (const n of ['Left', 'Right']) { await T.evaluate(() => document.querySelector('.new-tab').click()); await settle(T, 150); await setDoc(T, `# ${n}`); await settle(T, 500); }
+  const titles = async () => T.$$eval('.doc-tab .open span:first-of-type', (els) => els.map((e) => e.textContent));
+  const before = await titles();
+  const from = before.indexOf('Right');
+  const src = `.doc-tab:nth-child(${from + 1})`, dst = '.doc-tab:nth-child(1)';
+  await T.dragAndDrop(src, dst, { targetPosition: { x: 4, y: 10 } }); await settle(T, 300);
+  eq((await titles())[0], 'Right');
+  await T.reload(); await settle(T, 800);
+  eq((await titles())[0], 'Right');
+  await T.ctx.close();
+});
+await test('closing every tab shows "No documents open", and it stays that way after reload', async () => {
+  const T = await newPage();
+  await T.evaluate(() => document.querySelector('.new-tab').click()); await settle(T, 150); await setDoc(T, '# Keep me'); await settle(T, 500);
+  while (await T.$('.doc-tab .x')) { await T.click('.doc-tab .x'); await settle(T, 150); }
+  ok(await T.$eval('#noDocs', (e) => !e.hidden), 'empty state shown');
+  ok(await T.$eval('#panes', (e) => getComputedStyle(e).display === 'none'), 'editor and preview hidden');
+  eq(await T.$$eval('.doc-tab', (els) => els.length), 0);
+  ok((await T.textContent('#noDocsRecent')).includes('Keep me'), 'recent documents listed');
+  ok((await T.textContent('#outlinePanel')).includes('No document is open'), 'outline cleared');
+  ok(await T.$eval('#sbWords', (e) => getComputedStyle(e).visibility === 'hidden'), 'document stats hidden');
+  await T.keyboard.press('Control+b'); await T.keyboard.type('stray'); await settle(T, 300);
+  const stored = await T.evaluate(() => JSON.parse(localStorage.getItem('cowdrey.md:index')).map((m) => JSON.parse(localStorage.getItem('cowdrey.md:doc:' + m.id))));
+  ok(stored.every((c) => !c.includes('stray')), 'typing with nothing open changes no document');
+  await T.reload(); await settle(T, 800);
+  ok(await T.$eval('#noDocs', (e) => !e.hidden), 'still empty after reload');
+  await T.click('#noDocsRecent [data-open]'); await settle(T, 400);
+  ok(await T.$eval('#noDocs', (e) => e.hidden), 'opening a recent document leaves the empty state');
+  eq(await T.$$eval('.doc-tab', (els) => els.length), 1);
+  ok((await cmv(T)).length > 0, 'its text is in the editor');
+  await T.click('.doc-tab .x'); await settle(T, 150);
+  await T.click('#noDocs .btn.primary'); await settle(T, 400);
+  eq(await T.$$eval('.doc-tab', (els) => els.length), 1);
+  ok(await T.$eval('#noDocs', (e) => e.hidden), 'New document leaves the empty state');
+  eq(T.errors, []);
+  await T.ctx.close();
+});
+await test('File and View menus list the tab commands', async () => {
+  await P.click('[data-menu="0"]');
+  for (const id of ['closeTab', 'closeOtherTabs', 'closeAllTabs', 'reopenTab']) ok(await P.$(`#popover [data-cmd="${id}"]`), id);
+  ok(!(await P.$('#popover [data-cmd="saveAll"]')) && !(await P.$('#popover [data-cmd="openRecent"]')), 'Mac-only items hidden on the web');
+  await P.keyboard.press('Escape');
+  await P.click('[data-menu="2"]');
+  ok(await P.$('#popover [data-cmd="nextTab"]') && await P.$('#popover [data-cmd="prevTab"]'), 'next and previous tab');
+  await P.keyboard.press('Escape');
 });
 await test('no library URL points at a file that does not exist', async () => { eq([...missing], []); });
 await test('no uncaught page errors during the whole run', async () => { eq(P.errors, []); });

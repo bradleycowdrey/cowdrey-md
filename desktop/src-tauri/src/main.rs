@@ -58,12 +58,24 @@ fn quit_app(app: AppHandle) {
     app.exit(0);
 }
 
-/// Ask the page to save, then quit. If the page does not answer quickly, quit anyway.
+/// Set while the page asks about unsaved files, so the quit below waits for the answer.
+struct QuitHeld(AtomicBool);
+
+#[tauri::command]
+fn hold_quit(app: AppHandle, hold: bool) {
+    app.state::<QuitHeld>().0.store(hold, Ordering::SeqCst);
+}
+
+/// Ask the page to save, then quit. If the page does not answer quickly, quit anyway,
+/// unless it is asking the person what to do with unsaved files.
 fn flush_then_quit(app: &AppHandle) {
     let _ = app.emit("flush-and-quit", ());
     let handle = app.clone();
     std::thread::spawn(move || {
         std::thread::sleep(Duration::from_millis(1500));
+        if handle.state::<QuitHeld>().0.load(Ordering::SeqCst) {
+            return;
+        }
         handle.state::<Quitting>().0.store(true, Ordering::SeqCst);
         handle.exit(0);
     });
@@ -158,7 +170,8 @@ fn window_menu(app: &AppHandle) -> tauri::Result<Submenu<Wry>> {
         Box::new(PredefinedMenuItem::maximize(app, None)?),
         Box::new(PredefinedMenuItem::fullscreen(app, None)?),
         Box::new(PredefinedMenuItem::separator(app)?),
-        Box::new(PredefinedMenuItem::close_window(app, None)?),
+        // Cmd+W closes the current tab (File menu), as in most tabbed apps.
+        Box::new(MenuItem::with_id(app, "app:closeWindow", "Close Window", true, Some("CmdOrCtrl+Shift+W"))?),
     ];
     submenu(app, "Window", &items)
 }
@@ -171,9 +184,10 @@ fn main() {
         .plugin(tauri_plugin_process::init())
         .manage(PendingFiles(Mutex::new(Vec::new())))
         .manage(Quitting(AtomicBool::new(false)))
-        .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, quit_app, allow_exit, set_menu])
+        .manage(QuitHeld(AtomicBool::new(false)))
+        .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, quit_app, allow_exit, set_menu, hold_quit])
         .on_menu_event(|app, event| {
-            if event.id().0 == "app:quit" {
+            if event.id().0 == "app:quit" || event.id().0 == "app:closeWindow" {
                 flush_then_quit(app);
                 return;
             }

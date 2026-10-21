@@ -2,6 +2,26 @@
 
 Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.12
+
+- **Tabs above the editor and preview.** The tab bar now spans both panes.
+- **Open many files at once.** Every file you open, choose or drop gets its own tab (before, only the last one did).
+- **Close tabs like any other app.**
+  - Closing the last tab leaves "No documents open", with New, Open and your recent documents, instead of opening another document.
+  - Right-click a tab for Close, Close others, Close tabs to the right, Close all, Rename, Duplicate, Show in Finder and Copy file path.
+  - Drag tabs to reorder them.
+- **Keyboard:**
+  - ⌘W closes a tab (Close Window moves to ⇧⌘W).
+  - ⇧⌘] / ⇧⌘[ or ⌃Tab go to the next or previous tab.
+  - ⌘1–⌘9 jump to a tab.
+  - ⇧⌘T reopens a closed tab.
+  - On the web, the keys are ⌘⌥] / ⌘⌥[ and ⌘⌥⇧T.
+- **Unsaved work is never closed silently** (Mac app).
+  - A dot on the tab marks unsaved changes to a file.
+  - Closing it asks whether to Save, Don't save or Cancel. A new document that was never saved to a file asks whether to save it.
+  - Quitting with unsaved files asks first, with Save all.
+- **Save all** (⌥⇧⌘S) and **Open recent** in the File menu (Mac app).
+
 ## 1.0.11
 
 - **Terms of Use and Privacy:** asked once when the app first opens, and always under **Help → Terms & Privacy** and in About.

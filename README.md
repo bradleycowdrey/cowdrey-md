@@ -41,7 +41,11 @@ See the [changelog](CHANGELOG.md) for every release.
 - Scroll sync between source and preview based on source-line anchors; double-click the preview to jump to the source
 
 **Documents**
-- Multiple documents with tabs, a Recent documents list, and an outline of headings
+- Open many files at once (Open…, drag and drop, or Finder's Open With); each gets its own tab in a tab bar above the editor and preview
+- Tabs work like other apps: drag to reorder; right-click for Close, Close others, Close tabs to the right, Close all, Rename, Duplicate, Show in Finder and Copy file path; Next/Previous tab, ⌃Tab, ⌘1–9 and Reopen closed tab
+- Closing every tab shows a "No documents open" screen with New, Open and your recent documents
+- The Mac app marks files with unsaved changes with a dot on their tab, asks before closing or quitting with unsaved work, and has Save all and Open recent
+- A Recent documents list and an outline of headings
 - Autosaves to the browser's local storage
 - Open `.md` files, paste as a new document, download `.md` or a standalone `.html`, copy Markdown or HTML, or **Copy for Docs or Word** (rich text)
 - Word count dialog with reading and speaking time and a Flesch reading-ease score

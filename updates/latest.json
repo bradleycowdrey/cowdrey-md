@@ -1,19 +1,19 @@
 {
-  "version": "1.0.12",
-  "notes": "Signed and notarized by Apple. Tabs above the editor and preview; open many files at once, each in its own tab; right-click tabs to close others, reorder by dragging, ⌘W, ⌘1–9 and ⇧⌘T; asks before closing or quitting with unsaved changes; Save all and Open recent; Terms of Use and Privacy.",
-  "pub_date": "2026-10-22T02:46:29Z",
+  "version": "1.0.13",
+  "notes": "Find and Replace now open beside the ribbon's Find and Replace buttons, and you can drag the find bar anywhere (double-click its grip to put it back).",
+  "pub_date": "2026-10-22T21:41:43Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0VqV1QrY1NwZUpHRnQrUWJkREoxNHNiMEM4cmtLUXBHZ2NmS29IOEFpeDl6NmZsUWNaeXgySExiU2w2TGVTWnlvSC8zaTV5UmsvZ284a0Z2dDkwVUFvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNjM3MTg5CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpuK1ExZnZ4cDFtN0dDTUlVSFNha1VnNWt6TXQ0UndtRnNTWnNZd012STVpYytBSzgxTW9LM2RpKzVaT2FJS2lqckxKWWNRUVQwYnRXV0orTHpWRWFBQT09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.12/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV1B0T2w2ankyeGREdmpad1kwSWpRd2NTY1NtZWN4ZmkrTzhEd1BaQk12eFRDcElsUjFsTnovZHNVOEU1ZHhhUmxhL3VhclVBT1ZVYlgvV2dIN0w4MmdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNzA1MzAzCWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpZNzRJOTR6bDBBQkVIcUVTWU9lMmVJd0lDZXdWcW8vVXMySG04MlFkY3RZMVJPZFpqam0vaUdaeWt0OVJhUDQyRWl1bktzOWQyL0s0L0R2b2M0T0ZBQT09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.13/Cowdrey.MD_universal.app.tar.gz"
     },
     "darwin-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0VqV1QrY1NwZUpHRnQrUWJkREoxNHNiMEM4cmtLUXBHZ2NmS29IOEFpeDl6NmZsUWNaeXgySExiU2w2TGVTWnlvSC8zaTV5UmsvZ284a0Z2dDkwVUFvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNjM3MTg5CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpuK1ExZnZ4cDFtN0dDTUlVSFNha1VnNWt6TXQ0UndtRnNTWnNZd012STVpYytBSzgxTW9LM2RpKzVaT2FJS2lqckxKWWNRUVQwYnRXV0orTHpWRWFBQT09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.12/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV1B0T2w2ankyeGREdmpad1kwSWpRd2NTY1NtZWN4ZmkrTzhEd1BaQk12eFRDcElsUjFsTnovZHNVOEU1ZHhhUmxhL3VhclVBT1ZVYlgvV2dIN0w4MmdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNzA1MzAzCWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpZNzRJOTR6bDBBQkVIcUVTWU9lMmVJd0lDZXdWcW8vVXMySG04MlFkY3RZMVJPZFpqam0vaUdaeWt0OVJhUDQyRWl1bktzOWQyL0s0L0R2b2M0T0ZBQT09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.13/Cowdrey.MD_universal.app.tar.gz"
     },
     "darwin-universal": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0VqV1QrY1NwZUpHRnQrUWJkREoxNHNiMEM4cmtLUXBHZ2NmS29IOEFpeDl6NmZsUWNaeXgySExiU2w2TGVTWnlvSC8zaTV5UmsvZ284a0Z2dDkwVUFvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNjM3MTg5CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpuK1ExZnZ4cDFtN0dDTUlVSFNha1VnNWt6TXQ0UndtRnNTWnNZd012STVpYytBSzgxTW9LM2RpKzVaT2FJS2lqckxKWWNRUVQwYnRXV0orTHpWRWFBQT09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.12/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV1B0T2w2ankyeGREdmpad1kwSWpRd2NTY1NtZWN4ZmkrTzhEd1BaQk12eFRDcElsUjFsTnovZHNVOEU1ZHhhUmxhL3VhclVBT1ZVYlgvV2dIN0w4MmdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNzA1MzAzCWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpZNzRJOTR6bDBBQkVIcUVTWU9lMmVJd0lDZXdWcW8vVXMySG04MlFkY3RZMVJPZFpqam0vaUdaeWt0OVJhUDQyRWl1bktzOWQyL0s0L0R2b2M0T0ZBQT09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.13/Cowdrey.MD_universal.app.tar.gz"
     }
   }
 }

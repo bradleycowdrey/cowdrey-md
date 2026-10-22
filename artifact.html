@@ -655,6 +655,13 @@ svg.lucide { width: 16px; height: 16px; stroke-width: 1.8; flex: none; }
 /* find bar */
 .findbar { position: absolute; top: 40px; right: 14px; z-index: 6; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 28px rgba(15,25,50,.18); padding: 6px; display: flex; flex-direction: column; gap: 5px; width: min(380px, calc(100% - 28px)); }
 .find-row { display: flex; gap: 4px; align-items: center; }
+.findbar { top: 8px; }
+.findbar.anchored, .findbar.moved { position: fixed; right: auto; z-index: 40; width: 380px; max-width: calc(100vw - 16px); }
+.find-grip { display: grid; place-items: center; width: 16px; height: 28px; margin-left: -2px; color: var(--ink-3); cursor: grab; touch-action: none; border-radius: 4px; flex: none; }
+.find-grip:hover { color: var(--ink); background: var(--hover); }
+.findbar.dragging, .findbar.dragging .find-grip { cursor: grabbing; user-select: none; }
+#replaceRow { padding-left: 18px; }
+@media (max-width: 760px) { .find-grip { display: none; } #replaceRow { padding-left: 0; } } /* dragging is for larger screens */
 .find-row input[type="text"] { flex: 1; min-width: 0; height: 28px; border: 1px solid var(--line-strong); border-radius: 6px; padding: 0 8px; background: var(--chrome); }
 .find-count { font-size: 11.5px; color: var(--ink-3); min-width: 56px; text-align: center; font-variant-numeric: tabular-nums; }
 .find-row .rb { height: 28px; }
@@ -959,6 +966,7 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
       <section class="pane editor-pane" id="editorPane" aria-label="Markdown source">
         <div class="findbar" id="findbar" hidden>
           <div class="find-row">
+            <span class="find-grip" id="findGrip" role="button" tabindex="-1" title="Drag to move. Double-click to put it back next to Find." aria-label="Move the find bar"><i data-lucide="grip-vertical"></i></span>
             <input type="text" id="findInput" placeholder="Find in document" aria-label="Find" spellcheck="false">
             <span class="find-count" id="findCount" role="status">0 of 0</span>
             <button class="rb" type="button" id="findPrev" title="Previous match (Shift+Enter)"><i data-lucide="chevron-up"></i></button>
@@ -1941,11 +1949,56 @@ const F = { marks: [], matches: [], idx: -1, cs: false, re: false, curMark: null
 function openFind(withReplace) {
   if (S.view === 'preview') setView('split');
   $('#findbar').hidden = false; $('#replaceRow').hidden = !withReplace;
+  placeFindbar();
   const sel = cm.getSelection();
   const fi = $('#findInput');
   if (sel && !sel.includes('\n')) fi.value = sel;
   fi.focus(); fi.select(); runFind(true);
 }
+// The find bar opens to the right of the ribbon's Find and Replace buttons, as in Word.
+// When those buttons aren't on screen (collapsed ribbon, another ribbon tab, phones) it sits at the top right of the editor.
+let findPos = store.get(KEY + ':findPos', null); // where the person dragged it, if they did
+function placeFindbar() {
+  const bar = $('#findbar'); if (bar.hidden) return;
+  if (findPos && window.innerWidth > 760) {
+    bar.classList.add('moved'); bar.classList.remove('anchored'); bar.style.width = '';
+    const w = bar.offsetWidth, h = bar.offsetHeight; // keep it fully on screen if the window shrank
+    bar.style.left = clamp(findPos.x, 8, window.innerWidth - w - 8) + 'px';
+    bar.style.top = clamp(findPos.y, 8, window.innerHeight - h - 8) + 'px';
+    return;
+  }
+  bar.classList.remove('moved');
+  const btn = $$('#ribbonBody [data-cmd="find"]').find((b) => b.offsetParent);
+  if (!btn || window.innerWidth <= 760) { bar.classList.remove('anchored'); bar.style.left = bar.style.top = bar.style.width = ''; return; }
+  bar.classList.add('anchored');
+  const group = btn.closest('.r-group') || btn;
+  const g = group.getBoundingClientRect(), b = btn.getBoundingClientRect();
+  const room = window.innerWidth - 8 - (g.right + 8);
+  let left = g.right + 8, top = b.top - 4;
+  if (room >= 300) bar.style.width = Math.min(380, room) + 'px'; // beside Find, narrowing a little if needed
+  else { bar.style.width = ''; left = Math.max(8, window.innerWidth - 8 - bar.offsetWidth); top = g.bottom + 6; } // no room beside it: just below
+  bar.style.left = left + 'px'; bar.style.top = Math.max(8, top) + 'px';
+}
+window.addEventListener('resize', debounce(placeFindbar, 60));
+// Drag the grip to move the bar anywhere; double-click it to put it back beside Find.
+(() => {
+  const grip = $('#findGrip'), bar = $('#findbar');
+  let start = null;
+  grip.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0 || window.innerWidth <= 760) return;
+    const r = bar.getBoundingClientRect();
+    start = { x: e.clientX - r.left, y: e.clientY - r.top };
+    grip.setPointerCapture(e.pointerId); bar.classList.add('dragging'); e.preventDefault();
+  });
+  grip.addEventListener('pointermove', (e) => {
+    if (!start) return;
+    findPos = { x: e.clientX - start.x, y: e.clientY - start.y };
+    placeFindbar();
+  });
+  const end = () => { if (!start) return; start = null; bar.classList.remove('dragging'); store.set(KEY + ':findPos', findPos); $('#findInput').focus(); };
+  grip.addEventListener('pointerup', end); grip.addEventListener('pointercancel', end);
+  grip.addEventListener('dblclick', () => { findPos = null; store.set(KEY + ':findPos', null); placeFindbar(); $('#findInput').focus(); });
+})();
 function closeFind() { $('#findbar').hidden = true; clearFindMarks(); F.matches = []; cm.focus(); }
 function clearFindMarks() { F.marks.forEach((m) => m.clear()); F.marks = []; F.curMark && F.curMark.clear(); F.curMark = null; }
 function findQuery() {
@@ -3026,7 +3079,7 @@ function renderRibbon() {
   renderRibbonTabs();
   $('#ribbon').classList.toggle('collapsed', S.ribbonCollapsed);
   $('#ribbonBody').innerHTML = `<div class="ribbon-panel" role="tabpanel" aria-labelledby="rtab-${S.ribbonTab}">${RIBBON[S.ribbonTab]()}</div>`;
-  refreshIcons(); updateStyleGallery(); updateRibbonOverflow();
+  refreshIcons(); updateStyleGallery(); updateRibbonOverflow(); placeFindbar();
   if (keep) { const el = $('#ribbon').querySelector(keep); el && el.focus({ preventScroll: true }); }
 }
 function updateRibbonOverflow() {

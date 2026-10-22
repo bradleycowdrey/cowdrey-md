@@ -1,6 +1,6 @@
 {
   "name": "cowdrey-md-desktop",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "private": true,
   "description": "Mac desktop build of Cowdrey.MD by Bradley Cowdrey",
   "scripts": {

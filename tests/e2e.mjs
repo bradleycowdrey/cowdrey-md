@@ -905,6 +905,57 @@ await test('File and View menus list the tab commands', async () => {
   ok(await P.$('#popover [data-cmd="nextTab"]') && await P.$('#popover [data-cmd="prevTab"]'), 'next and previous tab');
   await P.keyboard.press('Escape');
 });
+await test('Find and Replace open to the right of the ribbon buttons, can be dragged, and remember where', async () => {
+  const T = await newPage({ width: 1920, height: 1000 });
+  const rect = (sel) => T.$eval(sel, (e) => e.getBoundingClientRect().toJSON());
+  await T.click('#ribbonBody [data-cmd="find"]'); await settle(T, 200);
+  const group = await T.$eval('#ribbonBody [data-cmd="find"]', (b) => b.closest('.r-group').getBoundingClientRect().toJSON());
+  const fbtn = await rect('#ribbonBody [data-cmd="find"]');
+  let bar = await rect('#findbar');
+  ok(bar.left >= group.right && bar.left - group.right <= 16, `just right of the Editing group (${Math.round(bar.left)} vs ${Math.round(group.right)})`);
+  ok(Math.abs(bar.top - fbtn.top) <= 8, 'level with Find');
+  ok(bar.right <= 1920 - 8, 'on screen');
+  ok(await T.evaluate(() => document.activeElement.id === 'findInput'), 'typing goes to the find box');
+  await T.keyboard.press('Escape'); await settle(T, 100);
+  await T.click('#ribbonBody [data-cmd="replace"]'); await settle(T, 200);
+  bar = await rect('#findbar');
+  ok(bar.left >= group.right && Math.abs(bar.top - fbtn.top) <= 8, 'Replace opens in the same place');
+  ok(await T.$eval('#replaceRow', (e) => !e.hidden), 'with the replace row');
+  // drag it by the grip
+  const g = await rect('#findGrip');
+  await T.mouse.move(g.x + g.width / 2, g.y + g.height / 2); await T.mouse.down();
+  await T.mouse.move(700, 520, { steps: 6 }); await T.mouse.up(); await settle(T, 200);
+  bar = await rect('#findbar');
+  const g1 = await rect('#findGrip');
+  ok(Math.abs(g1.x + g1.width / 2 - 700) < 3 && Math.abs(g1.y + g1.height / 2 - 520) < 3, `grip is where it was dropped (${Math.round(g1.x + g1.width / 2)}, ${Math.round(g1.y + g1.height / 2)})`);
+  await T.keyboard.press('Escape'); await T.reload(); await settle(T, 800);
+  await T.keyboard.press('Control+f'); await settle(T, 200);
+  const again = await rect('#findbar');
+  ok(Math.abs(again.left - bar.left) < 3 && Math.abs(again.top - bar.top) < 3, 'opens where it was left after a reload');
+  // a smaller window keeps it on screen
+  await T.setViewportSize({ width: 900, height: 600 }); await settle(T, 300);
+  const small = await rect('#findbar');
+  ok(small.right <= 900 - 4 && small.bottom <= 600 - 4, 'kept on screen');
+  await T.setViewportSize({ width: 1920, height: 1000 }); await settle(T, 300);
+  // double-click the grip puts it back beside Find
+  await T.dblclick('#findGrip'); await settle(T, 200);
+  bar = await rect('#findbar');
+  ok(bar.left >= group.right && Math.abs(bar.top - fbtn.top) <= 8, 'back beside Find');
+  // at 1440 wide it fits beside Find, a little narrower, or else just below the group, always on screen
+  await T.setViewportSize({ width: 1440, height: 900 }); await settle(T, 300);
+  const g2 = await T.$eval('#ribbonBody [data-cmd="find"]', (b) => b.closest('.r-group').getBoundingClientRect().toJSON());
+  bar = await rect('#findbar');
+  ok(bar.right <= 1440 - 4 && (bar.left >= g2.right || bar.top >= g2.bottom), `beside or below the group, on screen (${Math.round(bar.left)},${Math.round(bar.top)})`);
+  await T.setViewportSize({ width: 1920, height: 1000 }); await settle(T, 300);
+  // with the ribbon collapsed it sits at the top right of the editor
+  await T.keyboard.press('Escape');
+  await T.click('#ribbonToggle'); await settle(T, 300);
+  await T.keyboard.press('Control+f'); await settle(T, 200);
+  const ed = await rect('#editorPane'); bar = await rect('#findbar');
+  ok(bar.top >= ed.top && bar.top - ed.top < 20 && ed.right - bar.right < 30, 'top right of the editor');
+  await T.keyboard.press('Escape'); await T.click('#ribbonToggle');
+  eq(T.errors, []); await T.ctx.close();
+});
 await test('no library URL points at a file that does not exist', async () => { eq([...missing], []); });
 await test('no uncaught page errors during the whole run', async () => { eq(P.errors, []); });
 

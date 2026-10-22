@@ -2,6 +2,11 @@
 
 Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.13
+
+- **Find and Replace open beside the ribbon's Find and Replace buttons**, as in Word, instead of over the top of your text. In a narrower window they open just below that group.
+- **Move the find bar anywhere** by dragging its grip handle. It remembers the spot; double-click the grip to put it back beside Find.
+
 ## 1.0.12
 
 - **Tabs above the editor and preview.** The tab bar now spans both panes.

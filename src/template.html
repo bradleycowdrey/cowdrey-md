@@ -304,6 +304,13 @@ svg.lucide { width: 16px; height: 16px; stroke-width: 1.8; flex: none; }
 /* find bar */
 .findbar { position: absolute; top: 40px; right: 14px; z-index: 6; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 28px rgba(15,25,50,.18); padding: 6px; display: flex; flex-direction: column; gap: 5px; width: min(380px, calc(100% - 28px)); }
 .find-row { display: flex; gap: 4px; align-items: center; }
+.findbar { top: 8px; }
+.findbar.anchored, .findbar.moved { position: fixed; right: auto; z-index: 40; width: 380px; max-width: calc(100vw - 16px); }
+.find-grip { display: grid; place-items: center; width: 16px; height: 28px; margin-left: -2px; color: var(--ink-3); cursor: grab; touch-action: none; border-radius: 4px; flex: none; }
+.find-grip:hover { color: var(--ink); background: var(--hover); }
+.findbar.dragging, .findbar.dragging .find-grip { cursor: grabbing; user-select: none; }
+#replaceRow { padding-left: 18px; }
+@media (max-width: 760px) { .find-grip { display: none; } #replaceRow { padding-left: 0; } } /* dragging is for larger screens */
 .find-row input[type="text"] { flex: 1; min-width: 0; height: 28px; border: 1px solid var(--line-strong); border-radius: 6px; padding: 0 8px; background: var(--chrome); }
 .find-count { font-size: 11.5px; color: var(--ink-3); min-width: 56px; text-align: center; font-variant-numeric: tabular-nums; }
 .find-row .rb { height: 28px; }
@@ -608,6 +615,7 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
       <section class="pane editor-pane" id="editorPane" aria-label="Markdown source">
         <div class="findbar" id="findbar" hidden>
           <div class="find-row">
+            <span class="find-grip" id="findGrip" role="button" tabindex="-1" title="Drag to move. Double-click to put it back next to Find." aria-label="Move the find bar"><i data-lucide="grip-vertical"></i></span>
             <input type="text" id="findInput" placeholder="Find in document" aria-label="Find" spellcheck="false">
             <span class="find-count" id="findCount" role="status">0 of 0</span>
             <button class="rb" type="button" id="findPrev" title="Previous match (Shift+Enter)"><i data-lucide="chevron-up"></i></button>

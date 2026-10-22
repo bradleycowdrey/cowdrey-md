@@ -782,11 +782,56 @@ const F = { marks: [], matches: [], idx: -1, cs: false, re: false, curMark: null
 function openFind(withReplace) {
   if (S.view === 'preview') setView('split');
   $('#findbar').hidden = false; $('#replaceRow').hidden = !withReplace;
+  placeFindbar();
   const sel = cm.getSelection();
   const fi = $('#findInput');
   if (sel && !sel.includes('\n')) fi.value = sel;
   fi.focus(); fi.select(); runFind(true);
 }
+// The find bar opens to the right of the ribbon's Find and Replace buttons, as in Word.
+// When those buttons aren't on screen (collapsed ribbon, another ribbon tab, phones) it sits at the top right of the editor.
+let findPos = store.get(KEY + ':findPos', null); // where the person dragged it, if they did
+function placeFindbar() {
+  const bar = $('#findbar'); if (bar.hidden) return;
+  if (findPos && window.innerWidth > 760) {
+    bar.classList.add('moved'); bar.classList.remove('anchored'); bar.style.width = '';
+    const w = bar.offsetWidth, h = bar.offsetHeight; // keep it fully on screen if the window shrank
+    bar.style.left = clamp(findPos.x, 8, window.innerWidth - w - 8) + 'px';
+    bar.style.top = clamp(findPos.y, 8, window.innerHeight - h - 8) + 'px';
+    return;
+  }
+  bar.classList.remove('moved');
+  const btn = $$('#ribbonBody [data-cmd="find"]').find((b) => b.offsetParent);
+  if (!btn || window.innerWidth <= 760) { bar.classList.remove('anchored'); bar.style.left = bar.style.top = bar.style.width = ''; return; }
+  bar.classList.add('anchored');
+  const group = btn.closest('.r-group') || btn;
+  const g = group.getBoundingClientRect(), b = btn.getBoundingClientRect();
+  const room = window.innerWidth - 8 - (g.right + 8);
+  let left = g.right + 8, top = b.top - 4;
+  if (room >= 300) bar.style.width = Math.min(380, room) + 'px'; // beside Find, narrowing a little if needed
+  else { bar.style.width = ''; left = Math.max(8, window.innerWidth - 8 - bar.offsetWidth); top = g.bottom + 6; } // no room beside it: just below
+  bar.style.left = left + 'px'; bar.style.top = Math.max(8, top) + 'px';
+}
+window.addEventListener('resize', debounce(placeFindbar, 60));
+// Drag the grip to move the bar anywhere; double-click it to put it back beside Find.
+(() => {
+  const grip = $('#findGrip'), bar = $('#findbar');
+  let start = null;
+  grip.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0 || window.innerWidth <= 760) return;
+    const r = bar.getBoundingClientRect();
+    start = { x: e.clientX - r.left, y: e.clientY - r.top };
+    grip.setPointerCapture(e.pointerId); bar.classList.add('dragging'); e.preventDefault();
+  });
+  grip.addEventListener('pointermove', (e) => {
+    if (!start) return;
+    findPos = { x: e.clientX - start.x, y: e.clientY - start.y };
+    placeFindbar();
+  });
+  const end = () => { if (!start) return; start = null; bar.classList.remove('dragging'); store.set(KEY + ':findPos', findPos); $('#findInput').focus(); };
+  grip.addEventListener('pointerup', end); grip.addEventListener('pointercancel', end);
+  grip.addEventListener('dblclick', () => { findPos = null; store.set(KEY + ':findPos', null); placeFindbar(); $('#findInput').focus(); });
+})();
 function closeFind() { $('#findbar').hidden = true; clearFindMarks(); F.matches = []; cm.focus(); }
 function clearFindMarks() { F.marks.forEach((m) => m.clear()); F.marks = []; F.curMark && F.curMark.clear(); F.curMark = null; }
 function findQuery() {
@@ -1867,7 +1912,7 @@ function renderRibbon() {
   renderRibbonTabs();
   $('#ribbon').classList.toggle('collapsed', S.ribbonCollapsed);
   $('#ribbonBody').innerHTML = `<div class="ribbon-panel" role="tabpanel" aria-labelledby="rtab-${S.ribbonTab}">${RIBBON[S.ribbonTab]()}</div>`;
-  refreshIcons(); updateStyleGallery(); updateRibbonOverflow();
+  refreshIcons(); updateStyleGallery(); updateRibbonOverflow(); placeFindbar();
   if (keep) { const el = $('#ribbon').querySelector(keep); el && el.focus({ preventScroll: true }); }
 }
 function updateRibbonOverflow() {

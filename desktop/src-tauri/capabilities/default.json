@@ -11,5 +11,10 @@
     "opener:default",
     "updater:default",
     "process:default"
+  ],
+  "platforms": [
+    "macOS",
+    "windows",
+    "linux"
   ]
 }

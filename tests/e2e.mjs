@@ -956,6 +956,34 @@ await test('Find and Replace open to the right of the ribbon buttons, can be dra
   await T.keyboard.press('Escape'); await T.click('#ribbonToggle');
   eq(T.errors, []); await T.ctx.close();
 });
+await test('iPhone app: runs like the web version, shares exports and opens links in Safari', async () => {
+  const T = await newPage({ width: 390, height: 844, init: () => {
+    window.__calls = { invoke: [], opened: [], shared: [] };
+    Object.defineProperty(navigator, 'maxTouchPoints', { get: () => 5 });
+    window.__TAURI__ = {
+      core: { invoke: async (c) => { window.__calls.invoke.push(c); return null; } },
+      app: { getVersion: async () => '1.0.14' }, dialog: {}, event: { listen: async () => {} },
+      opener: { openUrl: async (u) => { window.__calls.opened.push(u); } },
+    };
+    navigator.canShare = (d) => !!(d && d.files && d.files.length);
+    navigator.share = async (d) => { window.__calls.shared.push({ name: d.files[0].name, type: d.files[0].type, size: d.files[0].size }); };
+  } });
+  // no Mac-only commands, menu bar or file paths
+  for (const id of ['saveAs', 'saveAll', 'openRecent', 'checkUpdates', 'print']) {
+    eq(await T.evaluate((id) => { for (let i = 0; i < 7; i++) { const m = document.querySelector(`[data-menu="${i}"]`); if (!m) continue; m.click(); const hit = !!document.querySelector(`#popover [data-cmd="${id}"]`); document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); if (hit) return true; } return false; }, id), false, `${id} hidden`);
+  }
+  // Export shares the file through the share sheet (Save to Files, AirDrop, Mail)
+  await T.evaluate(() => document.querySelector('#exportBtn').click()); await settle(T, 150);
+  await T.evaluate(() => document.querySelector('#popover [data-cmd="saveMd"]').click()); await settle(T, 300);
+  const c = await T.evaluate(() => window.__calls);
+  eq(c.shared.length, 1, 'shared once'); ok(/\.md$/.test(c.shared[0].name) && c.shared[0].size > 0, 'a Markdown file');
+  // web links open in Safari, not inside the app
+  await T.evaluate(() => document.querySelector('.sb-brand a').click()); await settle(T, 100);
+  eq((await T.evaluate(() => window.__calls.opened)).pop(), 'https://bradcowdrey.com/');
+  eq(T.url(), 'https://app.test/', 'still in the app');
+  eq((await T.evaluate(() => window.__calls.invoke)).filter((x) => x !== 'plugin:event|listen'), [], 'no Mac-only commands called');
+  eq(T.errors, []); await T.ctx.close();
+});
 await test('no library URL points at a file that does not exist', async () => { eq([...missing], []); });
 await test('no uncaught page errors during the whole run', async () => { eq(P.errors, []); });
 

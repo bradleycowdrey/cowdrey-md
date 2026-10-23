@@ -14,6 +14,7 @@ It combines MacDown's side-by-side writing, a Docs-style title bar, menus and pa
 
 ## What's new
 
+- **1.0.14: Cowdrey.MD for iPhone and iPad**, on its way to the App Store. Export opens the share sheet (Save to Files, AirDrop, Mail), and links open in Safari.
 - **Cowdrey.MD has a home on bradcowdrey.com.** [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) shows the editor running live in a Mac window, with features, install steps and a Share button. The full-screen editor is at [bradcowdrey.com/cowdrey-md/app](https://bradcowdrey.com/cowdrey-md/app).
 - **1.0.9:** better layouts for phones and tablets. In the Mac app, Quit saves your work first, the Edit menu uses the standard Mac items, and keyboard and screen-reader support is better.
 - **1.0.8:** a collapsible, resizable sidebar.
@@ -87,6 +88,12 @@ bradcowdrey.com serves this repository's GitHub Pages copy (`https://bradleycowd
 Download the latest `.dmg` from [Releases](https://github.com/bradleycowdrey/cowdrey-md/releases/latest). It runs on Apple silicon and Intel Macs and works offline.
 
 The Mac app checks for a newer release once a day (and from **Help → Check for updates…**). With update signing set up, **Install and restart** downloads the signed update, saves your work, replaces the app and reopens it; otherwise it offers the new DMG. Without that secret, `node desktop/sign-update.mjs <private-key> "<notes>"` signs the released bundle and writes `updates/latest.json`; pushing it publishes the update. Automatic signing needs one repository secret, `TAURI_SIGNING_PRIVATE_KEY`, holding the private key that matches the public key in `desktop/src-tauri/tauri.conf.json`. The DMG is built by GitHub Actions (`.github/workflows/mac-app.yml`) whenever the version in `desktop/src-tauri/tauri.conf.json` changes on `main`, a tag such as `v1.0.1` is pushed, or the workflow is run by hand. The `desktop/` folder wraps `index.html` with [Tauri](https://tauri.app) and copies every library in, so nothing loads from the internet. Releases are signed with the Developer ID certificate and notarized by Apple when the `DEVELOPER_ID_P12`, `DEVELOPER_ID_P12_PASSWORD`, `CODESIGN_IDENTITY`, `NOTARY_APPLE_ID`, `NOTARY_PASSWORD` and `NOTARY_TEAM_ID` secrets are set; Apple's notarization can add anywhere from a few minutes to over an hour to a release build.
+
+## iPhone and iPad app
+
+The same Tauri project builds the App Store app (`.github/workflows/ios-app.yml`), whenever the version or the Rust code changes on `main`. The iPhone app runs the page as it runs on the web, so Mac-only features (menu bar, file paths, self-updates) stay on the Mac; exports go through the iOS share sheet and links open in Safari.
+
+The workflow needs an App Store Connect API key with Admin access, saved as three repository secrets: `APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_CONNECT_KEY_ID` and `APP_STORE_CONNECT_API_KEY` (the contents of the `.p8` file). With them, Xcode creates the Apple Distribution certificate and App Store profile, and each build goes to TestFlight. Without them, the workflow only checks that the iOS code compiles. The build log is published to the `ios-build-log` branch.
 
 ## Fonts
 

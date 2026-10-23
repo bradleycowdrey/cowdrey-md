@@ -427,6 +427,7 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
   .menubar { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
   .divider { display: none; }
   .menubar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .menubar > button { flex: none; } /* scroll the menus sideways instead of squeezing them together */
   .ruler, #sbPage { display: none; }
   .save-state, .sb-brand, .sb-zoom input[type="range"], #zoomInBtn, #zoomOutBtn, .primary-btn span, .ghost-btn span { display: none; }
   .ghost-btn { padding: 8px 10px; }

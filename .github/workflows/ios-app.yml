@@ -1,0 +1,109 @@
+name: iPhone app
+
+on:
+  push:
+    branches: [main]
+    # Build a new iPhone and iPad version when the version number, the Rust code or this workflow changes.
+    paths:
+      - desktop/src-tauri/tauri.conf.json
+      - desktop/src-tauri/Cargo.toml
+      - desktop/src-tauri/src/**
+      - desktop/src-tauri/capabilities/**
+      - .github/workflows/ios-app.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ios:
+    name: Build Cowdrey.MD for iPhone and iPad
+    runs-on: macos-latest
+    env:
+      # App Store Connect API key (Users and Access, Integrations, Admin access). With it, Xcode makes the
+      # Apple Distribution certificate and App Store profile itself, and the build is uploaded to TestFlight.
+      APPLE_API_ISSUER: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      APPLE_API_KEY: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+      HAS_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri -> target
+
+      - name: Install build tools and libraries
+        working-directory: desktop
+        run: npm ci
+
+      - name: Bundle the web app for offline use
+        working-directory: desktop
+        run: node build.mjs
+
+      # Without the API key, prove the iOS code compiles. Nothing is signed or uploaded.
+      - name: Compile for iOS (no App Store key yet)
+        if: env.HAS_KEY == 'false'
+        working-directory: desktop/src-tauri
+        run: cargo build --release --lib --target aarch64-apple-ios 2>&1 | tee -a "$RUNNER_TEMP/ios-build.log"; exit ${PIPESTATUS[0]}
+
+      - name: Create the Xcode project
+        if: env.HAS_KEY == 'true'
+        working-directory: desktop
+        run: |
+          set -o pipefail
+          npx tauri ios init --ci 2>&1 | tee -a "$RUNNER_TEMP/ios-build.log"
+          # Full-bleed icon: iOS rounds the corners itself.
+          npx tauri icon src-tauri/icons/ios-source.png 2>&1 | tee -a "$RUNNER_TEMP/ios-build.log"
+          PLIST=$(find src-tauri/gen/apple -name Info.plist -path '*_iOS*' | head -1)
+          echo "Info.plist: $PLIST" | tee -a "$RUNNER_TEMP/ios-build.log"
+          # Uses only the encryption built into iOS, so no export compliance questions on each upload.
+          /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" "$PLIST" || /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption false" "$PLIST"
+
+      - name: Build, sign and upload to TestFlight
+        if: env.HAS_KEY == 'true'
+        working-directory: desktop
+        env:
+          P8: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: |
+          set -o pipefail
+          mkdir -p ~/.appstoreconnect/private_keys
+          KEY=~/.appstoreconnect/private_keys/AuthKey_${APPLE_API_KEY}.p8
+          printf '%s\n' "$P8" > "$KEY"
+          export APPLE_API_KEY_PATH="$KEY"
+          npx tauri ios build --export-method app-store-connect --build-number ${{ github.run_number }} 2>&1 | tee -a "$RUNNER_TEMP/ios-build.log"
+          IPA=$(find src-tauri/gen/apple/build -name '*.ipa' | head -1)
+          echo "IPA: $IPA" | tee -a "$RUNNER_TEMP/ios-build.log"
+          cp "$IPA" "$RUNNER_TEMP/Cowdrey.MD.ipa"
+          xcrun altool --upload-app --type ios --file "$IPA" --apiKey "$APPLE_API_KEY" --apiIssuer "$APPLE_API_ISSUER" 2>&1 | tee -a "$RUNNER_TEMP/ios-build.log"
+
+      - uses: actions/upload-artifact@v4
+        if: env.HAS_KEY == 'true'
+        with:
+          name: Cowdrey.MD-iOS
+          path: ${{ runner.temp }}/Cowdrey.MD.ipa
+          if-no-files-found: ignore
+
+      # The build log goes on the ios-build-log branch, so it can be read without signing in to GitHub.
+      - name: Publish the build log
+        if: always()
+        run: |
+          [[ -f "$RUNNER_TEMP/ios-build.log" ]] || exit 0
+          LOG=$(tail -c 200000 "$RUNNER_TEMP/ios-build.log")
+          # the branch is public: take out the key ID and issuer ID before publishing
+          for S in "$APPLE_API_ISSUER" "$APPLE_API_KEY"; do if [[ -n "$S" ]]; then LOG=${LOG//"$S"/***}; fi; done
+          printf '%s\n' "$LOG" > /tmp/log.txt
+          cd "$(mktemp -d)" && git init -q -b ios-build-log && cp /tmp/log.txt ios-build.log
+          echo "${{ job.status }} · run ${{ github.run_number }} · ${{ github.sha }}" > status.txt
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com add .
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -qm "iOS build log, run ${{ github.run_number }}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ios-build-log

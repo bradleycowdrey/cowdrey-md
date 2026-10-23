@@ -1,11 +1,16 @@
 [package]
 name = "cowdrey-md"
-version = "1.0.13"
+version = "1.0.14"
 description = "Cowdrey.MD, a Markdown editor by Bradley Cowdrey"
 authors = ["Bradley Cowdrey"]
 license = "MIT"
 repository = "https://github.com/bradleycowdrey/cowdrey-md"
 edition = "2021"
+
+# The Mac app runs main.rs; the iPhone and iPad app loads the same code from this library.
+[lib]
+name = "cowdrey_md_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
@@ -14,10 +19,13 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 tauri-plugin-opener = "2"
-tauri-plugin-updater = "2"
-tauri-plugin-process = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+
+# In-place updates and relaunching are for the Mac app only; the App Store updates the iPhone app.
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
 
 [profile.release]
 codegen-units = 1

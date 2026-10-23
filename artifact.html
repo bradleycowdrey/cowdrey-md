@@ -778,6 +778,7 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
   .menubar { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
   .divider { display: none; }
   .menubar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .menubar > button { flex: none; } /* scroll the menus sideways instead of squeezing them together */
   .ruler, #sbPage { display: none; }
   .save-state, .sb-brand, .sb-zoom input[type="range"], #zoomInBtn, #zoomOutBtn, .primary-btn span, .ghost-btn span { display: none; }
   .ghost-btn { padding: 8px 10px; }
@@ -1175,7 +1176,13 @@ window.MathJax = {
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
-const TAURI = window.__TAURI__ || null; // set when running as the installed Mac app
+// The iPhone and iPad app (App Store) runs the page as it runs on the web: no file paths, menu bar or
+// self-updates. Only the Mac app gets TAURI; IOS_APP keeps the native bridge for links and sharing.
+const NATIVE = window.__TAURI__ || null;
+const IOS_APP = !!NATIVE && (/iPhone|iPad|iPod/.test(navigator.userAgent) || navigator.maxTouchPoints > 1);
+const TAURI = IOS_APP ? null : NATIVE; // set when running as the installed Mac app
+// Web links leave the app: in the iPhone app they open in Safari instead of replacing the editor.
+const openExternal = (url) => { if (NATIVE) NATIVE.opener.openUrl(url).catch(() => {}); else window.open(url, '_blank', 'noopener'); };
 const baseName = (p) => String(p).split(/[\\/]/).pop();
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -2608,6 +2615,15 @@ async function saveFile(name, data, mime) {
       return path;
     } catch (e) { toast(`Could not save: ${e}`); return null; }
   }
+  if (IOS_APP) {
+    // iOS has no downloads folder: the share sheet offers Save to Files, AirDrop, Mail and the rest.
+    const file = new File([data], name, { type: mime });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: name }); toast(`Shared ${name}`); }
+      catch (e) { if (!e || e.name !== 'AbortError') toast('That file could not be shared. Use Copy Markdown instead.'); }
+      return;
+    }
+  }
   if (window.claude && typeof window.claude.use === 'function') {
     let dl = null;
     try { dl = await window.claude.use('downloads'); } catch {}
@@ -2789,7 +2805,7 @@ cmd('exportHtml', { label: 'Download web page (.html)', icon: 'file-code-2', run
 cmd('copyRich', { label: 'Copy for Docs or Word', icon: 'clipboard-copy', key: 'Mod-Alt-Shift-c', global: true, run: copyRich });
 cmd('copyHtml', { label: 'Copy HTML source', icon: 'code', run: () => copyText(cleanPreview().innerHTML, 'HTML copied') });
 cmd('copyMd', { label: 'Copy Markdown', icon: 'copy', run: () => copyText(cm.getValue(), 'Markdown copied') });
-cmd('print', { label: 'Print or save as PDF', icon: 'printer', key: 'Mod-p', global: true, hidden: () => inArtifact() || !!TAURI, run: () => { if (!inArtifact()) window.print(); } });
+cmd('print', { label: 'Print or save as PDF', icon: 'printer', key: 'Mod-p', global: true, hidden: () => inArtifact() || !!TAURI || IOS_APP, run: () => { if (!inArtifact()) window.print(); } });
 cmd('renameDoc', { label: 'Rename', icon: 'pencil-line', run: () => { titleInput.focus(); titleInput.select(); } });
 cmd('deleteDoc', { label: 'Delete document…', icon: 'trash-2', run: () => openDialog({ title: `Delete “${cur().title}”?`, body: '<p>This removes the document from this browser. It cannot be undone.</p>', actions: [{ label: 'Keep it' }, { label: 'Delete', danger: true, run: () => deleteDoc(currentId) }] }) });
 
@@ -3361,10 +3377,7 @@ function showShortcuts() {
 }
 const LEGAL_URL = 'https://bradcowdrey.com/legal';
 const TERMS_VERSION = '2026-10-21'; // bump when the terms change materially, so everyone is asked again
-function openLegal() {
-  if (TAURI) TAURI.opener.openUrl(LEGAL_URL).catch(() => {});
-  else window.open(LEGAL_URL, '_blank', 'noopener');
-}
+function openLegal() { openExternal(LEGAL_URL); }
 // Asked once (and again after a material change). Closing without agreeing asks again next time.
 function askTermsOnce() {
   if (store.get(KEY + ':terms', null) === TERMS_VERSION) return;
@@ -3634,6 +3647,15 @@ function resolvePath(base, rel) {
   const out = [];
   for (const x of parts) { if (x === '..') out.pop(); else if (x && x !== '.') out.push(x); }
   return '/' + out.join('/');
+}
+if (IOS_APP) {
+  // A web view has no new tabs, so links that would open one (or leave the page) open in Safari instead.
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest && e.target.closest('a[href]');
+    if (!a || !/^(https?:|mailto:|tel:)/i.test(a.getAttribute('href'))) return;
+    e.preventDefault();
+    openExternal(a.href);
+  }, true);
 }
 if (TAURI) {
   const takeOpened = () => TAURI.core.invoke('take_opened_files').then((files) => { if (files && files.length) openPathsAsDocs(files); }).catch(() => {});

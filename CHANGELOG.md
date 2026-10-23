@@ -1,6 +1,13 @@
 # Changelog
 
-Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
+iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
+
+## 1.0.14
+
+- **Cowdrey.MD for iPhone and iPad**, built for the App Store from the same code as the Mac app.
+  - Export (.md or .html) opens the share sheet: Save to Files, AirDrop, Mail or any app.
+  - Web links open in Safari, and the editor fits phone screens, with the menus scrolling sideways.
+- On narrow screens the File, Edit, View… menus scroll sideways instead of running into each other.
 
 ## 1.0.13
 

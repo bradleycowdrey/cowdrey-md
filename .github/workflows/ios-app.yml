@@ -82,7 +82,10 @@ jobs:
               try:
                   with urllib.request.urlopen(urllib.request.Request(url, headers={"Authorization": "Bearer " + tok})) as r:
                       data = json.load(r)
-                      print("%s: HTTP %d, %d found" % (name, r.status, len(data.get("data", []))))
+                      n = len(data.get("data", []))
+                      print("%s: HTTP %d, %d found" % (name, r.status, n))
+                      if name == "app record" and n == 0:
+                          print("No app with bundle ID com.bradcowdrey.cowdreymd in App Store Connect yet: create it under Apps, + New App.")
               except urllib.error.HTTPError as e:
                   ok = False
                   body = e.read().decode(errors="replace")

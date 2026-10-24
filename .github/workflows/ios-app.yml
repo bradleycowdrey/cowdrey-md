@@ -56,6 +56,45 @@ jobs:
         working-directory: desktop/src-tauri
         run: cargo build --release --lib --target aarch64-apple-ios 2>&1 | tee -a "$RUNNER_TEMP/ios-build.log"; exit ${PIPESTATUS[0]}
 
+      # Signs a short-lived token with the key and asks App Store Connect two questions, so a wrong key,
+      # a key without Admin access or a missing app record fails here with a clear message.
+      - name: Check the App Store Connect key
+        if: env.HAS_KEY == 'true'
+        env:
+          P8: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: |
+          set -o pipefail
+          python3 -m pip install --quiet --break-system-packages pyjwt cryptography 2>/dev/null || python3 -m pip install --quiet pyjwt cryptography
+          python3 - <<'PY' 2>&1 | tee -a "$RUNNER_TEMP/ios-build.log"
+          import os, sys, time, json, urllib.request, urllib.error, jwt
+          p8 = os.environ["P8"].replace("\r", "").strip()
+          print("key file: %d lines, starts with BEGIN PRIVATE KEY: %s, ends with END PRIVATE KEY: %s" % (
+              len(p8.splitlines()), p8.startswith("-----BEGIN PRIVATE KEY-----"), p8.endswith("-----END PRIVATE KEY-----")))
+          print("key ID length: %d, issuer ID length: %d" % (len(os.environ["APPLE_API_KEY"].strip()), len(os.environ["APPLE_API_ISSUER"].strip())))
+          try:
+              tok = jwt.encode({"iss": os.environ["APPLE_API_ISSUER"].strip(), "iat": int(time.time()), "exp": int(time.time()) + 600,
+                                "aud": "appstoreconnect-v1"}, p8, algorithm="ES256", headers={"kid": os.environ["APPLE_API_KEY"].strip(), "typ": "JWT"})
+          except Exception as e:
+              sys.exit("The APP_STORE_CONNECT_API_KEY secret is not a valid .p8 private key: %s" % e)
+          ok = True
+          for name, url in [("app record", "https://api.appstoreconnect.apple.com/v1/apps?filter[bundleId]=com.bradcowdrey.cowdreymd"),
+                            ("certificates (needs Admin)", "https://api.appstoreconnect.apple.com/v1/certificates?limit=1")]:
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(url, headers={"Authorization": "Bearer " + tok})) as r:
+                      data = json.load(r)
+                      print("%s: HTTP %d, %d found" % (name, r.status, len(data.get("data", []))))
+              except urllib.error.HTTPError as e:
+                  ok = False
+                  body = e.read().decode(errors="replace")
+                  try: body = "; ".join("%s: %s" % (x.get("title"), x.get("detail")) for x in json.loads(body)["errors"])
+                  except Exception: pass
+                  print("%s: HTTP %d %s" % (name, e.code, body))
+              except Exception as e:
+                  ok = False
+                  print("%s: could not reach App Store Connect: %s" % (name, e))
+          sys.exit(0 if ok else "App Store Connect refused the key. See the lines above.")
+          PY
+
       - name: Create the Xcode project
         if: env.HAS_KEY == 'true'
         working-directory: desktop
@@ -68,6 +107,8 @@ jobs:
           echo "Info.plist: $PLIST" | tee -a "$RUNNER_TEMP/ios-build.log"
           # Uses only the encryption built into iOS, so no export compliance questions on each upload.
           /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" "$PLIST" || /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption false" "$PLIST"
+          # Documents are opened as copies through the Files picker, not edited in place.
+          /usr/libexec/PlistBuddy -c "Add :LSSupportsOpeningDocumentsInPlace bool false" "$PLIST" || true
 
       - name: Build, sign and upload to TestFlight
         if: env.HAS_KEY == 'true'

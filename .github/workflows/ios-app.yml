@@ -50,7 +50,7 @@ jobs:
         working-directory: desktop
         run: node build.mjs
 
-      # Without the API key, prove the iOS code compiles. Nothing is signed or uploaded.
+      # Without the API key, only prove the iOS code compiles: nothing is signed or uploaded.
       - name: Compile for iOS (no App Store key yet)
         if: env.HAS_KEY == 'false'
         working-directory: desktop/src-tauri

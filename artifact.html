@@ -3980,7 +3980,8 @@ const SHEETS = {
   },
   more: {
     title: 'More',
-    body: () => mGroup('Document', [mRow('newDoc'), mRow('openFile'), mRow('pasteDoc'), mRow('renameDoc'), mAct('duplicate', 'copy-plus', 'Duplicate'), mAct('share', 'share', 'Share and export…'), mRow('deleteDoc', { danger: true })])
+    body: () => mSec('Appearance') + mSegPick('appTheme', [['system', 'Automatic'], ['light', 'Light'], ['dark', 'Dark']], S.appTheme)
+      + mGroup('Document', [mRow('newDoc'), mRow('openFile'), mRow('pasteDoc'), mRow('renameDoc'), mAct('duplicate', 'copy-plus', 'Duplicate'), mAct('share', 'share', 'Share and export…'), mRow('deleteDoc', { danger: true })])
       + mGroup('Tools', [mRow('find', { label: 'Find' }), mRow('replace', { label: 'Find and replace' }), mRow('wordCount'), mAct('outline', 'list-tree', 'Outline'), mAct('docs', 'files', 'All documents')])
       + mGroup('Writing', [mRow('toggleFocus'), mRow('toggleTypewriter'), mRow('toggleLineNumbers')])
       + mGroup('Help', [mRow('guide'), mRow('legal'), mRow('about'), mAct('shareApp', 'heart', 'Share Cowdrey.MD')]),

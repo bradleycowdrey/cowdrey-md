@@ -434,8 +434,14 @@ await test('phone: Format, Insert, Share and More sheets, Documents panel and re
   await Q.fill('#mRenameInput', 'Phone notes'); await Q.click('#dialog [data-a="1"]'); await settle(Q, 200);
   eq(await Q.textContent('#mTitle'), 'Phone notes');
   eq(await Q.evaluate(() => document.querySelector('#docTitle').value), 'Phone notes');
+  // Appearance is in the ··· menu from the reading view too, and stays open while you choose
+  await Q.click('#mBar [data-m="done"]'); await settle(Q, 200);
+  await Q.click('#mBar [data-m="more"]'); await settle(Q, 200);
+  await Q.click('#mSheet [data-set="appTheme"][data-v="dark"]'); await settle(Q, 200);
+  eq(await Q.evaluate(() => [document.documentElement.getAttribute('data-theme'), !document.querySelector('#mSheet').hidden, document.querySelector('#mSheet [data-v="dark"]').getAttribute('aria-pressed')]), ['dark', true, 'true']);
+  await Q.click('#mSheet [data-set="appTheme"][data-v="system"]'); await Q.click('#mSheet [data-m="close"]');
   // Share sheet in reading view
-  await Q.click('#mBar [data-m="done"]'); await Q.click('#mBar [data-m="share"]'); await settle(Q, 200);
+  await Q.click('#mBar [data-m="share"]'); await settle(Q, 200);
   ok(await Q.$('#mSheet [data-cmd="saveMd"]') && await Q.$('#mSheet [data-cmd="copyRich"]'), 'share options');
   await Q.click('#mSheet [data-m="close"]');
   // Documents opens the document list over the page, and closes on a tap outside

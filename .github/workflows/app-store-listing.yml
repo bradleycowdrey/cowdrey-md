@@ -35,7 +35,9 @@ jobs:
         run: |
           set -o pipefail
           pip install --quiet pyjwt cryptography
-          python3 .github/scripts/app_store_listing.py 2>&1 | tee "$RUNNER_TEMP/listing.log"
+          # After an iPhone build only the build is attached; the full listing is filled in when docs/app-store changes.
+          MODE=$([[ "${{ github.event_name }}" == workflow_run ]] && echo --build-only || true)
+          python3 .github/scripts/app_store_listing.py $MODE 2>&1 | tee "$RUNNER_TEMP/listing.log"
 
       # The result goes on the app-store-log branch, so it can be read without signing in to GitHub.
       - name: Publish the result

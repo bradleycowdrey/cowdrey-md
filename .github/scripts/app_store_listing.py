@@ -5,6 +5,8 @@ age rating, price (free), availability, the version's text and screenshots, App 
 attaches the newest processed build for the version in tauri.conf.json. It never submits for review:
 that stays a person's decision in App Store Connect.
 
+With --build-only (after each iPhone build) it only sets the version number and attaches the build.
+
 Each step runs on its own and reports what happened, so one refusal doesn't stop the rest.
 Environment: APPLE_API_ISSUER, APPLE_API_KEY (key ID), P8 (private key text).
 """
@@ -237,6 +239,16 @@ def upload_set(loc, display, files):
             'uploaded': True, 'sourceFileChecksum': hashlib.md5(data).hexdigest()}}})
     return f'{len(files)} uploaded'
 
+
+if '--build-only' in sys.argv:
+    # After an iPhone build: only move the version number and attach the new build. Text and screenshots are
+    # left alone, so edits made by hand in App Store Connect are kept.
+    v = editable_version()
+    version_fields(v)
+    attach_build(v)
+    for status, name, detail in results:
+        print(f"[{status}] {name}" + (f" — {detail}" if detail else ''))
+    sys.exit(0)
 
 content_rights()
 info = editable_app_info()

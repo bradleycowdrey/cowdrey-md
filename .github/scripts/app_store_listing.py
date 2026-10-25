@@ -175,8 +175,13 @@ def version_fields(v):
 
 @step('Build: newest processed upload of this version')
 def attach_build(v):
-    builds = call('GET', f'/v1/builds?filter[app]={APP}&filter[preReleaseVersion.version]={VERSION}&sort=-uploadedDate&limit=10')['data']
-    ok = [b for b in builds if b['attributes'].get('processingState') == 'VALID' and not b['attributes'].get('expired')]
+    # Right after an upload, Apple takes 5–30 minutes to process the build: wait for it.
+    for _ in range(45):
+        builds = call('GET', f'/v1/builds?filter[app]={APP}&filter[preReleaseVersion.version]={VERSION}&sort=-uploadedDate&limit=10')['data']
+        ok = [b for b in builds if b['attributes'].get('processingState') == 'VALID' and not b['attributes'].get('expired')]
+        if ok or not any(b['attributes'].get('processingState') == 'PROCESSING' for b in builds) and builds:
+            break
+        print('Waiting for Apple to process the build…', flush=True); time.sleep(60)
     if not ok:
         states = ', '.join(b['attributes'].get('processingState', '?') for b in builds) or 'none uploaded'
         raise ApiError(f'no processed build of {VERSION} yet ({states}). Run this again once Apple has processed it.')

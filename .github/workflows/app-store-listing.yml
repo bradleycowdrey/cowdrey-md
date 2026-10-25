@@ -8,6 +8,11 @@ on:
       - docs/app-store/**
       - .github/scripts/app_store_listing.py
       - .github/workflows/app-store-listing.yml
+  # After each iPhone build uploads, attach it to the App Store version once Apple has processed it.
+  workflow_run:
+    workflows: ['iPhone app']
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -17,6 +22,8 @@ jobs:
   listing:
     name: Fill in the App Store listing (does not submit)
     runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 

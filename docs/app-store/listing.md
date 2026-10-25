@@ -25,6 +25,12 @@ A Markdown editor that feels like Docs and Word. Write on one side, see a clean,
 
 Cowdrey.MD is a Markdown editor that feels like Docs and Word. Type plain text and watch it become a clean, printable page as you write.
 
+WORKS LIKE PAGES AND WORD
+• Read your document as a page, then tap Edit to write
+• A formatting bar above the keyboard: styles, bold, italic, lists, links and more
+• Format, Insert, Share and More panels slide up from the bottom
+• Double-tap anywhere on the page to edit that spot
+
 WRITE
 • Syntax-highlighted Markdown with lists that continue and renumber themselves
 • A Word-style ribbon for bold, headings, lists, links, tables, quotes and code
@@ -57,7 +63,7 @@ markdown,editor,md,notes,writing,text,latex,math,mermaid,docs,preview,export,htm
 
 ## What's New in This Version
 
-First release on iPhone and iPad.
+First release on iPhone and iPad. On iPhone it works like Pages and Word: read the page, tap Edit to write, with a formatting bar above the keyboard and Format and Insert panels.
 
 ## App Review Information
 
@@ -65,7 +71,7 @@ First release on iPhone and iPad.
 - Contact: Bradley Cowdrey, legal@bradcowdrey.com (add a phone number in App Store Connect)
 - Notes:
 
-  Cowdrey.MD is a Markdown editor. No account or sign-in is needed. On first launch it asks the user to agree to the Terms of Use (bradcowdrey.com/legal); tap "I agree". A sample document opens: edit the text, then tap the eye and split icons in the bottom bar to see the rendered page. Export (top right) opens the iOS share sheet. All documents are stored locally on the device; the app makes no network requests except opening web links in Safari.
+  Cowdrey.MD is a Markdown editor. No account or sign-in is needed. On first launch it asks the user to agree to the Terms of Use (bradcowdrey.com/legal); tap "I agree". A sample document opens as a page. Tap Edit to write; the formatting bar above the keyboard and the paintbrush (Format) and + (Insert) buttons change the text. Tap Done to see the page again. The share button (top right, in the reading view) opens the iOS share sheet. All documents are stored locally on the device; the app makes no network requests except opening web links in Safari.
 
 ## App Privacy
 
@@ -79,7 +85,7 @@ Already answered in the build (ITSAppUsesNonExemptEncryption = NO), so App Store
 
 Upload from `docs/app-store/` in this repository:
 
-- **iPhone 6.9" display** (1320 × 2868): `iphone-1-write.png`, `iphone-2-page.png`, `iphone-3-math-dark.png`, `iphone-4-split.png`, `iphone-5-share.png`
+- **iPhone 6.9" display** (1320 × 2868): `iphone-1-write.png`, `iphone-2-page.png`, `iphone-3-math-dark.png`, `iphone-4-format.png`, `iphone-5-insert.png`
 - **iPad 13" display** (2064 × 2752): `ipad-1-split.png`, `ipad-2-math-dark.png`, `ipad-3-page.png`
 
 Apple scales these down for smaller iPhones and iPads.

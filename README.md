@@ -14,6 +14,7 @@ It combines MacDown's side-by-side writing, a Docs-style title bar, menus and pa
 
 ## What's new
 
+- **1.0.16: the iPhone layout works like Pages and Word.** Read the page, tap Edit to write, with a formatting bar above the keyboard and Format, Insert, Share and More panels.
 - **1.0.14: Cowdrey.MD for iPhone and iPad**, on its way to the App Store. Export opens the share sheet (Save to Files, AirDrop, Mail), and links open in Safari.
 - **Cowdrey.MD has a home on bradcowdrey.com.** [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) shows the editor running live in a Mac window, with features, install steps and a Share button. The full-screen editor is at [bradcowdrey.com/cowdrey-md/app](https://bradcowdrey.com/cowdrey-md/app).
 - **1.0.9:** better layouts for phones and tablets. In the Mac app, Quit saves your work first, the Edit menu uses the standard Mac items, and keyboard and screen-reader support is better.

@@ -2,6 +2,16 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.16
+
+- **The iPhone layout works like Pages and Word for iPhone.**
+  - **Reading view.** The page fits the screen. Tap **Edit**, or double-tap a paragraph, to write there.
+  - **Editing view.** Done, Undo and Redo at the top, and a formatting bar above the keyboard (style, bold, italic, underline, strikethrough, highlight, lists, indents, link, quote, code, insert).
+  - **Format panel**, with Style, Text and Page tabs. **Insert panel**, with tables, pictures, links, equations, diagrams and more. **Share** and **More** panels. All slide up from the bottom.
+  - The editor reads like a document: serif text, large headings and faded Markdown symbols.
+  - **Documents** opens your document list. Tap the title to rename.
+- Changing a paragraph style keeps your selection on the same words (before, it selected the whole line).
+
 ## 1.0.15
 
 - The iPhone and iPad app says documents are saved **on this device** (not "in this browser").

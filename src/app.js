@@ -573,8 +573,12 @@ function selLineRange() {
 function replaceLines(a, b, lines) {
   const hadSel = cm.somethingSelected();
   const c = cm.getCursor(), fromEnd = cm.getLine(c.line).length - c.ch;
+  // A selection inside one line keeps covering the same words, as in Word; across lines, the lines stay selected.
+  const an = cm.getCursor('anchor'), hd = cm.getCursor('head'), len0 = cm.getLine(a).length;
+  const oneLine = hadSel && a === b && an.line === a && hd.line === a;
   cm.replaceRange(lines.join('\n'), { line: a, ch: 0 }, { line: b, ch: cm.getLine(b).length });
-  if (hadSel) cm.setSelection({ line: a, ch: 0 }, { line: b, ch: cm.getLine(b).length });
+  if (oneLine) { const d = cm.getLine(a).length - len0, at = (ch) => ({ line: a, ch: clamp(ch + d, 0, cm.getLine(a).length) }); cm.setSelection(at(an.ch), at(hd.ch)); }
+  else if (hadSel) cm.setSelection({ line: a, ch: 0 }, { line: b, ch: cm.getLine(b).length });
   else cm.setCursor({ line: c.line, ch: Math.max(0, cm.getLine(c.line).length - fromEnd) });
 }
 function setHeading(n) {
@@ -1256,6 +1260,7 @@ function deleteDoc(id) {
   toast(`Deleted “${d.title}”`);
 }
 function renderTabs() {
+  if (mobileReady) mobileTitle();
   const el = $('#docTabs');
   el.setAttribute('role', 'tablist'); el.setAttribute('aria-label', 'Open documents');
   const open = S.openTabs.map((id) => docs.find((x) => x.id === id)).filter(Boolean);
@@ -2047,7 +2052,7 @@ function toggleOutline(force) {
   requestAnimationFrame(() => { cm.refresh(); sizePage(); });
 }
 document.addEventListener('pointerdown', (e) => {
-  if (app.dataset.overlay === 'on' && !e.target.closest('#sidebar, #sideToggle, #popover, #dialog')) toggleOutline(false);
+  if (app.dataset.overlay === 'on' && !e.target.closest('#sidebar, #sideToggle, #popover, #dialog, [data-m="docs"], [data-m="outline"], #mSheet')) toggleOutline(false);
 }, true);
 for (const q of ['(max-width: 1180px)', '(max-width: 760px)']) {
   matchMedia(q).addEventListener?.('change', () => { overlayOpen = false; applySidebarMode(); requestAnimationFrame(() => { cm.refresh(); sizePage(); buildLineMap(); updateRibbonOverflow(); }); });
@@ -2481,6 +2486,225 @@ function resolvePath(base, rel) {
   for (const x of parts) { if (x === '..') out.pop(); else if (x && x !== '.') out.push(x); }
   return '/' + out.join('/');
 }
+/* ================================================================
+   Phone layout, in the style of Pages and Word for iPhone
+   Reading view: the page, fitted to the screen, with an Edit button.
+   Editing view: Done, Undo and Redo, a formatting bar above the keyboard, and
+   Format, Insert, Share and More as bottom sheets.
+   ================================================================ */
+var mobileReady = false; // renderTabs runs before this block on startup
+const phoneMQ = matchMedia('(max-width: 600px), (max-height: 500px) and (pointer: coarse)');
+let mobile = false, mmode = 'read', sheetKind = null, sheetTab = null, deskView = null;
+const STYLE_NAMES = { normal: 'Body', h1: 'Heading 1', h2: 'Heading 2', h3: 'Heading 3', h4: 'Heading 4', quote: 'Quote', codeBlock: 'Code' };
+const STYLE_LOOK = {
+  normal: 'font-family:var(--font-serif);font-size:17px', h1: 'font-weight:700;font-size:25px;letter-spacing:-.01em',
+  h2: 'font-weight:650;font-size:21px', h3: 'font-weight:650;font-size:18px', h4: 'font-weight:600;font-size:16px',
+  quote: 'font-family:var(--font-serif);font-style:italic;font-size:17px;color:var(--ink-2)', codeBlock: 'font-family:var(--font-mono);font-size:15px',
+};
+const blurEditor = () => { if (cm.hasFocus()) cm.getInputField().blur(); };
+// Formatting from a sheet changes the text without bringing the keyboard back over the sheet.
+function runQuiet(id, anchor) { const f = cm.focus; cm.focus = () => {}; try { runCmd(id, anchor); } finally { cm.focus = f; } }
+
+function mobileTitle() {
+  const t = $('#mTitle'); if (!t) return;
+  t.textContent = isEmpty() ? 'Cowdrey.MD' : (cur() ? cur().title : '');
+  if (mobile && isEmpty() && mmode === 'edit') setMobileMode('read');
+}
+function setMobileMode(m, { focus = true } = {}) {
+  mmode = m; app.dataset.mmode = m;
+  if (m === 'edit') { setView('editor'); if (!focus) blurEditor(); }
+  else { blurEditor(); setView('preview'); }
+  updateMobileKeys();
+}
+function applyMobile() {
+  const on = phoneMQ.matches;
+  if (on === mobile) return;
+  mobile = on; app.dataset.mobile = on ? 'on' : 'off';
+  closeSheet();
+  if (on) { deskView = S.view; setMobileMode('read'); }
+  else { delete app.dataset.mmode; setView(deskView && deskView !== 'preview' ? deskView : 'split'); }
+  mobileTitle(); fitViewport();
+  requestAnimationFrame(() => { cm.refresh(); sizePage(); buildLineMap(); });
+}
+// Keep the editor and formatting bar above the keyboard: size the app to the visible part of the screen.
+function fitViewport() {
+  const vv = window.visualViewport;
+  if (!mobile || !vv) { app.style.removeProperty('--vvh'); app.style.removeProperty('--kb-safe'); return; }
+  app.style.setProperty('--vvh', Math.round(vv.height) + 'px');
+  app.style.setProperty('--kb-safe', window.innerHeight - vv.height > 120 ? '0px' : 'env(safe-area-inset-bottom, 0px)');
+  if (window.scrollY) window.scrollTo(0, 0);
+  if (mmode === 'edit' && cm.hasFocus()) requestAnimationFrame(() => { cm.refresh(); cm.scrollIntoView(null, 48); });
+}
+if (window.visualViewport) { visualViewport.addEventListener('resize', fitViewport); visualViewport.addEventListener('scroll', () => { if (mobile && window.scrollY) window.scrollTo(0, 0); }); }
+function updateMobileKeys() {
+  if (!mobile || mmode !== 'edit' || isEmpty()) return;
+  $('#mStyle').textContent = STYLE_NAMES[currentStyle()] || 'Body';
+}
+cm.on('cursorActivity', debounce(updateMobileKeys, 60));
+
+function mobileRename() {
+  if (isEmpty()) return;
+  openDialog({
+    title: 'Rename document',
+    body: `<input class="m-input" id="mRenameInput" type="text" value="${esc(cur().title)}" aria-label="Document name" spellcheck="false" autocomplete="off">`,
+    actions: [{ label: 'Cancel' }, { label: 'Rename', primary: true, run: () => { const v = $('#mRenameInput').value.trim(); if (v) { titleInput.value = v; titleInput.dispatchEvent(new Event('input')); } } }],
+    onOpen: (d) => {
+      const i = d.querySelector('#mRenameInput'); i.focus(); i.select();
+      i.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); d.querySelector('[data-a="1"]').click(); } });
+    },
+  });
+}
+function shareApp() {
+  if (typeof navigator.share === 'function' && !inArtifact()) navigator.share({ title: 'Cowdrey.MD', text: SHARE_TEXT, url: APP_URL }).catch(() => {});
+  else copyText(APP_URL, 'Link to Cowdrey.MD copied');
+}
+
+/* sheet content */
+const mRow = (id, o = {}) => {
+  const c = C[id]; if (!c || (c.hidden && c.hidden())) return '';
+  const on = c.checked ? !!c.checked() : null;
+  return `<button type="button" class="m-row${o.danger ? ' danger' : ''}" data-cmd="${id}"${on === null ? '' : ` role="switch" aria-checked="${on}"`}>${ic(o.icon || c.icon)}<span class="m-row-l">${esc(o.label || c.label)}</span>${on === null ? '' : `<span class="m-switch" data-on="${on}"></span>`}</button>`;
+};
+const mAct = (m, icon, label, o = {}) => `<button type="button" class="m-row${o.danger ? ' danger' : ''}" data-m="${m}">${ic(icon)}<span class="m-row-l">${esc(label)}</span></button>`;
+const mGroup = (title, rows) => { const r = rows.filter(Boolean).join(''); return r ? (title ? `<div class="m-sec">${esc(title)}</div>` : '<div style="height:12px"></div>') + `<div class="m-group">${r}</div>` : ''; };
+const mSegCmds = (ids) => `<div class="m-seg">${ids.map((id) => `<button type="button" data-cmd="${id}" aria-label="${esc(C[id].label)}" title="${esc(C[id].label)}">${ic(C[id].icon)}</button>`).join('')}</div>`;
+const mSegPick = (key, pairs, now) => `<div class="m-seg">${pairs.map(([v, l]) => `<button type="button" data-set="${key}" data-v="${v}" aria-pressed="${now === v}">${l}</button>`).join('')}</div>`;
+const mSec = (t) => `<div class="m-sec">${esc(t)}</div>`;
+const INSERT_TILES = ['table', 'image', 'imageUrl', 'link', 'footnote', 'codeBlock', 'math', 'diagram', 'callout', 'details', 'hr', 'toc', 'date', 'deflist', 'frontMatter'];
+const SHEETS = {
+  format: {
+    title: 'Format', tabs: [['style', 'Style'], ['text', 'Text'], ['page', 'Page']],
+    body: (tab) => {
+      if (tab === 'style') {
+        const now = currentStyle();
+        return mSec('Paragraph style') + `<div class="m-group">${Object.keys(STYLE_NAMES).map((id) => `<button type="button" class="m-row m-style${id === now ? ' on' : ''}" data-cmd="${id}" aria-pressed="${id === now}"><span class="m-row-l" style="${STYLE_LOOK[id]}">${STYLE_NAMES[id]}</span>${id === now ? `<span class="m-check">${ic('check')}</span>` : ''}</button>`).join('')}</div>`;
+      }
+      if (tab === 'text') {
+        return mSec('Font') + mSegCmds(['bold', 'italic', 'underline', 'strike']) + '<div style="height:8px"></div>' + mSegCmds(['highlight', 'code', 'sup', 'sub'])
+          + mSec('Lists and indents') + mSegCmds(['ul', 'ol', 'task']) + '<div style="height:8px"></div>' + mSegCmds(['outdent', 'indent', 'quote'])
+          + mGroup('', [mRow('link'), mRow('clearFormat')]);
+      }
+      return mSec('Page style') + `<div class="m-cards">${PAGE_STYLES.map(([id, n, st]) => `<button type="button" class="m-card" data-set="pageStyle" data-v="${id}" aria-pressed="${S.pageStyle === id}"><span class="s" style="${st}">Aa</span>${n}</button>`).join('')}</div>`
+        + mSec('Paper') + mSegPick('pageSize', Object.entries(PAGES).map(([k, v]) => [k, v.label]), S.pageSize)
+        + mSec('Margins') + mSegPick('margins', [['narrow', 'Narrow'], ['normal', 'Normal'], ['wide', 'Wide']], S.margins)
+        + mSec('Appearance') + mSegPick('appTheme', [['system', 'Automatic'], ['light', 'Light'], ['dark', 'Dark']], S.appTheme)
+        + mSec('Editing text size') + `<div class="m-seg"><button type="button" data-edsize="-1" aria-label="Smaller">${ic('a-arrow-down')}</button><button type="button" disabled style="opacity:1">${S.edSize + 3} pt</button><button type="button" data-edsize="1" aria-label="Larger">${ic('a-arrow-up')}</button></div>`
+        + mGroup('Markdown', [mRow('typographer'), mRow('breaks'), mRow('toggleMath'), mRow('toggleDiagrams')]);
+    },
+  },
+  insert: {
+    title: 'Insert',
+    body: () => `<div class="m-tiles">${INSERT_TILES.filter((id) => C[id]).map((id) => `<button type="button" class="m-tile" data-cmd="${id}">${ic(C[id].icon)}<span>${esc(C[id].label.replace(/…$/, ''))}</span></button>`).join('')}</div>`,
+  },
+  share: {
+    title: 'Share and export',
+    body: () => mGroup('Send a copy', [mRow('saveMd', { label: IOS_APP ? 'Share Markdown (.md)…' : 'Download Markdown (.md)' }), mRow('exportHtml', { label: IOS_APP ? 'Share web page (.html)…' : 'Download web page (.html)' }), mRow('print')])
+      + mGroup('Copy', [mRow('copyRich'), mRow('copyMd'), mRow('copyHtml')])
+      + mGroup('', [mAct('shareApp', 'heart', 'Share Cowdrey.MD with a friend')]),
+  },
+  more: {
+    title: 'More',
+    body: () => mGroup('Document', [mRow('newDoc'), mRow('openFile'), mRow('pasteDoc'), mRow('renameDoc'), mAct('duplicate', 'copy-plus', 'Duplicate'), mAct('share', 'share', 'Share and export…'), mRow('deleteDoc', { danger: true })])
+      + mGroup('Tools', [mRow('find', { label: 'Find' }), mRow('replace', { label: 'Find and replace' }), mRow('wordCount'), mAct('outline', 'list-tree', 'Outline'), mAct('docs', 'files', 'All documents')])
+      + mGroup('Writing', [mRow('toggleFocus'), mRow('toggleTypewriter'), mRow('toggleLineNumbers')])
+      + mGroup('Help', [mRow('guide'), mRow('legal'), mRow('about'), mAct('shareApp', 'heart', 'Share Cowdrey.MD')]),
+  },
+};
+const KEEP_OPEN = new Set(['format']); // like Pages, the Format sheet stays up while you try styles
+function openSheet(kind, tab) {
+  const def = SHEETS[kind];
+  sheetKind = kind;
+  sheetTab = def.tabs ? (tab || (def.tabs.some(([k]) => k === sheetTab) ? sheetTab : def.tabs[0][0])) : null;
+  $('#mSheetTitle').textContent = def.title;
+  $('#mSheetTabs').innerHTML = def.tabs ? def.tabs.map(([k, l]) => `<button type="button" role="tab" data-mtab="${k}" aria-selected="${k === sheetTab}">${l}</button>`).join('') : '';
+  blurEditor(); closePopover();
+  $('#mSheetBody').scrollTop = 0; renderSheet();
+  $('#mSheet').hidden = false; $('#mScrim').hidden = false; $('#mSheet').style.transform = '';
+  $('#mSheet').querySelector('[data-m="close"]').focus({ preventScroll: true });
+}
+function renderSheet() {
+  if (!sheetKind) return;
+  const body = $('#mSheetBody'), top = body.scrollTop;
+  body.innerHTML = SHEETS[sheetKind].body(sheetTab);
+  refreshIcons(); body.scrollTop = top;
+}
+function closeSheet({ refocus = false } = {}) {
+  if ($('#mSheet').hidden) return;
+  const was = sheetKind;
+  $('#mSheet').hidden = true; $('#mScrim').hidden = true; sheetKind = null;
+  if (refocus && was === 'format' && mmode === 'edit') cm.focus();
+}
+function mobileAction(m, el) {
+  switch (m) {
+    case 'docs': closeSheet(); setSideTab('docs'); toggleOutline(true); break;
+    case 'outline': closeSheet(); setSideTab('outline'); toggleOutline(true); break;
+    case 'done': setMobileMode('read'); break;
+    case 'edit': setMobileMode('edit'); cm.focus(); break;
+    case 'rename': mobileRename(); break;
+    case 'format': case 'insert': case 'share': case 'more': openSheet(m); break;
+    case 'style': openSheet('format', 'style'); break;
+    case 'hidekb': blurEditor(); break;
+    case 'close': closeSheet({ refocus: true }); break;
+    case 'shareApp': closeSheet(); shareApp(); break;
+    case 'duplicate': closeSheet(); if (!isEmpty()) duplicateDoc(currentId); break;
+  }
+}
+// Buttons in the bars keep the keyboard up (no focus change) and act on tap.
+for (const el of [$('#mBar'), $('#mKeys')]) {
+  el.addEventListener('pointerdown', (e) => { if (e.target.closest('button') && el.id === 'mKeys') e.preventDefault(); });
+  el.addEventListener('mousedown', (e) => { if (e.target.closest('button') && el.id === 'mKeys') e.preventDefault(); });
+  el.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.cmd) { runCmd(b.dataset.cmd, b); updateMobileKeys(); return; }
+    if (b.dataset.m) mobileAction(b.dataset.m, b);
+  });
+}
+$('#mEdit').addEventListener('click', () => mobileAction('edit'));
+$('#mScrim').addEventListener('click', () => closeSheet({ refocus: true }));
+$('#mSheetTabs').addEventListener('click', (e) => { const t = e.target.closest('[data-mtab]'); if (t) { sheetTab = t.dataset.mtab; $$('#mSheetTabs [data-mtab]').forEach((b) => b.setAttribute('aria-selected', b === t)); $('#mSheetBody').scrollTop = 0; renderSheet(); } });
+$('#mSheet').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b || b.closest('#mSheetTabs')) return;
+  if (b.dataset.m) { mobileAction(b.dataset.m, b); return; }
+  const kind = sheetKind;
+  if (b.dataset.cmd) {
+    const id = b.dataset.cmd, c = C[id];
+    if (KEEP_OPEN.has(kind) || (c && c.checked)) { runQuiet(id, b); renderSheet(); updateMobileKeys(); return; }
+    closeSheet();
+    if (id === 'table') { openTablePicker($(mmode === 'edit' ? '#mBar [data-m="insert"]' : '#mBar [data-m="more"]')); return; }
+    runCmd(id, b); updateMobileKeys(); return;
+  }
+  if (b.dataset.set) {
+    const k = b.dataset.set, v = b.dataset.v;
+    S[k] = v;
+    if (k === 'appTheme') { saveSettings(); applyTheme(); } else applyPagePrefs();
+    renderSheet(); return;
+  }
+  if (b.dataset.edsize) { S.edSize = clamp(S.edSize + +b.dataset.edsize, 11, 24); applyEditorPrefs(); renderSheet(); }
+});
+// Drag the sheet down by its top to dismiss it.
+(() => {
+  const sheet = $('#mSheet'); let y0 = null, dy = 0;
+  sheet.addEventListener('touchstart', (e) => { if (!e.target.closest('.m-grab, .m-sheet-head')) return; y0 = e.touches[0].clientY; dy = 0; sheet.style.transition = 'none'; }, { passive: true });
+  sheet.addEventListener('touchmove', (e) => { if (y0 == null) return; dy = Math.max(0, e.touches[0].clientY - y0); sheet.style.transform = `translateY(${dy}px)`; }, { passive: true });
+  sheet.addEventListener('touchend', () => { if (y0 == null) return; y0 = null; sheet.style.transition = ''; sheet.style.transform = ''; if (dy > 80) closeSheet({ refocus: true }); });
+})();
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && sheetKind) { e.preventDefault(); closeSheet({ refocus: true }); } });
+// Double-tap the page to edit that spot, as in Pages.
+preview.addEventListener('dblclick', (e) => {
+  if (!mobile || mmode !== 'read' || e.target.closest('a, input, .copy-code')) return;
+  const el = e.target.closest('[data-line]');
+  setMobileMode('edit'); cm.focus();
+  if (el) { const line = +el.getAttribute('data-line'); cm.setCursor({ line, ch: 0 }); cm.scrollIntoView({ line, ch: 0 }, 80); }
+});
+// On a phone these commands open the editing view (Find needs the text; a new document is for writing).
+for (const id of ['newDoc', 'pasteDoc', 'find', 'replace']) {
+  const run = C[id].run;
+  C[id].run = (...a) => { if (mobile && mmode !== 'edit' && id !== 'pasteDoc') setMobileMode('edit', { focus: false }); const r = run(...a); if (mobile && id === 'newDoc') { setMobileMode('edit'); cm.focus(); } return r; };
+}
+{ const run = C.renameDoc.run; C.renameDoc.run = (...a) => mobile ? mobileRename() : run(...a); }
+phoneMQ.addEventListener?.('change', applyMobile);
+mobileReady = true;
+
 if (IOS_APP) {
   // A web view has no new tabs, so links that would open one (or leave the page) open in Safari instead.
   document.addEventListener('click', (e) => {
@@ -2560,8 +2784,9 @@ applyTheme(); applyEditorPrefs(); applyPagePrefs();
 setSideTab(S.sideTab);
 if (S.allClosed && !S.openTabs.length) setEmpty(true); else openDoc(currentId);
 refreshState(); refreshIcons();
-if (window.innerWidth > 760) cm.focus();
+if (window.innerWidth > 760 && !phoneMQ.matches) cm.focus();
 if (firstRun) persist(); else setSaveState('saved');
+applyMobile(); mobileTitle();
 askTermsOnce();
 window.addEventListener('resize', debounce(() => { cm.refresh(); sizePage(); buildLineMap(); }, 120));
 document.fonts && document.fonts.ready.then(() => { cm.refresh(); sizePage(); buildLineMap(); });

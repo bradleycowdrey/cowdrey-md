@@ -542,6 +542,111 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
 .page.style-manuscript .preview p { margin: 0; }
 .page.style-manuscript .preview p + p { text-indent: 2em; }
 .page.style-manuscript .preview p + :not(p) { margin-top: 1em; }
+
+/* ================================================================
+   Phone layout, in the style of Pages and Word for iPhone: a reading view of the page with an
+   Edit button, an editing view with a formatting bar above the keyboard, and bottom sheets for
+   Format, Insert, Share and More. On when the screen is phone-sized (data-mobile="on").
+   ================================================================ */
+.m-bar, .m-keys, .m-fab, .m-sheet, .m-scrim { display: none; }
+.app[data-mobile="on"] { height: var(--vvh, 100%); }
+.app[data-mobile="on"] :is(.titlebar, .ribbon, .statusbar, .doc-tabs, .ruler, .divider) { display: none !important; }
+.app[data-mobile="on"] .m-bar { display: flex; align-items: center; gap: 2px; flex: none; background: var(--chrome); border-bottom: 1px solid var(--line); padding: calc(env(safe-area-inset-top, 0px) + 4px) max(6px, env(safe-area-inset-right, 0px)) 4px max(6px, env(safe-area-inset-left, 0px)); min-height: 48px; }
+.m-side { display: flex; align-items: center; gap: 0; flex: none; }
+.m-btn, .m-icon { border: 0; background: none; color: var(--accent); font: 500 16px/1 var(--font-ui); display: inline-flex; align-items: center; justify-content: center; gap: 2px; min-height: 44px; border-radius: 10px; -webkit-tap-highlight-color: transparent; }
+.m-btn { padding: 0 8px; }
+.m-btn svg { width: 24px; height: 24px; margin-left: -6px; }
+.m-done { font-weight: 600; }
+.m-icon { min-width: 44px; }
+.m-icon svg { width: 22px; height: 22px; }
+.m-btn:active, .m-icon:active { background: var(--hover); }
+.m-icon:disabled { color: var(--ink-3); opacity: .5; }
+.m-title { flex: 1; min-width: 0; border: 0; background: none; color: var(--ink); font: 600 16px/1.2 var(--font-ui); padding: 6px 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; border-radius: 8px; }
+.m-title:active { background: var(--hover); }
+.app[data-mobile="on"][data-mmode="read"] :is(.m-done, [data-m-edit]) { display: none; }
+.app[data-mobile="on"][data-mmode="edit"] :is(.m-docs, [data-m-read]) { display: none; }
+/* reading view: the page, fitted to the screen, on the canvas */
+.app[data-mobile="on"] .canvas { padding: 12px 8px calc(96px + env(safe-area-inset-bottom, 0px)); }
+.app[data-mobile="on"][data-mmode="read"] .m-fab { display: inline-flex; }
+.m-fab { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 12; align-items: center; gap: 8px; height: 52px; padding: 0 20px 0 16px; border: 0; border-radius: 26px; background: var(--accent); color: var(--accent-ink); font: 600 16px/1 var(--font-ui); box-shadow: 0 8px 24px rgba(20, 40, 120, .32); -webkit-tap-highlight-color: transparent; }
+.m-fab svg { width: 20px; height: 20px; }
+.m-fab:active { transform: scale(.97); }
+.app[data-mobile="on"][data-empty="on"] .m-fab { display: none; }
+/* editing view: the source reads like a document */
+.app[data-mobile="on"] .CodeMirror.cm-s-cowdrey { font-family: var(--font-serif); font-size: calc(var(--ed-size, 14px) + 3px); line-height: 1.6; }
+.app[data-mobile="on"] .cm-s-cowdrey pre.CodeMirror-line, .app[data-mobile="on"] .cm-s-cowdrey pre.CodeMirror-line-like { padding: 0 max(18px, env(safe-area-inset-right, 0px)) 0 max(18px, env(safe-area-inset-left, 0px)); }
+.app[data-mobile="on"] .cm-s-cowdrey .CodeMirror-lines { padding: 18px 0 40vh; }
+.app[data-mobile="on"] .cm-s-cowdrey .cm-header { font-family: var(--font-ui); letter-spacing: -.01em; }
+.app[data-mobile="on"] .cm-s-cowdrey .cm-header-1 { font-size: 1.7em; line-height: 1.25; }
+.app[data-mobile="on"] .cm-s-cowdrey .cm-header-2 { font-size: 1.38em; line-height: 1.3; }
+.app[data-mobile="on"] .cm-s-cowdrey .cm-header-3 { font-size: 1.17em; }
+.app[data-mobile="on"] .cm-s-cowdrey .cm-formatting:not(.cm-formatting-list):not(.cm-formatting-task) { opacity: .45; font-weight: 400; }
+.app[data-mobile="on"] .cm-s-cowdrey .cm-comment, .app[data-mobile="on"] .cm-s-cowdrey .cm-formatting-code-block { font-family: var(--font-mono); font-size: .86em; }
+/* the formatting bar: just above the keyboard while editing, like Pages and Word */
+.app[data-mobile="on"][data-mmode="edit"] .m-keys { display: flex; }
+.m-keys { flex: none; align-items: center; gap: 2px; overflow-x: auto; scrollbar-width: none; background: var(--chrome); border-top: 1px solid var(--line); padding: 4px max(6px, env(safe-area-inset-right, 0px)) calc(4px + var(--kb-safe, env(safe-area-inset-bottom, 0px))) max(6px, env(safe-area-inset-left, 0px)); -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 20px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 20px), transparent); }
+.m-keys::-webkit-scrollbar { display: none; }
+.m-keys button { flex: none; border: 0; background: none; color: var(--ink); min-width: 42px; height: 42px; border-radius: 9px; display: grid; place-items: center; font: 600 15px/1 var(--font-ui); -webkit-tap-highlight-color: transparent; }
+.m-keys button svg { width: 21px; height: 21px; }
+.m-keys button:active, .m-keys button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+.m-keys .m-aa { color: var(--accent); font-size: 17px; font-family: var(--font-serif); }
+.m-keys .m-k-sep { flex: none; width: 1px; height: 24px; background: var(--line); margin: 0 4px; }
+.m-keys .m-k-style { min-width: 0; padding: 0 10px; font-weight: 600; font-size: 14px; color: var(--accent); white-space: nowrap; }
+/* bottom sheets */
+.m-scrim { position: fixed; inset: 0; z-index: 40; background: rgba(10, 16, 30, .32); }
+.m-scrim:not([hidden]) { display: block; }
+.m-sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 41; flex-direction: column; max-height: min(78%, 640px); background: var(--surface); color: var(--ink); border-radius: 16px 16px 0 0; box-shadow: 0 -12px 40px rgba(10, 20, 40, .25); padding-bottom: env(safe-area-inset-bottom, 0px); animation: m-up .22s cubic-bezier(.2, .8, .2, 1); }
+.m-sheet:not([hidden]) { display: flex; }
+@keyframes m-up { from { transform: translateY(100%); } }
+.m-grab { width: 38px; height: 5px; border-radius: 3px; background: var(--line-strong); opacity: .5; margin: 7px auto 0; flex: none; }
+.m-sheet-head { display: flex; align-items: center; padding: 2px 6px 0 18px; flex: none; }
+.m-sheet-head h2 { flex: 1; margin: 0; font: 700 18px/1.2 var(--font-ui); }
+.m-sheet-tabs { display: flex; gap: 2px; margin: 6px 16px 4px; padding: 3px; background: var(--hover); border-radius: 10px; flex: none; }
+.m-sheet-tabs:empty { display: none; }
+.m-sheet-tabs button { flex: 1; border: 0; background: none; color: var(--ink); font: 600 14px/1 var(--font-ui); height: 34px; border-radius: 8px; }
+.m-sheet-tabs button[aria-selected="true"] { background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,.14); }
+.m-sheet-body { overflow: auto; padding: 6px 16px 16px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+.m-sec { font: 600 12.5px/1 var(--font-ui); color: var(--ink-2); text-transform: uppercase; letter-spacing: .04em; margin: 14px 4px 6px; }
+.m-group { background: var(--chrome); border-radius: 12px; overflow: hidden; }
+.m-row { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 48px; border: 0; background: none; color: var(--ink); font: 400 16px/1.25 var(--font-ui); text-align: left; padding: 6px 14px; -webkit-tap-highlight-color: transparent; }
+.m-row + .m-row { box-shadow: inset 0 1px 0 var(--line); }
+.m-row:active { background: var(--hover); }
+.m-row > svg { width: 21px; height: 21px; color: var(--accent); flex: none; }
+.m-row .m-row-l { flex: 1; min-width: 0; }
+.m-row .m-check svg { width: 20px; height: 20px; color: var(--accent); }
+.m-row.danger, .m-row.danger > svg { color: var(--danger); }
+.m-switch { width: 46px; height: 28px; border-radius: 14px; background: var(--line-strong); position: relative; flex: none; transition: background .15s; }
+.m-switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: transform .15s; }
+.m-switch[data-on="true"] { background: var(--ok); }
+.m-switch[data-on="true"]::after { transform: translateX(18px); }
+.m-style { padding: 10px 14px; }
+.m-style .m-row-l { color: var(--paper-ink, var(--ink)); }
+.m-style.on { background: var(--accent-soft); }
+.m-seg { display: flex; background: var(--chrome); border-radius: 12px; padding: 4px; gap: 4px; }
+.m-seg button { flex: 1; border: 0; background: none; color: var(--ink); min-height: 46px; border-radius: 9px; display: grid; place-items: center; font: 600 15px/1 var(--font-ui); }
+.m-seg button svg { width: 22px; height: 22px; }
+.m-seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+.m-seg button:active { background: var(--hover); }
+.m-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; }
+.m-tile { border: 0; background: var(--chrome); color: var(--ink); border-radius: 14px; min-height: 86px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font: 500 13.5px/1.2 var(--font-ui); padding: 10px 6px; text-align: center; }
+.m-tile svg { width: 26px; height: 26px; color: var(--accent); }
+.m-tile:active { background: var(--hover); }
+.m-cards { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 2px; }
+.m-card { flex: none; width: 92px; border: 2px solid transparent; background: var(--chrome); color: var(--ink); border-radius: 12px; padding: 10px 6px; display: flex; flex-direction: column; align-items: center; gap: 6px; font: 500 12.5px/1.2 var(--font-ui); }
+.m-card .s { font-size: 24px; color: var(--ink); }
+.m-card[aria-pressed="true"] { border-color: var(--accent); }
+.app[data-mobile="on"] .sidebar { width: min(86vw, 340px) !important; }
+.app[data-mobile="on"]:not([data-overlay="on"]) .sidebar { display: none; }
+.app[data-mobile="on"][data-overlay="on"] .side-rail { display: none; }
+.app[data-mobile="on"] :is(.side-act, .ol-item) { font-size: 16px; padding-top: 11px; padding-bottom: 11px; }
+.app[data-mobile="on"] .side-tabs button { font-size: 14px; min-height: 36px; }
+.app[data-mobile="on"] .doc-item { padding: 10px 8px; }
+.app[data-mobile="on"] .doc-open { font-size: 16px; }
+.app[data-mobile="on"] .doc-open .m { font-size: 13px; }
+.app[data-mobile="on"] .side-collapse { display: none; }
+.app[data-mobile="on"] .findbar { top: 8px; }
+.m-input { width: 100%; box-sizing: border-box; font: 400 17px/1.3 var(--font-ui); padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--chrome); color: var(--ink); margin: 6px 0 4px; }
+.m-input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 </style>
 
 <div class="app" id="app" data-view="split">
@@ -563,6 +668,23 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
         <button class="ghost-btn" id="shareAppBtn" type="button" aria-haspopup="menu" title="Share Cowdrey.MD with someone" aria-label="Share app"><i data-lucide="share"></i><span>Share app</span></button>
         <button class="primary-btn" id="exportBtn" type="button" aria-haspopup="menu" aria-label="Export"><i data-lucide="download"></i><span>Export</span></button>
       </div>
+    </div>
+  </header>
+
+
+  <header class="m-bar" id="mBar" aria-label="Document toolbar">
+    <div class="m-side">
+      <button class="m-btn m-docs" type="button" data-m="docs" aria-label="Documents"><i data-lucide="chevron-left"></i><span>Documents</span></button>
+      <button class="m-btn m-done" type="button" data-m="done">Done</button>
+      <button class="m-icon" type="button" data-m-edit data-cmd="undo" aria-label="Undo"><i data-lucide="undo-2"></i></button>
+      <button class="m-icon" type="button" data-m-edit data-cmd="redo" aria-label="Redo"><i data-lucide="redo-2"></i></button>
+    </div>
+    <button class="m-title" type="button" id="mTitle" data-m="rename" aria-label="Rename document"></button>
+    <div class="m-side">
+      <button class="m-icon" type="button" data-m-edit data-m="format" aria-label="Format"><i data-lucide="paintbrush"></i></button>
+      <button class="m-icon" type="button" data-m-edit data-m="insert" aria-label="Insert"><i data-lucide="plus"></i></button>
+      <button class="m-icon" type="button" data-m-read data-m="share" aria-label="Share or export"><i data-lucide="share"></i></button>
+      <button class="m-icon" type="button" data-m="more" aria-label="More"><i data-lucide="ellipsis"></i></button>
     </div>
   </header>
 
@@ -647,6 +769,32 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
     </div>
   </main>
 
+
+  <nav class="m-keys" id="mKeys" aria-label="Formatting">
+    <button type="button" class="m-aa" data-m="format" aria-label="Format">Aa</button>
+    <button type="button" class="m-k-style" data-m="style" id="mStyle" aria-label="Paragraph style">Body</button>
+    <span class="m-k-sep"></span>
+    <button type="button" data-cmd="bold" aria-label="Bold"><i data-lucide="bold"></i></button>
+    <button type="button" data-cmd="italic" aria-label="Italic"><i data-lucide="italic"></i></button>
+    <button type="button" data-cmd="underline" aria-label="Underline"><i data-lucide="underline"></i></button>
+    <button type="button" data-cmd="strike" aria-label="Strikethrough"><i data-lucide="strikethrough"></i></button>
+    <button type="button" data-cmd="highlight" aria-label="Highlight"><i data-lucide="highlighter"></i></button>
+    <span class="m-k-sep"></span>
+    <button type="button" data-cmd="ul" aria-label="Bulleted list"><i data-lucide="list"></i></button>
+    <button type="button" data-cmd="ol" aria-label="Numbered list"><i data-lucide="list-ordered"></i></button>
+    <button type="button" data-cmd="task" aria-label="Checklist"><i data-lucide="list-checks"></i></button>
+    <button type="button" data-cmd="outdent" aria-label="Decrease indent"><i data-lucide="indent-decrease"></i></button>
+    <button type="button" data-cmd="indent" aria-label="Increase indent"><i data-lucide="indent-increase"></i></button>
+    <span class="m-k-sep"></span>
+    <button type="button" data-cmd="link" aria-label="Link"><i data-lucide="link"></i></button>
+    <button type="button" data-cmd="quote" aria-label="Quote"><i data-lucide="text-quote"></i></button>
+    <button type="button" data-cmd="code" aria-label="Inline code"><i data-lucide="code"></i></button>
+    <button type="button" data-m="insert" aria-label="Insert"><i data-lucide="plus"></i></button>
+    <span class="m-k-sep"></span>
+    <button type="button" data-m="hidekb" aria-label="Hide keyboard"><i data-lucide="keyboard-off"></i></button>
+  </nav>
+  <button class="m-fab" type="button" data-m="edit" id="mEdit"><i data-lucide="pencil"></i><span>Edit</span></button>
+
   <footer class="statusbar">
     <div class="sb-inner gutter-x">
       <span class="sb-item" id="sbPage">Page 1 of 1</span>
@@ -670,6 +818,13 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
   </footer>
 </div>
 
+<div class="m-scrim" id="mScrim" hidden></div>
+<section class="m-sheet" id="mSheet" role="dialog" aria-modal="true" aria-labelledby="mSheetTitle" hidden>
+  <div class="m-grab"></div>
+  <div class="m-sheet-head"><h2 id="mSheetTitle"></h2><button class="m-icon" type="button" data-m="close" aria-label="Close"><i data-lucide="x"></i></button></div>
+  <div class="m-sheet-tabs" id="mSheetTabs" role="tablist"></div>
+  <div class="m-sheet-body" id="mSheetBody"></div>
+</section>
 <div class="popover" id="popover" role="menu" hidden></div>
 <dialog class="dlg" id="dialog"></dialog>
 <input type="file" id="fileInput" accept=".md,.markdown,.mdown,.mkd,.mkdn,.txt,text/markdown,text/plain" multiple hidden>

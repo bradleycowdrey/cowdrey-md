@@ -349,12 +349,73 @@ await test('full storage shows a clear warning instead of failing silently', asy
   await Q.ctx.close();
 });
 
-await test('phone width: no sideways scrolling, writing gets the screen, preview one tap away', async () => {
+await test('phone: reading view of the page, Edit opens the editor with a formatting bar, Done goes back (Pages/Word style)', async () => {
   const Q = await newPage({ width: 390, height: 844 });
-  const r = await Q.evaluate(() => ({ h: document.documentElement.scrollWidth <= innerWidth, ed: document.querySelector('.editor-pane').getBoundingClientRect().height > 450, ribbon: document.querySelector('#ribbon').classList.contains('collapsed') }));
-  eq(r, { h: true, ed: true, ribbon: true });
-  await Q.click('#sbViews [data-view="preview"]'); await settle(Q, 300);
-  ok(await Q.evaluate(() => document.querySelector('.preview-pane').getBoundingClientRect().height > 450), 'preview fills the screen');
+  const vis = (sel) => Q.evaluate((s) => { const e = document.querySelector(s); return !!e && getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().height > 0; }, sel);
+  ok(await Q.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'no sideways scrolling');
+  for (const s of ['.titlebar', '.ribbon', '.statusbar', '#docTabs']) eq(await vis(s), false, s + ' hidden');
+  ok(await vis('#mBar') && await vis('#mEdit'), 'phone toolbar and Edit button');
+  ok(await Q.evaluate(() => document.querySelector('.preview-pane').getBoundingClientRect().height > 600), 'the page fills the screen');
+  eq(await Q.textContent('#mTitle'), await Q.evaluate(() => document.querySelector('#docTitle').value), 'title in the toolbar');
+  await Q.click('#mEdit'); await settle(Q, 300);
+  ok(await vis('#mKeys') && !(await vis('#mEdit')), 'formatting bar, no Edit button');
+  ok(await Q.evaluate(() => document.querySelector('.editor-pane').getBoundingClientRect().height > 550), 'the editor fills the screen');
+  // formatting bar: bold wraps the selection and the style button names the paragraph style
+  await setDoc(Q, '# Title\n\nhello'); await sel(Q, { line: 2, ch: 0 }, { line: 2, ch: 5 });
+  await Q.click('#mKeys [data-cmd="bold"]'); await settle(Q);
+  eq(await cmv(Q), '# Title\n\n**hello**');
+  await sel(Q, { line: 0, ch: 2 }); await settle(Q, 150);
+  eq(await Q.textContent('#mStyle'), 'Heading 1');
+  await Q.click('#mBar [data-m="done"]'); await settle(Q, 300);
+  ok(await vis('#mEdit') && !(await vis('#mKeys')), 'back to reading');
+  // double-tap a paragraph on the page to edit it there
+  await Q.dblclick('#preview strong'); await settle(Q, 300);
+  eq(await Q.evaluate(() => [document.querySelector('#app').dataset.mmode, document.querySelector('.CodeMirror').CodeMirror.getCursor().line]), ['edit', 2]);
+  eq(Q.errors, [], 'page errors'); await Q.ctx.close();
+});
+
+await test('phone: Format, Insert, Share and More sheets, Documents panel and rename', async () => {
+  const Q = await newPage({ width: 390, height: 844 });
+  const open = () => Q.evaluate(() => !document.querySelector('#mSheet').hidden);
+  await Q.click('#mEdit'); await settle(Q, 200);
+  await setDoc(Q, 'one two'); await sel(Q, { line: 0, ch: 0 }, { line: 0, ch: 3 });
+  // Format stays open while you apply styles, like Pages
+  await Q.click('#mKeys .m-aa'); await settle(Q, 200);
+  ok(await open(), 'format sheet'); eq(await Q.textContent('#mSheetTitle'), 'Format');
+  await Q.click('#mSheet [data-cmd="h2"]'); await settle(Q);
+  eq(await cmv(Q), '## one two'); ok(await open(), 'still open');
+  ok(await Q.$('#mSheet .m-style.on[data-cmd="h2"]'), 'Heading 2 ticked');
+  await Q.click('[data-mtab="text"]'); await Q.click('#mSheet [data-cmd="italic"]'); await settle(Q);
+  ok(/\*one\*|_one_/.test(await cmv(Q)), 'italic from the sheet: ' + await cmv(Q));
+  await Q.click('[data-mtab="page"]'); await Q.click('#mSheet [data-set="pageStyle"][data-v="github"]'); await settle(Q);
+  eq(await Q.evaluate(() => document.querySelector('#page').className), 'page style-github'); 
+  await Q.click('#mSheet [data-set="pageStyle"][data-v="cowdrey"]');
+  await Q.click('#mScrim', { position: { x: 200, y: 40 } }); await settle(Q, 200); eq(await open(), false, 'tap outside closes');
+  // Insert: a tile inserts and closes the sheet
+  await Q.click('#mBar [data-m="insert"]'); await settle(Q, 200);
+  ok((await Q.$$('#mSheet .m-tile')).length >= 12, 'insert tiles');
+  await Q.click('#mSheet .m-tile[data-cmd="hr"]'); await settle(Q);
+  ok((await cmv(Q)).includes('---'), 'divider inserted'); eq(await open(), false);
+  await Q.click('#mBar [data-m="insert"]'); await Q.click('#mSheet .m-tile[data-cmd="table"]'); await settle(Q, 200);
+  ok(!(await Q.evaluate(() => document.querySelector('#popover').hidden)), 'table picker'); await Q.keyboard.press('Escape');
+  // More: rename through a dialog
+  await Q.click('#mBar [data-m="more"]'); await settle(Q, 200);
+  await Q.click('#mSheet [data-cmd="renameDoc"]'); await settle(Q, 200);
+  await Q.fill('#mRenameInput', 'Phone notes'); await Q.click('#dialog [data-a="1"]'); await settle(Q, 200);
+  eq(await Q.textContent('#mTitle'), 'Phone notes');
+  eq(await Q.evaluate(() => document.querySelector('#docTitle').value), 'Phone notes');
+  // Share sheet in reading view
+  await Q.click('#mBar [data-m="done"]'); await Q.click('#mBar [data-m="share"]'); await settle(Q, 200);
+  ok(await Q.$('#mSheet [data-cmd="saveMd"]') && await Q.$('#mSheet [data-cmd="copyRich"]'), 'share options');
+  await Q.click('#mSheet [data-m="close"]');
+  // Documents opens the document list over the page, and closes on a tap outside
+  await Q.click('#mBar [data-m="docs"]'); await settle(Q, 250);
+  ok(await Q.evaluate(() => document.querySelector('#app').dataset.overlay === 'on' && !document.querySelector('#docsPanel').hidden), 'documents panel');
+  await Q.mouse.click(375, 600); await settle(Q, 250);
+  eq(await Q.evaluate(() => document.querySelector('#app').dataset.overlay), 'off');
+  // a new document opens ready for writing
+  await Q.click('#mBar [data-m="more"]'); await Q.click('#mSheet [data-cmd="newDoc"]'); await settle(Q, 300);
+  eq(await Q.evaluate(() => document.querySelector('#app').dataset.mmode), 'edit');
   eq(Q.errors, [], 'page errors'); await Q.ctx.close();
 });
 
@@ -763,12 +824,12 @@ await test('tablet: compact strip by default, expands over the page, tap outside
   eq(Q.errors, [], 'page errors'); await Q.ctx.close();
 });
 
-await test('phone: title-bar button opens the sidebar, split view shares the height, zoom stays reachable', async () => {
-  const Q = await newPage({ width: 390, height: 844 });
+await test('small tablet: title-bar button opens the sidebar, split view shares the height, zoom stays reachable', async () => {
+  const Q = await newPage({ width: 700, height: 900 });
   ok(await Q.evaluate(() => getComputedStyle(document.querySelector('#sidebar')).display === 'none'), 'sidebar hidden');
   await Q.click('#sideToggle'); await settle(Q, 200);
   ok(await Q.evaluate(() => document.querySelector('#sidebar').getBoundingClientRect().width >= 240), 'sidebar opened');
-  await Q.mouse.click(370, 600); await settle(Q, 200);
+  await Q.mouse.click(680, 600); await settle(Q, 200);
   ok(await Q.evaluate(() => getComputedStyle(document.querySelector('#sidebar')).display === 'none'), 'closed again');
   await Q.click('#sbViews [data-view="split"]'); await settle(Q, 300);
   const [e, p] = await Q.evaluate(() => ['.editor-pane', '.preview-pane'].map((x) => document.querySelector(x).getBoundingClientRect().height));

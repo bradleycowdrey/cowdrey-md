@@ -1189,6 +1189,7 @@ const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAg
 const NATIVE = window.__TAURI__ || null;
 const IOS_APP = !!NATIVE && (/iPhone|iPad|iPod/.test(navigator.userAgent) || navigator.maxTouchPoints > 1);
 const TAURI = IOS_APP ? null : NATIVE; // set when running as the installed Mac app
+const ON_DEVICE = IOS_APP ? 'on this device' : 'in this browser'; // where autosaved documents live
 // Web links leave the app: in the iPhone app they open in Safari instead of replacing the editor.
 const openExternal = (url) => { if (NATIVE) NATIVE.opener.openUrl(url).catch(() => {}); else window.open(url, '_blank', 'noopener'); };
 const baseName = (p) => String(p).split(/[\\/]/).pop();
@@ -2227,7 +2228,7 @@ let setSaveState = function (kind) {
   el.classList.toggle('error', kind === 'error');
   el.innerHTML = kind === 'saving' ? `${ic('loader')}<span>Saving…</span>`
     : kind === 'error' ? `${ic('triangle-alert')}<span>Not saved. Browser storage is full or blocked, so export to keep your work.</span>`
-    : `${ic('check')}<span>Saved to this browser</span>`;
+    : `${ic('check')}<span>Saved ${IOS_APP ? 'on this device' : 'to this browser'}</span>`;
   refreshIcons();
 };
 // Pull in documents created, edited or deleted in other browser tabs. Returns true when anything changed.
@@ -2530,7 +2531,7 @@ function renderDocsList() {
       <button type="button" class="doc-open"${d.id === currentId ? ' aria-current="page"' : ''}>${ic('file-text')}<span style="min-width:0"><span class="t">${esc(d.title)}</span><span class="m">${rel(d.updated)} · ${nf.format(countWords(d.content).count)} words</span></span></button>
       <button class="del" type="button" data-del="${d.id}" title="Delete document" aria-label="Delete ${esc(d.title)}">${ic('trash-2')}</button>
     </div>${confirmDelete === d.id ? `<div class="confirm-row">Delete for good?<button class="mini-btn danger" type="button" data-yes="${d.id}">Delete</button><button class="mini-btn" type="button" data-no>Keep</button></div>` : ''}`).join('')
-    + '</div><p class="empty-note">Documents are saved in this browser. Export anything you want to keep elsewhere.</p>';
+    + `</div><p class="empty-note">Documents are saved ${ON_DEVICE}. Export anything you want to keep elsewhere.</p>`;
   refreshIcons();
 }
 $('#docsPanel').addEventListener('click', (e) => {
@@ -2806,7 +2807,7 @@ cmd('reopenTab', { label: 'Reopen closed tab', icon: 'rotate-ccw', key: TAURI ? 
 cmd('nextTab', { label: 'Next tab', icon: 'chevron-right', key: TAURI ? 'Mod-Shift-]' : 'Mod-Alt-]', global: true, run: () => cycleTab(1) });
 cmd('prevTab', { label: 'Previous tab', icon: 'chevron-left', key: TAURI ? 'Mod-Shift-[' : 'Mod-Alt-[', global: true, run: () => cycleTab(-1) });
 cmd('saveAll', { label: 'Save all', icon: 'save-all', key: 'Mod-Alt-Shift-s', global: true, hidden: () => !TAURI, run: saveAll });
-cmd('saveNow', { label: 'Save', icon: 'save', key: 'Mod-s', global: true, run: () => { markDirty(); if (TAURI) return saveToDisk(false); if (persist()) toast('Saved to this browser'); } });
+cmd('saveNow', { label: 'Save', icon: 'save', key: 'Mod-s', global: true, run: () => { markDirty(); if (TAURI) return saveToDisk(false); if (persist()) toast(IOS_APP ? 'Saved on this device' : 'Saved to this browser'); } });
 cmd('saveAs', { label: 'Save as…', icon: 'save', key: 'Mod-Shift-s', global: true, hidden: () => !TAURI, run: () => saveToDisk(true) });
 cmd('saveMd', { label: 'Download Markdown (.md)', icon: 'file-down', run: () => saveFile(slugFile(cur().title) + '.md', cm.getValue(), 'text/markdown') });
 cmd('exportHtml', { label: 'Download web page (.html)', icon: 'file-code-2', run: exportHtml });
@@ -2815,7 +2816,7 @@ cmd('copyHtml', { label: 'Copy HTML source', icon: 'code', run: () => copyText(c
 cmd('copyMd', { label: 'Copy Markdown', icon: 'copy', run: () => copyText(cm.getValue(), 'Markdown copied') });
 cmd('print', { label: 'Print or save as PDF', icon: 'printer', key: 'Mod-p', global: true, hidden: () => inArtifact() || !!TAURI || IOS_APP, run: () => { if (!inArtifact()) window.print(); } });
 cmd('renameDoc', { label: 'Rename', icon: 'pencil-line', run: () => { titleInput.focus(); titleInput.select(); } });
-cmd('deleteDoc', { label: 'Delete document…', icon: 'trash-2', run: () => openDialog({ title: `Delete “${cur().title}”?`, body: '<p>This removes the document from this browser. It cannot be undone.</p>', actions: [{ label: 'Keep it' }, { label: 'Delete', danger: true, run: () => deleteDoc(currentId) }] }) });
+cmd('deleteDoc', { label: 'Delete document…', icon: 'trash-2', run: () => openDialog({ title: `Delete “${cur().title}”?`, body: `<p>This removes the document from ${IOS_APP ? 'this device' : 'this browser'}. It cannot be undone.</p>`, actions: [{ label: 'Keep it' }, { label: 'Delete', danger: true, run: () => deleteDoc(currentId) }] }) });
 
 cmd('undo', { label: 'Undo', icon: 'undo-2', hint: 'Mod-z', run: () => { cm.undo(); cm.focus(); } });
 cmd('redo', { label: 'Redo', icon: 'redo-2', hint: 'Mod-Shift-z', run: () => { cm.redo(); cm.focus(); } });

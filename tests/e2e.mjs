@@ -972,6 +972,7 @@ await test('iPhone app: runs like the web version, shares exports and opens link
   for (const id of ['saveAs', 'saveAll', 'openRecent', 'checkUpdates', 'print']) {
     eq(await T.evaluate((id) => { for (let i = 0; i < 7; i++) { const m = document.querySelector(`[data-menu="${i}"]`); if (!m) continue; m.click(); const hit = !!document.querySelector(`#popover [data-cmd="${id}"]`); document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); if (hit) return true; } return false; }, id), false, `${id} hidden`);
   }
+  ok((await T.$eval('#saveState', (e) => e.textContent)).includes('on this device'), 'says on this device, not in this browser');
   // Export shares the file through the share sheet (Save to Files, AirDrop, Mail)
   await T.evaluate(() => document.querySelector('#exportBtn').click()); await settle(T, 150);
   await T.evaluate(() => document.querySelector('#popover [data-cmd="saveMd"]').click()); await settle(T, 300);

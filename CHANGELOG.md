@@ -2,6 +2,11 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.15
+
+- The iPhone and iPad app says documents are saved **on this device** (not "in this browser").
+- App Store screenshots and listing text are in `docs/app-store/`.
+
 ## 1.0.14
 
 - **Cowdrey.MD for iPhone and iPad**, built for the App Store from the same code as the Mac app.

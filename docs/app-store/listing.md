@@ -1,6 +1,6 @@
 # Cowdrey.MD: App Store listing
 
-Paste these into App Store Connect → Cowdrey.MD → the iOS version page. Character counts are within Apple's limits.
+The **App Store listing** workflow (`.github/workflows/app-store-listing.yml`) fills these in automatically from `listing.json`, whenever anything in this folder changes. It never submits for review. You can also paste them by hand: App Store Connect → Cowdrey.MD → the iOS version page. Character counts are within Apple's limits.
 
 ## App information
 

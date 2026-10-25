@@ -1,0 +1,35 @@
+{
+  "bundleId": "com.bradcowdrey.cowdreymd",
+  "locale": "en-US",
+  "subtitle": "Write Markdown, see the page",
+  "privacyPolicyUrl": "https://bradcowdrey.com/legal",
+  "supportUrl": "https://bradcowdrey.com/cowdrey-md",
+  "marketingUrl": "https://bradcowdrey.com/cowdrey-md",
+  "primaryCategory": "PRODUCTIVITY",
+  "secondaryCategory": "UTILITIES",
+  "copyright": "2026 Bradley Cowdrey",
+  "promotionalText": "A Markdown editor that feels like Docs and Word. Write on one side, see a clean, printable page on the other. Free, private, and it works offline.",
+  "description": "Cowdrey.MD is a Markdown editor that feels like Docs and Word. Type plain text and watch it become a clean, printable page as you write.\n\nWORKS LIKE PAGES AND WORD\n• Read your document as a page, then tap Edit to write\n• A formatting bar above the keyboard: styles, bold, italic, lists, links and more\n• Format, Insert, Share and More panels slide up from the bottom\n• Double-tap anywhere on the page to edit that spot\n\nWRITE\n• Syntax-highlighted Markdown with lists that continue and renumber themselves\n• A Word-style ribbon for bold, headings, lists, links, tables, quotes and code\n• Find and replace, with match case and regular expressions\n• Focus mode, typewriter mode, line numbers and four editor themes\n\nSEE THE PAGE\n• Editor, page or both at once, on iPhone and iPad\n• Letter, A4, wide or fluid pages with five page styles\n• Tables, task lists you can tick, footnotes, callouts and highlights\n• LaTeX math and Mermaid diagrams, drawn right on the page\n• Light and dark mode\n\nKEEP AND SHARE\n• Many documents in tabs, with an outline of your headings\n• Export Markdown (.md) or a standalone web page (.html) through the share sheet: Save to Files, AirDrop, Mail or any app\n• Copy Markdown, copy HTML, or copy with formatting to paste into Docs, Word or Mail\n• Open .md and .txt files from Files\n\nPRIVATE BY DESIGN\n• Your documents stay on your device\n• No account, no ads, no tracking\n• Works fully offline\n\nFree. Forever. Made by Bradley Cowdrey (bradcowdrey.com). Also available for Mac and in any web browser.",
+  "keywords": "markdown,editor,md,notes,writing,text,latex,math,mermaid,docs,preview,export,html,journal,outline",
+  "review": {
+    "contactFirstName": "Bradley",
+    "contactLastName": "Cowdrey",
+    "contactEmail": "legal@bradcowdrey.com",
+    "notes": "Cowdrey.MD is a Markdown editor. No account or sign-in is needed. On first launch it asks the user to agree to the Terms of Use (bradcowdrey.com/legal); tap \"I agree\". A sample document opens as a page. Tap Edit to write; the formatting bar above the keyboard and the paintbrush (Format) and + (Insert) buttons change the text. Tap Done to see the page again. The share button (top right, in the reading view) opens the iOS share sheet. All documents are stored locally on the device; the app makes no network requests except opening web links in Safari.",
+    "demoAccountRequired": false
+  },
+  "screenshots": {
+    "APP_IPHONE_67": [
+      "iphone-1-write.png",
+      "iphone-2-page.png",
+      "iphone-3-math-dark.png",
+      "iphone-4-format.png",
+      "iphone-5-insert.png"
+    ],
+    "APP_IPAD_PRO_3GEN_129": [
+      "ipad-1-split.png",
+      "ipad-2-math-dark.png",
+      "ipad-3-page.png"
+    ]
+  }
+}

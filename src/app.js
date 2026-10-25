@@ -13,6 +13,20 @@ const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAg
 const NATIVE = window.__TAURI__ || null;
 const IOS_APP = !!NATIVE && (/iPhone|iPad|iPod/.test(navigator.userAgent) || navigator.maxTouchPoints > 1);
 const TAURI = IOS_APP ? null : NATIVE; // set when running as the installed Mac app
+if (IOS_APP) {
+  document.documentElement.classList.add('ios-app');
+  // An app's interface doesn't pinch-zoom like a web page; the page has its own zoom and Dynamic Type sizes the text.
+  document.querySelector('meta[name="viewport"]')?.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
+}
+// Dynamic Type: the toolbars, panels and lists follow the text size chosen in iOS Settings (17 pt is the default).
+function applyDynamicType() {
+  const probe = document.createElement('span');
+  probe.style.cssText = 'font: -apple-system-body; position: absolute; visibility: hidden';
+  document.body.appendChild(probe);
+  const px = parseFloat(getComputedStyle(probe).fontSize) || 17; probe.remove();
+  document.documentElement.style.setProperty('--dt', String(Math.min(1.5, Math.max(0.85, px / 17))));
+}
+if (IOS_APP) { applyDynamicType(); document.addEventListener('visibilitychange', () => { if (!document.hidden) applyDynamicType(); }); }
 const ON_DEVICE = IOS_APP ? 'on this device' : 'in this browser'; // where autosaved documents live
 // Web links leave the app: in the iPhone app they open in Safari instead of replacing the editor.
 const openExternal = (url) => { if (NATIVE) NATIVE.opener.openUrl(url).catch(() => {}); else window.open(url, '_blank', 'noopener'); };
@@ -41,7 +55,19 @@ const saveSettings = debounce(() => store.set(KEY + ':settings', S), 200);
 /* ---------------- documents ---------------- */
 const uid = () => 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const makeDoc = (content = '', title = 'Untitled document', autoTitle = true) => ({ id: uid(), title, autoTitle, content, updated: Date.now() });
-const WELCOME = $('#welcome-md').textContent.replace(/^\n/, '');
+// The welcome document describes the layout you're looking at: the iPhone layout, or on any phone or app, where files are kept.
+const WELCOME = ((md) => {
+  const phone = matchMedia('(max-width: 600px), (max-height: 500px) and (pointer: coarse)').matches;
+  const swap = (a, b) => { md = md.replace(a, b); };
+  if (IOS_APP) { swap('it saves to this browser automatically', 'it saves on this device automatically'); swap('Documents live in this browser only.', 'Documents live on this device.'); }
+  if (phone) {
+    swap('You write plain text on the left, and I render a clean, printable page on the right as you type.', 'Tap **Edit** to write in plain text, then **Done** to see it as a clean, printable page.');
+    swap('Start fresh with **New document** in the sidebar.', 'Start fresh with **New document** in the ⋯ menu.');
+    swap('The ribbon above does the typing for you, but every format has a shortcut:', 'The formatting bar above the keyboard does the typing for you, and every format has a keyboard shortcut too:');
+    swap('| Home ribbon |', '| Formatting bar |');
+  }
+  return md;
+})($('#welcome-md').textContent.replace(/^\n/, ''));
 
 const DOC_KEY = (id) => KEY + ':doc:' + id;
 const meta = ({ content, diskContent, ...m }) => m;
@@ -2494,7 +2520,8 @@ function resolvePath(base, rel) {
    ================================================================ */
 var mobileReady = false; // renderTabs runs before this block on startup
 const phoneMQ = matchMedia('(max-width: 600px), (max-height: 500px) and (pointer: coarse)');
-let mobile = false, mmode = 'read', sheetKind = null, sheetTab = null, deskView = null;
+let mobile = false, mmode = 'read', sheetKind = null, sheetTab = null, deskView = null, sheetOpener = null;
+const setSheetPanel = () => { const b = $('#mSheetBody'); if (sheetTab) { b.setAttribute('role', 'tabpanel'); b.setAttribute('aria-labelledby', 'mtab-' + sheetTab); } else { b.removeAttribute('role'); b.removeAttribute('aria-labelledby'); } };
 const STYLE_NAMES = { normal: 'Body', h1: 'Heading 1', h2: 'Heading 2', h3: 'Heading 3', h4: 'Heading 4', quote: 'Quote', codeBlock: 'Code' };
 const STYLE_LOOK = {
   normal: 'font-family:var(--font-serif);font-size:17px', h1: 'font-weight:700;font-size:25px;letter-spacing:-.01em',
@@ -2508,6 +2535,7 @@ function runQuiet(id, anchor) { const f = cm.focus; cm.focus = () => {}; try { r
 function mobileTitle() {
   const t = $('#mTitle'); if (!t) return;
   t.textContent = isEmpty() ? 'Cowdrey.MD' : (cur() ? cur().title : '');
+  t.setAttribute('aria-label', isEmpty() ? 'Cowdrey.MD' : `${t.textContent}, rename`); t.disabled = isEmpty();
   if (mobile && isEmpty() && mmode === 'edit') setMobileMode('read');
 }
 function setMobileMode(m, { focus = true } = {}) {
@@ -2537,10 +2565,28 @@ function fitViewport() {
 }
 if (window.visualViewport) { visualViewport.addEventListener('resize', fitViewport); visualViewport.addEventListener('scroll', () => { if (mobile && window.scrollY) window.scrollTo(0, 0); }); }
 function updateMobileKeys() {
-  if (!mobile || mmode !== 'edit' || isEmpty()) return;
-  $('#mStyle').textContent = STYLE_NAMES[currentStyle()] || 'Body';
+  if (!mobile || isEmpty()) return;
+  const name = STYLE_NAMES[currentStyle()] || 'Body';
+  $('#mStyle').textContent = name; $('#mStyle').setAttribute('aria-label', `Paragraph style, ${name}`);
+  const on = activeFormats();
+  $$('#mKeys [data-cmd], #mSheet .m-seg [data-cmd]').forEach((b) => { if (b.dataset.cmd in on) b.setAttribute('aria-pressed', on[b.dataset.cmd]); });
+  const h = cm.historySize();
+  $$('#mBar [data-cmd="undo"]').forEach((b) => { b.disabled = !h.undo; });
+  $$('#mBar [data-cmd="redo"]').forEach((b) => { b.disabled = !h.redo; });
 }
 cm.on('cursorActivity', debounce(updateMobileKeys, 60));
+cm.on('changes', debounce(updateMobileKeys, 60));
+// What's applied where the cursor is, so the formatting bar shows it the way Word and Pages do.
+function activeFormats() {
+  const pos = cm.getCursor(), line = cm.getLine(pos.line) || '';
+  const types = (cm.getTokenTypeAt(pos) || '') + ' ' + (pos.ch < line.length ? cm.getTokenTypeAt({ line: pos.line, ch: pos.ch + 1 }) || '' : '');
+  const inside = (open, close = open) => { const a = line.lastIndexOf(open, pos.ch - 1); if (a < 0) return false; const b = line.indexOf(close, Math.max(pos.ch, a + open.length)); return b >= 0; };
+  return {
+    bold: /\bstrong\b/.test(types), italic: /\bem\b/.test(types), strike: /\bstrikethrough\b/.test(types),
+    code: /\bcomment\b/.test(types) && !/^\s*(```|~~~)/.test(line), underline: inside('<u>', '</u>'), highlight: inside('=='),
+    ul: /^\s*[-*+]\s+(?!\[[ xX]\])/.test(line), ol: /^\s*\d+[.)]\s/.test(line), task: /^\s*[-*+]\s+\[[ xX]\]/.test(line), quote: /^\s*>/.test(line),
+  };
+}
 
 function mobileRename() {
   if (isEmpty()) return;
@@ -2616,8 +2662,11 @@ function openSheet(kind, tab) {
   sheetKind = kind;
   sheetTab = def.tabs ? (tab || (def.tabs.some(([k]) => k === sheetTab) ? sheetTab : def.tabs[0][0])) : null;
   $('#mSheetTitle').textContent = def.title;
-  $('#mSheetTabs').innerHTML = def.tabs ? def.tabs.map(([k, l]) => `<button type="button" role="tab" data-mtab="${k}" aria-selected="${k === sheetTab}">${l}</button>`).join('') : '';
+  $('#mSheetTabs').innerHTML = def.tabs ? def.tabs.map(([k, l]) => `<button type="button" role="tab" id="mtab-${k}" data-mtab="${k}" aria-controls="mSheetBody" aria-selected="${k === sheetTab}" tabindex="${k === sheetTab ? 0 : -1}">${l}</button>`).join('') : '';
+  setSheetPanel();
+  if ($('#mSheet').hidden) sheetOpener = document.activeElement;
   blurEditor(); closePopover();
+  app.inert = true; // VoiceOver and taps stay in the sheet, like a native modal sheet
   $('#mSheetBody').scrollTop = 0; renderSheet();
   $('#mSheet').hidden = false; $('#mScrim').hidden = false; $('#mSheet').style.transform = '';
   $('#mSheet').querySelector('[data-m="close"]').focus({ preventScroll: true });
@@ -2626,13 +2675,15 @@ function renderSheet() {
   if (!sheetKind) return;
   const body = $('#mSheetBody'), top = body.scrollTop;
   body.innerHTML = SHEETS[sheetKind].body(sheetTab);
-  refreshIcons(); body.scrollTop = top;
+  refreshIcons(); body.scrollTop = top; updateMobileKeys();
 }
 function closeSheet({ refocus = false } = {}) {
   if ($('#mSheet').hidden) return;
   const was = sheetKind;
-  $('#mSheet').hidden = true; $('#mScrim').hidden = true; sheetKind = null;
+  $('#mSheet').hidden = true; $('#mScrim').hidden = true; sheetKind = null; app.inert = false;
   if (refocus && was === 'format' && mmode === 'edit') cm.focus();
+  else if (sheetOpener && sheetOpener.isConnected && sheetOpener.offsetParent && sheetOpener !== document.body) sheetOpener.focus({ preventScroll: true });
+  sheetOpener = null;
 }
 function mobileAction(m, el) {
   switch (m) {
@@ -2661,7 +2712,23 @@ for (const el of [$('#mBar'), $('#mKeys')]) {
 }
 $('#mEdit').addEventListener('click', () => mobileAction('edit'));
 $('#mScrim').addEventListener('click', () => closeSheet({ refocus: true }));
-$('#mSheetTabs').addEventListener('click', (e) => { const t = e.target.closest('[data-mtab]'); if (t) { sheetTab = t.dataset.mtab; $$('#mSheetTabs [data-mtab]').forEach((b) => b.setAttribute('aria-selected', b === t)); $('#mSheetBody').scrollTop = 0; renderSheet(); } });
+const pickSheetTab = (t) => { sheetTab = t.dataset.mtab; $$('#mSheetTabs [data-mtab]').forEach((b) => { b.setAttribute('aria-selected', b === t); b.tabIndex = b === t ? 0 : -1; }); setSheetPanel(); $('#mSheetBody').scrollTop = 0; renderSheet(); };
+$('#mSheetTabs').addEventListener('click', (e) => { const t = e.target.closest('[data-mtab]'); if (t) pickSheetTab(t); });
+$('#mSheetTabs').addEventListener('keydown', (e) => {
+  const tabs = $$('#mSheetTabs [data-mtab]'), i = tabs.indexOf(document.activeElement);
+  const j = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+  if (i < 0 || j === undefined) return;
+  e.preventDefault(); const t = tabs[(j + tabs.length) % tabs.length]; pickSheetTab(t); t.focus();
+});
+// Keep keyboard focus inside the open sheet.
+$('#mSheet').addEventListener('keydown', (e) => {
+  if (e.key !== 'Tab') return;
+  const f = $$('#mSheet button:not([disabled]), #mSheet [tabindex="0"]').filter((x) => x.offsetParent);
+  if (!f.length) return;
+  const first = f[0], last = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+});
 $('#mSheet').addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b || b.closest('#mSheetTabs')) return;
   if (b.dataset.m) { mobileAction(b.dataset.m, b); return; }
@@ -2702,9 +2769,44 @@ for (const id of ['newDoc', 'pasteDoc', 'find', 'replace']) {
   C[id].run = (...a) => { if (mobile && mmode !== 'edit' && id !== 'pasteDoc') setMobileMode('edit', { focus: false }); const r = run(...a); if (mobile && id === 'newDoc') { setMobileMode('edit'); cm.focus(); } return r; };
 }
 { const run = C.renameDoc.run; C.renameDoc.run = (...a) => mobile ? mobileRename() : run(...a); }
+// Pinch the page to make its text larger or smaller (it reflows to the screen, like Word's mobile view).
+(() => {
+  let d0 = 0, z0 = 100, raf = 0;
+  const dist = (t) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+  canvas.addEventListener('touchstart', (e) => { if (mobile && e.touches.length === 2) { d0 = dist(e.touches); z0 = Math.round(scale * 100); } }, { passive: true });
+  canvas.addEventListener('touchmove', (e) => {
+    if (!d0 || e.touches.length !== 2) return;
+    e.preventDefault();
+    const z = z0 * dist(e.touches) / d0;
+    cancelAnimationFrame(raf); raf = requestAnimationFrame(() => setZoom(z <= 105 ? 'fit' : Math.min(200, z)));
+  }, { passive: false });
+  canvas.addEventListener('touchend', (e) => { if (e.touches.length < 2) d0 = 0; }, { passive: true });
+})();
+// Swipe in from the left edge of the page for your documents, like going back in Pages.
+(() => {
+  let x0 = null, y0 = 0;
+  const previewPane = $('#previewPane');
+  previewPane.addEventListener('touchstart', (e) => { const t = e.touches[0]; x0 = mobile && mmode === 'read' && e.touches.length === 1 && t.clientX < 24 ? t.clientX : null; y0 = t.clientY; }, { passive: true });
+  previewPane.addEventListener('touchmove', (e) => {
+    if (x0 == null) return;
+    const t = e.touches[0];
+    if (Math.abs(t.clientY - y0) > 40) { x0 = null; return; }
+    if (t.clientX - x0 > 70) { x0 = null; mobileAction('docs'); }
+  }, { passive: true });
+})();
 phoneMQ.addEventListener?.('change', applyMobile);
 mobileReady = true;
 
+if (IOS_APP) {
+  // "Open in Cowdrey.MD" from Files, Mail or another app: the file arrives through the native side.
+  const takeOpened = () => NATIVE.core.invoke('take_opened_files').then((files) => {
+    if (!files || !files.length) return;
+    openFiles(files.map((f) => new File([f.content], f.name, { type: 'text/markdown' })));
+    if (mobile) setMobileMode('read');
+  }).catch(() => {});
+  NATIVE.event.listen('open-files', takeOpened);
+  takeOpened(); // a file that launched the app
+}
 if (IOS_APP) {
   // A web view has no new tabs, so links that would open one (or leave the page) open in Safari instead.
   document.addEventListener('click', (e) => {

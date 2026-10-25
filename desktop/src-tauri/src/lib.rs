@@ -229,7 +229,8 @@ pub fn run() {
                     flush_then_quit(app);
                 }
             }
-            #[cfg(target_os = "macos")]
+            // Finder "Open With" on the Mac, and "Open in Cowdrey.MD" from Files or Mail on iPhone and iPad.
+            #[cfg(any(target_os = "macos", target_os = "ios"))]
             if let RunEvent::Opened { urls } = &event {
                 let paths: Vec<String> = urls
                     .iter()
@@ -239,6 +240,7 @@ pub fn run() {
                 if !paths.is_empty() {
                     app.state::<PendingFiles>().0.lock().unwrap().extend(paths);
                     let _ = app.emit("open-files", ());
+                    #[cfg(desktop)]
                     if let Some(w) = app.get_webview_window("main") {
                         let _ = w.set_focus();
                     }

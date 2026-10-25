@@ -355,6 +355,8 @@ await test('phone: reading view of the page, Edit opens the editor with a format
   ok(await Q.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'no sideways scrolling');
   for (const s of ['.titlebar', '.ribbon', '.statusbar', '#docTabs']) eq(await vis(s), false, s + ' hidden');
   ok(await vis('#mBar') && await vis('#mEdit'), 'phone toolbar and Edit button');
+  ok((await cmv(Q)).includes('Tap **Edit** to write'), 'the welcome document describes the iPhone layout');
+  ok(!(await cmv(Q)).includes('on the left'), 'no left/right panes in the phone welcome');
   ok(await Q.evaluate(() => document.querySelector('.preview-pane').getBoundingClientRect().height > 600), 'the page fills the screen');
   eq(await Q.textContent('#mTitle'), await Q.evaluate(() => document.querySelector('#docTitle').value), 'title in the toolbar');
   await Q.click('#mEdit'); await settle(Q, 300);
@@ -364,13 +366,41 @@ await test('phone: reading view of the page, Edit opens the editor with a format
   await setDoc(Q, '# Title\n\nhello'); await sel(Q, { line: 2, ch: 0 }, { line: 2, ch: 5 });
   await Q.click('#mKeys [data-cmd="bold"]'); await settle(Q);
   eq(await cmv(Q), '# Title\n\n**hello**');
+  await sel(Q, { line: 2, ch: 4 }); await settle(Q, 150);
+  eq(await Q.getAttribute('#mKeys [data-cmd="bold"]', 'aria-pressed'), 'true', 'Bold shows as on inside bold text');
+  eq(await Q.getAttribute('#mKeys [data-cmd="italic"]', 'aria-pressed'), 'false');
+  await setDoc(Q, '- item'); await sel(Q, { line: 0, ch: 6 }); await settle(Q, 150);
+  eq(await Q.getAttribute('#mKeys [data-cmd="ul"]', 'aria-pressed'), 'true', 'bullets on in a list');
+  await setDoc(Q, '# Title\n\n**hello**');
   await sel(Q, { line: 0, ch: 2 }); await settle(Q, 150);
   eq(await Q.textContent('#mStyle'), 'Heading 1');
+  eq(await Q.getAttribute('#mStyle', 'aria-label'), 'Paragraph style, Heading 1', 'spoken name includes the visible text');
   await Q.click('#mBar [data-m="done"]'); await settle(Q, 300);
   ok(await vis('#mEdit') && !(await vis('#mKeys')), 'back to reading');
   // double-tap a paragraph on the page to edit it there
   await Q.dblclick('#preview strong'); await settle(Q, 300);
   eq(await Q.evaluate(() => [document.querySelector('#app').dataset.mmode, document.querySelector('.CodeMirror').CodeMirror.getCursor().line]), ['edit', 2]);
+  // pinch the page to zoom its text; pinch back to fit
+  const pinch = (from, to) => Q.evaluate(([from, to]) => {
+    const c = document.querySelector('#canvas'), r = c.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + 200;
+    const mk = (d) => [new Touch({ identifier: 1, target: c, clientX: cx - d / 2, clientY: cy }), new Touch({ identifier: 2, target: c, clientX: cx + d / 2, clientY: cy })];
+    c.dispatchEvent(new TouchEvent('touchstart', { touches: mk(from), bubbles: true }));
+    c.dispatchEvent(new TouchEvent('touchmove', { touches: mk(to), bubbles: true, cancelable: true }));
+    c.dispatchEvent(new TouchEvent('touchend', { touches: [], bubbles: true }));
+  }, [from, to]);
+  await Q.click('#mBar [data-m="done"]'); await settle(Q, 200);
+  await pinch(100, 150); await settle(Q, 200);
+  eq(await Q.evaluate(() => JSON.parse(localStorage.getItem('cowdrey.md:settings') || '{}').zoom), 150, 'pinch out zooms to 150%');
+  await pinch(150, 60); await settle(Q, 200);
+  eq(await Q.evaluate(() => JSON.parse(localStorage.getItem('cowdrey.md:settings') || '{}').zoom), 'fit', 'pinch in returns to fit');
+  // swipe in from the left edge for the document list
+  await Q.evaluate(() => {
+    const p = document.querySelector('#previewPane'), t = (x) => [new Touch({ identifier: 1, target: p, clientX: x, clientY: 400 })];
+    p.dispatchEvent(new TouchEvent('touchstart', { touches: t(8), bubbles: true }));
+    p.dispatchEvent(new TouchEvent('touchmove', { touches: t(120), bubbles: true }));
+  }); await settle(Q, 250);
+  eq(await Q.evaluate(() => document.querySelector('#app').dataset.overlay), 'on', 'edge swipe opens documents');
+  eq(await Q.getAttribute('#mTitle', 'aria-label'), (await Q.textContent('#mTitle')) + ', rename');
   eq(Q.errors, [], 'page errors'); await Q.ctx.close();
 });
 
@@ -416,6 +446,9 @@ await test('phone: Format, Insert, Share and More sheets, Documents panel and re
   // a new document opens ready for writing
   await Q.click('#mBar [data-m="more"]'); await Q.click('#mSheet [data-cmd="newDoc"]'); await settle(Q, 300);
   eq(await Q.evaluate(() => document.querySelector('#app').dataset.mmode), 'edit');
+  eq(await Q.evaluate(() => document.querySelector('#mBar [data-cmd="undo"]').disabled), true, 'nothing to undo in a new document');
+  await Q.keyboard.type('Hi'); await settle(Q, 200);
+  eq(await Q.evaluate(() => [document.querySelector('#mBar [data-cmd="undo"]').disabled, document.querySelector('#mBar [data-cmd="redo"]').disabled]), [false, true], 'undo on, redo off after typing');
   eq(Q.errors, [], 'page errors'); await Q.ctx.close();
 });
 
@@ -1022,7 +1055,7 @@ await test('iPhone app: runs like the web version, shares exports and opens link
     window.__calls = { invoke: [], opened: [], shared: [] };
     Object.defineProperty(navigator, 'maxTouchPoints', { get: () => 5 });
     window.__TAURI__ = {
-      core: { invoke: async (c) => { window.__calls.invoke.push(c); return null; } },
+      core: { invoke: async (c) => { window.__calls.invoke.push(c); if (c === 'take_opened_files' && !window.__took) { window.__took = true; return [{ name: 'From Files.md', path: '/Inbox/From Files.md', content: '# Opened from Files' }]; } return null; } },
       app: { getVersion: async () => '1.0.14' }, dialog: {}, event: { listen: async () => {} },
       opener: { openUrl: async (u) => { window.__calls.opened.push(u); } },
     };
@@ -1033,7 +1066,8 @@ await test('iPhone app: runs like the web version, shares exports and opens link
   for (const id of ['saveAs', 'saveAll', 'openRecent', 'checkUpdates', 'print']) {
     eq(await T.evaluate((id) => { for (let i = 0; i < 7; i++) { const m = document.querySelector(`[data-menu="${i}"]`); if (!m) continue; m.click(); const hit = !!document.querySelector(`#popover [data-cmd="${id}"]`); document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); if (hit) return true; } return false; }, id), false, `${id} hidden`);
   }
-  ok((await T.$eval('#saveState', (e) => e.textContent)).includes('on this device'), 'says on this device, not in this browser');
+  await T.waitForFunction(() => !document.querySelector('#saveState').textContent.includes('Saving'), null, { timeout: 5000 }).catch(() => {});
+  { const t = await T.$eval('#saveState', (e) => e.textContent); ok(t.includes('on this device'), 'says on this device, not in this browser: ' + t); }
   // Export shares the file through the share sheet (Save to Files, AirDrop, Mail)
   await T.evaluate(() => document.querySelector('#exportBtn').click()); await settle(T, 150);
   await T.evaluate(() => document.querySelector('#popover [data-cmd="saveMd"]').click()); await settle(T, 300);
@@ -1043,7 +1077,20 @@ await test('iPhone app: runs like the web version, shares exports and opens link
   await T.evaluate(() => document.querySelector('.sb-brand a').click()); await settle(T, 100);
   eq((await T.evaluate(() => window.__calls.opened)).pop(), 'https://bradcowdrey.com/');
   eq(T.url(), 'https://app.test/', 'still in the app');
-  eq((await T.evaluate(() => window.__calls.invoke)).filter((x) => x !== 'plugin:event|listen'), [], 'no Mac-only commands called');
+  eq((await T.evaluate(() => window.__calls.invoke)).filter((x) => x !== 'plugin:event|listen' && x !== 'take_opened_files'), [], 'no Mac-only commands called');
+  // "Open in Cowdrey.MD" from Files opens the file as a document
+  eq(await T.evaluate(() => document.querySelector('#docTitle').value), 'From Files');
+  ok((await cmv(T)).includes('# Opened from Files'), 'file content');
+  // feels like an app: no pinch-zoom of the interface, chrome is not selectable text
+  ok((await T.getAttribute('meta[name="viewport"]', 'content')).includes('user-scalable=no'), 'no UI zoom');
+  eq(await T.evaluate(() => getComputedStyle(document.querySelector('#mBar')).userSelect), 'none');
+  ok(+(await T.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--dt'))) > 0, 'Dynamic Type scale set');
+  ok((await cmv(T)).includes('saves on this device') || (await T.evaluate(() => !!window.__took)), 'app wording');
+  // sheets are modal: the app behind is inert; closing returns focus to the button that opened it
+  await T.click('#mBar [data-m="more"]'); await settle(T, 150);
+  eq(await T.evaluate(() => document.querySelector('#app').inert), true, 'app inert under the sheet');
+  await T.click('#mSheet [data-m="close"]'); await settle(T, 150);
+  eq(await T.evaluate(() => [document.querySelector('#app').inert, document.activeElement.dataset.m]), [false, 'more']);
   eq(T.errors, []); await T.ctx.close();
 });
 await test('no library URL points at a file that does not exist', async () => { eq([...missing], []); });

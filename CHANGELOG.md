@@ -2,6 +2,19 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.17
+
+iPhone and iPad app refinements:
+- **"Open in Cowdrey.MD"** from Files, Mail or any app now opens the file as a document.
+- **Feels like a native app:** no text selection or callouts on toolbars, the interface doesn't pinch-zoom or bounce, and buttons are at least 44 pt.
+- **Pinch the page** to make its text larger or smaller. **Swipe in from the left edge** for your documents.
+- **The formatting bar shows what's applied** (bold, italic, lists, quote…), and Undo and Redo grey out when there's nothing to undo or redo.
+- **Dynamic Type:** toolbars, panels and lists follow your iOS text size.
+- **VoiceOver:**
+  - Panels are true modal sheets: the app behind is inert, focus stays inside, and it returns to the button that opened the panel.
+  - The style and title buttons announce their visible text.
+- **The welcome document describes the iPhone layout**: Edit and Done, the formatting bar, and saving on this device.
+
 ## 1.0.16
 
 - **The iPhone layout works like Pages and Word for iPhone.**

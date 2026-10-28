@@ -243,7 +243,14 @@ def upload_set(loc, display, files):
 if '--build-only' in sys.argv:
     # After an iPhone build: only move the version number and attach the new build. Text and screenshots are
     # left alone, so edits made by hand in App Store Connect are kept.
-    v = editable_version()
+    try:
+        v = editable_version()
+    except ApiError as e:
+        if 'current state' not in str(e):
+            raise
+        print(f'A version is in App Review, so build {VERSION} stays in TestFlight. Once that review is done, run this '
+              'workflow again (or push any change to docs/app-store) to start the next App Store version with it.')
+        sys.exit(0)
     version_fields(v)
     attach_build(v)
     for status, name, detail in results:

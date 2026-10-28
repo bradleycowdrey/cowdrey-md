@@ -2083,8 +2083,12 @@ document.addEventListener('pointerdown', (e) => {
 for (const q of ['(max-width: 1180px)', '(max-width: 760px)']) {
   matchMedia(q).addEventListener?.('change', () => { overlayOpen = false; applySidebarMode(); requestAnimationFrame(() => { cm.refresh(); sizePage(); buildLineMap(); updateRibbonOverflow(); }); });
 }
+// The centred editor column must start after the line-number gutter, whose width grows with the line count.
+function syncGutterWidth() { editorPane.style.setProperty('--cm-gutter', (S.lineNumbers ? cm.getGutterElement().offsetWidth : 0) + 'px'); }
+cm.on('update', () => { if (S.lineNumbers) syncGutterWidth(); });
 function applyEditorPrefs() {
   cm.setOption('lineNumbers', S.lineNumbers);
+  syncGutterWidth();
   cm.setOption('lineWrapping', S.wrap);
   editorPane.dataset.ed = S.edTheme;
   editorPane.style.setProperty('--ed-size', S.edSize + 'px');

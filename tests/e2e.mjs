@@ -404,6 +404,16 @@ await test('phone: reading view of the page, Edit opens the editor with a format
   eq(Q.errors, [], 'page errors'); await Q.ctx.close();
 });
 
+await test('line numbers never cover the text (phone, narrow window and wide editor view)', async () => {
+  for (const [w, phone] of [[390, true], [700, false], [1440, false]]) {
+    const Q = await newPage({ width: w, height: 844, init: () => localStorage.setItem('cowdrey.md:settings', JSON.stringify({ lineNumbers: true, view: 'editor' })) });
+    if (phone) { await Q.click('#mEdit'); await settle(Q, 300); }
+    const g = await Q.evaluate(() => { const gut = document.querySelector('.CodeMirror-gutter-wrapper').getBoundingClientRect(), line = document.querySelector('.CodeMirror-line > span').getBoundingClientRect(); return [Math.round(gut.right), Math.round(line.left)]; });
+    ok(g[1] >= g[0], `${w}px: text starts at ${g[1]}, after the numbers end at ${g[0]}`);
+    eq(Q.errors, [], 'page errors'); await Q.ctx.close();
+  }
+});
+
 await test('phone: Format, Insert, Share and More sheets, Documents panel and rename', async () => {
   const Q = await newPage({ width: 390, height: 844 });
   const open = () => Q.evaluate(() => !document.querySelector('#mSheet').hidden);

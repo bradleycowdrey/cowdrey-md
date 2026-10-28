@@ -263,7 +263,7 @@ svg.lucide { width: 16px; height: 16px; stroke-width: 1.8; flex: none; }
 .CodeMirror.cm-s-cowdrey { height: 100%; background: var(--ed-bg); color: var(--ed-fg); font-family: var(--font-mono); font-size: var(--ed-size, 14.5px); line-height: 1.68; }
 .cm-s-cowdrey .CodeMirror-lines { padding: 22px 0 40px; }
 .cm-s-cowdrey pre.CodeMirror-line, .cm-s-cowdrey pre.CodeMirror-line-like { padding: 0 max(22px, env(safe-area-inset-left, 0px)) 0 22px; }
-.app[data-view="editor"] .cm-s-cowdrey .CodeMirror-sizer { max-width: 820px; margin-left: auto !important; margin-right: auto; }
+.app[data-view="editor"] .cm-s-cowdrey .CodeMirror-sizer { max-width: 820px; margin-left: max(var(--cm-gutter, 0px), calc((100% - 820px) / 2)) !important; margin-right: auto; } /* centred, but never under the line numbers */
 .cm-s-cowdrey .CodeMirror-gutters { background: var(--ed-bg); border-right: 0; }
 .cm-s-cowdrey .CodeMirror-linenumber { color: var(--ed-gutter); font-size: .82em; padding-right: 4px; }
 .cm-s-cowdrey .CodeMirror-cursor { border-left: 2px solid var(--ed-cursor); }

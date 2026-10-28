@@ -2,6 +2,10 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.19
+
+- **Line numbers no longer cover the text.** On iPhone, and in any narrow window showing only the editor, the numbers overlapped the start of each line. The text now always starts after the numbers.
+
 ## 1.0.18
 
 - **Appearance (Automatic, Light, Dark) is at the top of the ··· menu on iPhone**, so you can switch it from the reading view or while editing. It's still in Format → Page too.

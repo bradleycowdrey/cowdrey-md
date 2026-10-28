@@ -69,9 +69,17 @@ First release on iPhone and iPad. On iPhone it works like Pages and Word: read t
 
 - Sign-in required: No
 - Contact: Bradley Cowdrey, legal@bradcowdrey.com (add a phone number in App Store Connect)
-- Notes:
+- Notes (also sent to App Review in answer to their Guideline 2.1 information request):
 
-  Cowdrey.MD is a Markdown editor. No account or sign-in is needed. On first launch it asks the user to agree to the Terms of Use (bradcowdrey.com/legal); tap "I agree". A sample document opens as a page. Tap Edit to write; the formatting bar above the keyboard and the paintbrush (Format) and + (Insert) buttons change the text. Tap Done to see the page again. The share button (top right, in the reading view) opens the iOS share sheet. All documents are stored locally on the device; the app makes no network requests except opening web links in Safari.
+  Cowdrey.MD is a free Markdown editor for writers, students and professionals who write notes, documents and reports in plain text. It shows a clean, printable page of what you write, with tables, task lists, math and diagrams. On iPhone it works like Pages and Word: read the document as a page, tap Edit to write, with a formatting bar above the keyboard. Documents are stored on the device, with no account needed.
+
+  Setup: no login or credentials. On first launch, tap "I agree" to the Terms of Use. A sample document opens, demonstrating every feature. Tap Edit to write; use the formatting bar, the paintbrush (Format) and + (Insert). Tap Done to see the page. The share button exports Markdown or a web page through the iOS share sheet. The ··· menu has New document, Open, Find, Word count and Appearance. Any .md or .txt file opens from the Files app with "Open in Cowdrey.MD".
+
+  No accounts, login, user-generated content shared with others, paid content or in-app purchases.
+
+  External services: none. No servers, data providers, authentication, payments, analytics, advertising or AI services. Everything runs on the device and works offline; web links open in Safari. Bundled open-source libraries (CodeMirror, markdown-it, MathJax, Mermaid, highlight.js, DOMPurify, Lucide) and SIL Open Font License fonts are used under their licenses (MIT, Apache 2.0, SIL OFL).
+
+  Regions: the app works the same in all regions; the interface is in English. Not a regulated industry; no protected third-party material.
 
 ## App Privacy
 

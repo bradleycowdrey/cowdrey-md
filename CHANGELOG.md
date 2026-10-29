@@ -2,6 +2,13 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.20
+
+- **Cowdrey.MD for Android**, built from the same code as the Mac and iPhone apps, with the same Pages- and Word-style phone layout.
+  - **Open…** and **Save** use Android's system file picker (Google Drive, Downloads, any folder).
+  - The **Back button** closes the open panel, then the document list, then leaves editing.
+  - Adaptive icon that fits round and squircle launchers.
+
 ## 1.0.19
 
 - **Line numbers no longer cover the text.** On iPhone, and in any narrow window showing only the editor, the numbers overlapped the start of each line. The text now always starts after the numbers.

@@ -646,12 +646,12 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
 .app[data-mobile="on"] .side-collapse { display: none; }
 .app[data-mobile="on"] .findbar { top: 8px; }
 /* Native feel: the app's controls are not selectable web text, and the window doesn't bounce or zoom. */
-.ios-app, .ios-app body { overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
-:is(.ios-app, .app[data-mobile="on"]) :is(.m-bar, .m-keys, .m-sheet, .m-fab, .titlebar, .ribbon, .statusbar, .doc-tabs, .sidebar, .popover, .dlg-head, .dlg-actions, .toast) { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
-:is(.ios-app, .app[data-mobile="on"]) :is(input, textarea, select) { -webkit-user-select: text; user-select: text; }
+.mobile-app, .mobile-app body { overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
+:is(.mobile-app, .app[data-mobile="on"]) :is(.m-bar, .m-keys, .m-sheet, .m-fab, .titlebar, .ribbon, .statusbar, .doc-tabs, .sidebar, .popover, .dlg-head, .dlg-actions, .toast) { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+:is(.mobile-app, .app[data-mobile="on"]) :is(input, textarea, select) { -webkit-user-select: text; user-select: text; }
 .m-sheet { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .m-sheet input { -webkit-user-select: text; user-select: text; }
-.ios-app button, .m-sheet button, .m-bar button, .m-keys button { touch-action: manipulation; }
+.mobile-app button, .m-sheet button, .m-bar button, .m-keys button { touch-action: manipulation; }
 .m-input { width: 100%; box-sizing: border-box; font: 400 17px/1.3 var(--font-ui); padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--chrome); color: var(--ink); margin: 6px 0 4px; }
 .m-input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 </style>

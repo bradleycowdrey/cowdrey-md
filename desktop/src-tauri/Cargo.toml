@@ -1,6 +1,6 @@
 [package]
 name = "cowdrey-md"
-version = "1.0.19"
+version = "1.0.20"
 description = "Cowdrey.MD, a Markdown editor by Bradley Cowdrey"
 authors = ["Bradley Cowdrey"]
 license = "MIT"
@@ -23,6 +23,10 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
 # In-place updates and relaunching are for the Mac app only; the App Store updates the iPhone app.
+# Android saves and opens files through the system picker's content:// addresses, read and written by this plugin.
+[target.'cfg(target_os = "android")'.dependencies]
+tauri-plugin-fs = "2"
+
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"

@@ -26,8 +26,8 @@ const browser = await chromium.launch({ executablePath: exe });
 const results = [];
 const missing = new Set();
 
-async function newPage({ width = 1440, height = 900, scheme = 'light', block = [], init, fresh = false } = {}) {
-  const ctx = await browser.newContext({ viewport: { width, height }, colorScheme: scheme, acceptDownloads: true, permissions: ['clipboard-read', 'clipboard-write'] });
+async function newPage({ width = 1440, height = 900, scheme = 'light', block = [], init, fresh = false, userAgent } = {}) {
+  const ctx = await browser.newContext({ viewport: { width, height }, colorScheme: scheme, ...(userAgent ? { userAgent } : {}), acceptDownloads: true, permissions: ['clipboard-read', 'clipboard-write'] });
   const page = await ctx.newPage();
   page.errors = [];
   page.on('pageerror', (e) => page.errors.push(e.message));
@@ -1107,6 +1107,40 @@ await test('iPhone app: runs like the web version, shares exports and opens link
   eq(await T.evaluate(() => document.querySelector('#app').inert), true, 'app inert under the sheet');
   await T.click('#mSheet [data-m="close"]'); await settle(T, 150);
   eq(await T.evaluate(() => [document.querySelector('#app').inert, document.activeElement.dataset.m]), [false, 'more']);
+  eq(T.errors, []); await T.ctx.close();
+});
+await test('Android app: opens and saves through the system file picker; Back closes panels, then leaves editing', async () => {
+  const T = await newPage({ width: 412, height: 915, userAgent: 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Mobile Safari/537.36', init: () => {
+    window.__calls = { saved: [], invoke: [] };
+    window.__TAURI__ = {
+      core: { invoke: async (c) => { window.__calls.invoke.push(c); return null; } },
+      app: { getVersion: async () => '1.0.20' }, event: { listen: async () => {} }, opener: { openUrl: async () => {} },
+      dialog: {
+        save: async (o) => 'content://com.android.externalstorage.documents/document/primary%3ADocuments%2F' + encodeURIComponent(o.defaultPath),
+        open: async () => ['content://com.android.externalstorage.documents/document/primary%3ADocuments%2FTrip%20notes.md'],
+      },
+      fs: { writeTextFile: async (p, d) => { window.__calls.saved.push([p, d.length]); }, readTextFile: async () => '# Trip notes\n\nPack the charger.' },
+    };
+  } });
+  ok(await T.evaluate(() => document.documentElement.classList.contains('mobile-app')), 'app mode');
+  // Open: system picker → document
+  await T.click('#mBar [data-m="more"]'); await T.click('#mSheet [data-cmd="openFile"]'); await settle(T, 400);
+  eq(await T.evaluate(() => document.querySelector('#docTitle').value), 'Trip notes');
+  ok((await cmv(T)).includes('Pack the charger.'), 'content read');
+  // Save: share panel → "Save Markdown" → system picker
+  await T.click('#mBar [data-m="share"]'); await settle(T, 200);
+  eq((await T.textContent('#mSheet [data-cmd="saveMd"]')).trim(), 'Save Markdown (.md)…');
+  await T.click('#mSheet [data-cmd="saveMd"]'); await settle(T, 300);
+  const saved = await T.evaluate(() => window.__calls.saved);
+  eq(saved.length, 1); ok(/Trip%20notes\.md$/.test(saved[0][0]) && saved[0][1] > 10, 'saved to the picked file');
+  // Back button: panel → editing → reading
+  await T.click('#mEdit'); await settle(T, 200);
+  await T.click('#mBar [data-m="more"]'); await settle(T, 200);
+  await T.goBack().catch(() => {}); await settle(T, 250);
+  eq(await T.evaluate(() => [!!document.querySelector('#mSheet').hidden, document.querySelector('#app').dataset.mmode]), [true, 'edit'], 'Back closes the panel');
+  await T.goBack().catch(() => {}); await settle(T, 250);
+  eq(await T.evaluate(() => document.querySelector('#app').dataset.mmode), 'read', 'Back leaves editing');
+  eq(T.url(), 'https://app.test/', 'still in the app');
   eq(T.errors, []); await T.ctx.close();
 });
 await test('no library URL points at a file that does not exist', async () => { eq([...missing], []); });

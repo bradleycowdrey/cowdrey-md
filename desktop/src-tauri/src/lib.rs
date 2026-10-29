@@ -205,6 +205,8 @@ pub fn run() {
                 let _ = app.emit("menu-command", cmd.to_string());
             }
         });
+    #[cfg(target_os = "android")]
+    let builder = builder.plugin(tauri_plugin_fs::init());
     #[cfg(mobile)]
     let builder = builder.invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, quit_app, allow_exit, hold_quit]);
     builder

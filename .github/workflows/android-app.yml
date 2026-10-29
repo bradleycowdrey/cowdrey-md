@@ -1,0 +1,136 @@
+name: Android app
+
+on:
+  push:
+    branches: [main]
+    # Build a new Android version when the version number, the Rust code or this workflow changes.
+    paths:
+      - desktop/src-tauri/tauri.conf.json
+      - desktop/src-tauri/Cargo.toml
+      - desktop/src-tauri/src/**
+      - desktop/src-tauri/capabilities/**
+      - .github/workflows/android-app.yml
+      - .github/scripts/android_smoke.sh
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    name: Build Cowdrey.MD for Android and try it on an emulator
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      # Upload key for Google Play (base64 .jks or .keystore), its password and alias. Without them the APK is
+      # signed with a throwaway key: fine for trying it, but each build then needs uninstalling the last one.
+      KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+      KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri -> target
+
+      - name: Install the Android NDK
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;27.2.12479018" > /dev/null
+          echo "NDK_HOME=$ANDROID_HOME/ndk/27.2.12479018" >> "$GITHUB_ENV"
+
+      - name: Install build tools and libraries
+        working-directory: desktop
+        run: npm ci
+
+      - name: Bundle the web app for offline use
+        working-directory: desktop
+        run: node build.mjs
+
+      - name: Create the Android project
+        working-directory: desktop
+        run: |
+          set -o pipefail
+          npx tauri android init --ci 2>&1 | tee -a "$RUNNER_TEMP/android-build.log"
+          # Glyph inside the adaptive-icon safe zone, so round and squircle launchers don't crop it.
+          npx tauri icon src-tauri/icons/android-source.png 2>&1 | tail -3 | tee -a "$RUNNER_TEMP/android-build.log"
+
+      # Phones (arm64, older armv7) and the x86_64 emulator used below.
+      - name: Build the APK and App Bundle
+        working-directory: desktop
+        run: |
+          set -o pipefail
+          npx tauri android build --apk --aab --ci --target aarch64 --target armv7 --target x86_64 2>&1 | tee -a "$RUNNER_TEMP/android-build.log"
+
+      - name: Sign the APK
+        run: |
+          set -eo pipefail
+          BT="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
+          UNSIGNED=$(find desktop/src-tauri/gen/android/app/build/outputs/apk -name '*release-unsigned.apk' | head -1)
+          AAB=$(find desktop/src-tauri/gen/android/app/build/outputs/bundle -name '*.aab' | head -1)
+          echo "APK: $UNSIGNED · AAB: $AAB" | tee -a "$RUNNER_TEMP/android-build.log"
+          if [[ -n "$KEYSTORE" ]]; then
+            echo "$KEYSTORE" | base64 -d > "$RUNNER_TEMP/upload.jks"; PASS="$KEYSTORE_PASSWORD"; ALIAS="$KEY_ALIAS"; SIGNED_BY="upload key"
+          else
+            PASS=$(openssl rand -hex 16); ALIAS=test; SIGNED_BY="throwaway test key"
+            keytool -genkeypair -keystore "$RUNNER_TEMP/upload.jks" -storepass "$PASS" -keypass "$PASS" -alias "$ALIAS" \
+              -keyalg RSA -keysize 4096 -validity 10000 -dname "CN=Cowdrey.MD test build" > /dev/null 2>&1
+          fi
+          "$BT/zipalign" -f -p 4 "$UNSIGNED" "$RUNNER_TEMP/aligned.apk"
+          "$BT/apksigner" sign --ks "$RUNNER_TEMP/upload.jks" --ks-pass "pass:$PASS" --ks-key-alias "$ALIAS" --out "$RUNNER_TEMP/Cowdrey.MD.apk" "$RUNNER_TEMP/aligned.apk"
+          "$BT/apksigner" verify "$RUNNER_TEMP/Cowdrey.MD.apk" && echo "APK signed with the $SIGNED_BY" | tee -a "$RUNNER_TEMP/android-build.log"
+          if [[ -n "$KEYSTORE" ]]; then
+            cp "$AAB" "$RUNNER_TEMP/Cowdrey.MD.aab"
+            jarsigner -keystore "$RUNNER_TEMP/upload.jks" -storepass "$PASS" "$RUNNER_TEMP/Cowdrey.MD.aab" "$ALIAS" > /dev/null && echo "App Bundle signed for Google Play" | tee -a "$RUNNER_TEMP/android-build.log"
+          fi
+          rm -f "$RUNNER_TEMP/upload.jks"
+
+      - name: Allow the emulator to use hardware acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+
+      - name: Try it on an Android 15 emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          profile: pixel_7
+          disable-animations: true
+          script: bash .github/scripts/android_smoke.sh "$RUNNER_TEMP/Cowdrey.MD.apk" "$RUNNER_TEMP/smoke" 2>&1 | tee -a "$RUNNER_TEMP/android-build.log"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Cowdrey.MD-Android
+          path: |
+            ${{ runner.temp }}/Cowdrey.MD.apk
+            ${{ runner.temp }}/Cowdrey.MD.aab
+          if-no-files-found: ignore
+
+      # The log and emulator screenshots go on the android-build-log branch, readable without signing in.
+      - name: Publish the build log and screenshots
+        if: always()
+        run: |
+          D=$(mktemp -d); cd "$D" && git init -q -b android-build-log
+          [[ -f "$RUNNER_TEMP/android-build.log" ]] && tail -c 300000 "$RUNNER_TEMP/android-build.log" > android-build.log
+          [[ -d "$RUNNER_TEMP/smoke" ]] && cp "$RUNNER_TEMP"/smoke/*.png "$RUNNER_TEMP"/smoke/logcat.txt . 2>/dev/null
+          echo "${{ job.status }} · run ${{ github.run_number }} · ${{ github.sha }}" > status.txt
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com add .
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -qm "Android build log, run ${{ github.run_number }}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" android-build-log

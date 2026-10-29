@@ -8,13 +8,14 @@
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
-// The iPhone and iPad app (App Store) runs the page as it runs on the web: no file paths, menu bar or
-// self-updates. Only the Mac app gets TAURI; IOS_APP keeps the native bridge for links and sharing.
+// The iPhone, iPad and Android apps run the page as it runs on the web: no file paths, menu bar or
+// self-updates. Only the Mac app gets TAURI; MOBILE_APP keeps the native bridge for links, files and sharing.
 const NATIVE = window.__TAURI__ || null;
-const IOS_APP = !!NATIVE && (/iPhone|iPad|iPod/.test(navigator.userAgent) || navigator.maxTouchPoints > 1);
-const TAURI = IOS_APP ? null : NATIVE; // set when running as the installed Mac app
-if (IOS_APP) {
-  document.documentElement.classList.add('ios-app');
+const MOBILE_APP = !!NATIVE && (/iPhone|iPad|iPod|Android/.test(navigator.userAgent) || navigator.maxTouchPoints > 1);
+const ANDROID_APP = MOBILE_APP && /Android/.test(navigator.userAgent); // no share sheet or downloads in its web view
+const TAURI = MOBILE_APP ? null : NATIVE; // set when running as the installed Mac app
+if (MOBILE_APP) {
+  document.documentElement.classList.add('mobile-app');
   // An app's interface doesn't pinch-zoom like a web page; the page has its own zoom and Dynamic Type sizes the text.
   document.querySelector('meta[name="viewport"]')?.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
 }
@@ -26,8 +27,8 @@ function applyDynamicType() {
   const px = parseFloat(getComputedStyle(probe).fontSize) || 17; probe.remove();
   document.documentElement.style.setProperty('--dt', String(Math.min(1.5, Math.max(0.85, px / 17))));
 }
-if (IOS_APP) { applyDynamicType(); document.addEventListener('visibilitychange', () => { if (!document.hidden) applyDynamicType(); }); }
-const ON_DEVICE = IOS_APP ? 'on this device' : 'in this browser'; // where autosaved documents live
+if (MOBILE_APP) { applyDynamicType(); document.addEventListener('visibilitychange', () => { if (!document.hidden) applyDynamicType(); }); }
+const ON_DEVICE = MOBILE_APP ? 'on this device' : 'in this browser'; // where autosaved documents live
 // Web links leave the app: in the iPhone app they open in Safari instead of replacing the editor.
 const openExternal = (url) => { if (NATIVE) NATIVE.opener.openUrl(url).catch(() => {}); else window.open(url, '_blank', 'noopener'); };
 const baseName = (p) => String(p).split(/[\\/]/).pop();
@@ -59,7 +60,7 @@ const makeDoc = (content = '', title = 'Untitled document', autoTitle = true) =>
 const WELCOME = ((md) => {
   const phone = matchMedia('(max-width: 600px), (max-height: 500px) and (pointer: coarse)').matches;
   const swap = (a, b) => { md = md.replace(a, b); };
-  if (IOS_APP) { swap('it saves to this browser automatically', 'it saves on this device automatically'); swap('Documents live in this browser only.', 'Documents live on this device.'); }
+  if (MOBILE_APP) { swap('it saves to this browser automatically', 'it saves on this device automatically'); swap('Documents live in this browser only.', 'Documents live on this device.'); }
   if (phone) {
     swap('You write plain text on the left, and I render a clean, printable page on the right as you type.', 'Tap **Edit** to write in plain text, then **Done** to see it as a clean, printable page.');
     swap('Start fresh with **New document** in the sidebar.', 'Start fresh with **New document** in the ⋯ menu.');
@@ -1082,7 +1083,7 @@ let setSaveState = function (kind) {
   el.classList.toggle('error', kind === 'error');
   el.innerHTML = kind === 'saving' ? `${ic('loader')}<span>Saving…</span>`
     : kind === 'error' ? `${ic('triangle-alert')}<span>Not saved. Browser storage is full or blocked, so export to keep your work.</span>`
-    : `${ic('check')}<span>Saved ${IOS_APP ? 'on this device' : 'to this browser'}</span>`;
+    : `${ic('check')}<span>Saved ${MOBILE_APP ? 'on this device' : 'to this browser'}</span>`;
   refreshIcons();
 };
 // Pull in documents created, edited or deleted in other browser tabs. Returns true when anything changed.
@@ -1423,6 +1424,22 @@ async function openFiles(files) {
   }
   if (last) { persist(); openDoc(last.id); toast(opened > 1 ? `Opened ${opened} files` : `Opened ${last.title}`); }
 }
+// Android: the system file picker hands back content:// addresses, read through the file system plugin.
+async function openAndroid() {
+  let picked;
+  try { picked = await NATIVE.dialog.open({ multiple: true, filters: [{ name: 'Markdown', extensions: ['md', 'markdown', 'mdown', 'mkd', 'mkdn', 'txt'] }] }); }
+  catch (e) { toast(`Could not open: ${e}`); return; }
+  if (!picked) return;
+  const files = [];
+  for (const uri of [].concat(picked)) {
+    const u = typeof uri === 'string' ? uri : uri.path;
+    let name = decodeURIComponent(u).split(/[\/:]/).pop() || 'Document.md';
+    if (!/\.(md|markdown|mdown|mkdn?|txt)$/i.test(name)) name += '.md';
+    try { files.push(new File([await NATIVE.fs.readTextFile(u)], name, { type: 'text/markdown' })); }
+    catch (e) { toast(`Could not read ${name}: ${e}`); }
+  }
+  if (files.length) openFiles(files);
+}
 $('#fileInput').addEventListener('change', (e) => { openFiles([...e.target.files]); e.target.value = ''; });
 $('#imageInput').addEventListener('change', (e) => { insertImages(e.target.files); e.target.value = ''; });
 
@@ -1479,7 +1496,18 @@ async function saveFile(name, data, mime) {
       return path;
     } catch (e) { toast(`Could not save: ${e}`); return null; }
   }
-  if (IOS_APP) {
+  if (ANDROID_APP) {
+    // Android's web view can't download or share files: save through the system's "Save to" picker instead.
+    try {
+      const ext = name.split('.').pop();
+      const path = await NATIVE.dialog.save({ defaultPath: name, filters: [{ name: ext === 'md' ? 'Markdown' : ext.toUpperCase(), extensions: [ext] }] });
+      if (!path) return null;
+      await NATIVE.fs.writeTextFile(path, data);
+      toast(`Saved ${name}`);
+      return path;
+    } catch (e) { toast(`Could not save: ${e}`); return null; }
+  }
+  if (MOBILE_APP) {
     // iOS has no downloads folder: the share sheet offers Save to Files, AirDrop, Mail and the rest.
     const file = new File([data], name, { type: mime });
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -1652,7 +1680,7 @@ const fmtKey = (k) => !k ? '' : k.split(/-(?=.)/).map((p) => isMac
 const inArtifact = () => !!(window.claude && typeof window.claude.use === 'function');
 
 cmd('newDoc', { label: 'New document', icon: 'file-plus', key: TAURI ? 'Mod-n' : 'Mod-Alt-n', global: true, run: () => newDoc() });
-cmd('openFile', { label: 'Open…', icon: 'folder-open', key: 'Mod-o', global: true, run: () => TAURI ? openNative() : $('#fileInput').click() });
+cmd('openFile', { label: 'Open…', icon: 'folder-open', key: 'Mod-o', global: true, run: () => TAURI ? openNative() : ANDROID_APP ? openAndroid() : $('#fileInput').click() });
 cmd('pasteDoc', { label: 'Paste as new document', icon: 'clipboard-paste', run: pasteAsNew });
 cmd('openRecent', { label: 'Open recent…', icon: 'history', hidden: () => !TAURI, run: showRecent });
 cmd('closeTab', { label: 'Close tab', icon: 'x', key: TAURI ? 'Mod-w' : undefined, global: true, run: () => closeTab(currentId) });
@@ -1662,16 +1690,16 @@ cmd('reopenTab', { label: 'Reopen closed tab', icon: 'rotate-ccw', key: TAURI ? 
 cmd('nextTab', { label: 'Next tab', icon: 'chevron-right', key: TAURI ? 'Mod-Shift-]' : 'Mod-Alt-]', global: true, run: () => cycleTab(1) });
 cmd('prevTab', { label: 'Previous tab', icon: 'chevron-left', key: TAURI ? 'Mod-Shift-[' : 'Mod-Alt-[', global: true, run: () => cycleTab(-1) });
 cmd('saveAll', { label: 'Save all', icon: 'save-all', key: 'Mod-Alt-Shift-s', global: true, hidden: () => !TAURI, run: saveAll });
-cmd('saveNow', { label: 'Save', icon: 'save', key: 'Mod-s', global: true, run: () => { markDirty(); if (TAURI) return saveToDisk(false); if (persist()) toast(IOS_APP ? 'Saved on this device' : 'Saved to this browser'); } });
+cmd('saveNow', { label: 'Save', icon: 'save', key: 'Mod-s', global: true, run: () => { markDirty(); if (TAURI) return saveToDisk(false); if (persist()) toast(MOBILE_APP ? 'Saved on this device' : 'Saved to this browser'); } });
 cmd('saveAs', { label: 'Save as…', icon: 'save', key: 'Mod-Shift-s', global: true, hidden: () => !TAURI, run: () => saveToDisk(true) });
 cmd('saveMd', { label: 'Download Markdown (.md)', icon: 'file-down', run: () => saveFile(slugFile(cur().title) + '.md', cm.getValue(), 'text/markdown') });
 cmd('exportHtml', { label: 'Download web page (.html)', icon: 'file-code-2', run: exportHtml });
 cmd('copyRich', { label: 'Copy for Docs or Word', icon: 'clipboard-copy', key: 'Mod-Alt-Shift-c', global: true, run: copyRich });
 cmd('copyHtml', { label: 'Copy HTML source', icon: 'code', run: () => copyText(cleanPreview().innerHTML, 'HTML copied') });
 cmd('copyMd', { label: 'Copy Markdown', icon: 'copy', run: () => copyText(cm.getValue(), 'Markdown copied') });
-cmd('print', { label: 'Print or save as PDF', icon: 'printer', key: 'Mod-p', global: true, hidden: () => inArtifact() || !!TAURI || IOS_APP, run: () => { if (!inArtifact()) window.print(); } });
+cmd('print', { label: 'Print or save as PDF', icon: 'printer', key: 'Mod-p', global: true, hidden: () => inArtifact() || !!TAURI || MOBILE_APP, run: () => { if (!inArtifact()) window.print(); } });
 cmd('renameDoc', { label: 'Rename', icon: 'pencil-line', run: () => { titleInput.focus(); titleInput.select(); } });
-cmd('deleteDoc', { label: 'Delete document…', icon: 'trash-2', run: () => openDialog({ title: `Delete “${cur().title}”?`, body: `<p>This removes the document from ${IOS_APP ? 'this device' : 'this browser'}. It cannot be undone.</p>`, actions: [{ label: 'Keep it' }, { label: 'Delete', danger: true, run: () => deleteDoc(currentId) }] }) });
+cmd('deleteDoc', { label: 'Delete document…', icon: 'trash-2', run: () => openDialog({ title: `Delete “${cur().title}”?`, body: `<p>This removes the document from ${MOBILE_APP ? 'this device' : 'this browser'}. It cannot be undone.</p>`, actions: [{ label: 'Keep it' }, { label: 'Delete', danger: true, run: () => deleteDoc(currentId) }] }) });
 
 cmd('undo', { label: 'Undo', icon: 'undo-2', hint: 'Mod-z', run: () => { cm.undo(); cm.focus(); } });
 cmd('redo', { label: 'Redo', icon: 'redo-2', hint: 'Mod-Shift-z', run: () => { cm.redo(); cm.focus(); } });
@@ -2648,7 +2676,7 @@ const SHEETS = {
   },
   share: {
     title: 'Share and export',
-    body: () => mGroup('Send a copy', [mRow('saveMd', { label: IOS_APP ? 'Share Markdown (.md)…' : 'Download Markdown (.md)' }), mRow('exportHtml', { label: IOS_APP ? 'Share web page (.html)…' : 'Download web page (.html)' }), mRow('print')])
+    body: () => mGroup('Send a copy', [mRow('saveMd', { label: ANDROID_APP ? 'Save Markdown (.md)…' : MOBILE_APP ? 'Share Markdown (.md)…' : 'Download Markdown (.md)' }), mRow('exportHtml', { label: ANDROID_APP ? 'Save web page (.html)…' : MOBILE_APP ? 'Share web page (.html)…' : 'Download web page (.html)' }), mRow('print')])
       + mGroup('Copy', [mRow('copyRich'), mRow('copyMd'), mRow('copyHtml')])
       + mGroup('', [mAct('shareApp', 'heart', 'Share Cowdrey.MD with a friend')]),
   },
@@ -2799,10 +2827,23 @@ for (const id of ['newDoc', 'pasteDoc', 'find', 'replace']) {
     if (t.clientX - x0 > 70) { x0 = null; mobileAction('docs'); }
   }, { passive: true });
 })();
+// Android Back button: closes the open panel, then the document list, then leaves editing, like a native app.
+// Each layer adds a history entry, so Back pops it here instead of closing the app.
+if (ANDROID_APP) {
+  const layer = () => !!sheetKind || app.dataset.overlay === 'on' || (mobile && mmode === 'edit');
+  const mark = () => { if (layer() && !(history.state && history.state.cmLayer)) history.pushState({ cmLayer: true }, ''); };
+  new MutationObserver(mark).observe(app, { attributes: true, attributeFilter: ['data-mmode', 'data-overlay', 'inert'] });
+  window.addEventListener('popstate', () => {
+    if (sheetKind) closeSheet({ refocus: false });
+    else if (app.dataset.overlay === 'on') toggleOutline(false);
+    else if (mobile && mmode === 'edit') setMobileMode('read');
+    if (layer()) history.pushState({ cmLayer: true }, ''); // more to close: keep catching Back
+  });
+}
 phoneMQ.addEventListener?.('change', applyMobile);
 mobileReady = true;
 
-if (IOS_APP) {
+if (MOBILE_APP) {
   // "Open in Cowdrey.MD" from Files, Mail or another app: the file arrives through the native side.
   const takeOpened = () => NATIVE.core.invoke('take_opened_files').then((files) => {
     if (!files || !files.length) return;
@@ -2812,7 +2853,7 @@ if (IOS_APP) {
   NATIVE.event.listen('open-files', takeOpened);
   takeOpened(); // a file that launched the app
 }
-if (IOS_APP) {
+if (MOBILE_APP) {
   // A web view has no new tabs, so links that would open one (or leave the page) open in Safari instead.
   document.addEventListener('click', (e) => {
     const a = e.target.closest && e.target.closest('a[href]');

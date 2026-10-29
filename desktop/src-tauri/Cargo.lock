@@ -562,13 +562,14 @@ dependencies = [
 
 [[package]]
 name = "cowdrey-md"
-version = "1.0.19"
+version = "1.0.20"
 dependencies = [
  "serde",
  "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-dialog",
+ "tauri-plugin-fs",
  "tauri-plugin-opener",
  "tauri-plugin-process",
  "tauri-plugin-updater",

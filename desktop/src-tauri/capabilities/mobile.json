@@ -6,8 +6,7 @@
     "main"
   ],
   "platforms": [
-    "iOS",
-    "android"
+    "iOS"
   ],
   "permissions": [
     "core:default",

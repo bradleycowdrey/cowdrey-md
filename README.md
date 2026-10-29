@@ -14,6 +14,7 @@ It combines MacDown's side-by-side writing, a Docs-style title bar, menus and pa
 
 ## What's new
 
+- **1.0.20: Cowdrey.MD for Android**, with the same phone layout, Android's file picker for Open and Save, and the Back button.
 - **1.0.16: the iPhone layout works like Pages and Word.** Read the page, tap Edit to write, with a formatting bar above the keyboard and Format, Insert, Share and More panels.
 - **1.0.14: Cowdrey.MD for iPhone and iPad**, on its way to the App Store. Export opens the share sheet (Save to Files, AirDrop, Mail), and links open in Safari.
 - **Cowdrey.MD has a home on bradcowdrey.com.** [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) shows the editor running live in a Mac window, with features, install steps and a Share button. The full-screen editor is at [bradcowdrey.com/cowdrey-md/app](https://bradcowdrey.com/cowdrey-md/app).
@@ -95,6 +96,12 @@ The Mac app checks for a newer release once a day (and from **Help → Check for
 The same Tauri project builds the App Store app (`.github/workflows/ios-app.yml`), whenever the version or the Rust code changes on `main`. The iPhone app runs the page as it runs on the web, so Mac-only features (menu bar, file paths, self-updates) stay on the Mac; exports go through the iOS share sheet and links open in Safari.
 
 The workflow needs an App Store Connect API key with Admin access, saved as three repository secrets: `APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_CONNECT_KEY_ID` and `APP_STORE_CONNECT_API_KEY` (the contents of the `.p8` file). With them, Xcode creates the Apple Distribution certificate and App Store profile, and each build goes to TestFlight. Without them, the workflow only checks that the iOS code compiles. The build log is published to the `ios-build-log` branch.
+
+## Android app
+
+`.github/workflows/android-app.yml` builds the Android app (APK and App Bundle) from the same Tauri project whenever the version or the Rust code changes on `main`. It then installs the app on an Android 15 emulator, agrees to the terms, opens the editor, presses Back and switches to dark mode, publishing screenshots and the log to the `android-build-log` branch. The Android app uses the phone layout. Open and Save go through Android's file picker, and the Back button closes panels and leaves editing.
+
+For Google Play, add the upload key as repository secrets: `ANDROID_KEYSTORE` (the `.jks` file, base64), `ANDROID_KEYSTORE_PASSWORD` and `ANDROID_KEY_ALIAS`. The workflow then signs the APK and the App Bundle (`.aab`) for upload. Without them, the APK is signed with a throwaway key, for trying it out only.
 
 ## Fonts
 

@@ -15,12 +15,18 @@ tap() {
   read -r x1 y1 x2 y2 <<<"$(echo "$b" | tr -c '0-9' ' ')"
   adb shell input tap $(((x1 + x2) / 2)) $(((y1 + y2) / 2)); echo "tapped \"$1\""; sleep 3
 }
+# The emulator's own launcher sometimes stalls on CI and covers the app with "isn't responding": hide those
+# system dialogs, and tap "Wait" if one still shows.
+adb shell settings put global hide_error_dialogs 1 2>/dev/null
+dismiss() { tap "Wait" >/dev/null 2>&1 && echo "dismissed a system dialog"; return 0; }
 adb install -r "$APK" && echo "installed"
 adb logcat -c
 adb shell monkey -p "$PKG" -c android.intent.category.LAUNCHER 1 >/dev/null && echo "launched"
 sleep 25
+dismiss
 shot 1-first-launch
 tap "I agree"
+dismiss
 shot 2-reading-view
 tap "Edit"
 sleep 2

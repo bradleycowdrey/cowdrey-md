@@ -20,7 +20,7 @@ jobs:
   android:
     name: Build Cowdrey.MD for Android and try it on an emulator
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 200
     env:
       # Upload key for Google Play (base64 .jks or .keystore), its password and alias. Without them the APK is
       # signed with a throwaway key: fine for trying it, but each build then needs uninstalling the last one.
@@ -99,6 +99,20 @@ jobs:
             jarsigner -keystore "$RUNNER_TEMP/upload.jks" -storepass "$PASS" "$RUNNER_TEMP/Cowdrey.MD.aab" "$ALIAS" > /dev/null && echo "App Bundle signed for Google Play" | tee -a "$RUNNER_TEMP/android-build.log"
           fi
           rm -f "$RUNNER_TEMP/upload.jks"
+
+      # With the upload key, the APK goes on the version's GitHub release as Cowdrey.MD.apk, so
+      # github.com/…/releases/latest/download/Cowdrey.MD.apk (linked from bradcowdrey.com) is always the newest.
+      # The Mac workflow creates that release; wait for it, and create it only if it never appears.
+      - name: Publish the APK on the GitHub release
+        if: env.KEYSTORE != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V=$(node -p "require('./desktop/src-tauri/tauri.conf.json').version")
+          for i in $(seq 1 60); do gh release view "v$V" > /dev/null 2>&1 && break; echo "waiting for release v$V"; sleep 60; done
+          gh release view "v$V" > /dev/null 2>&1 || gh release create "v$V" --title "Cowdrey.MD v$V" --notes "Cowdrey.MD $V by Bradley Cowdrey (https://bradcowdrey.com)."
+          gh release upload "v$V" "$RUNNER_TEMP/Cowdrey.MD.apk" --clobber
+          echo "Published Cowdrey.MD.apk on release v$V" | tee -a "$RUNNER_TEMP/android-build.log"
 
       - name: Allow the emulator to use hardware acceleration
         run: |

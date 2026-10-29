@@ -20,6 +20,7 @@ tap() {
 adb shell settings put global hide_error_dialogs 1 2>/dev/null
 dismiss() { tap "Wait" >/dev/null 2>&1 && echo "dismissed a system dialog"; return 0; }
 adb install -r "$APK" && echo "installed"
+adb shell dumpsys package "$PKG" | grep -m1 versionName | sed 's/^ */installed version: /'
 adb logcat -c
 adb shell monkey -p "$PKG" -c android.intent.category.LAUNCHER 1 >/dev/null && echo "launched"
 sleep 25

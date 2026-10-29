@@ -1784,7 +1784,7 @@ cmd('shortcuts', { label: 'Keyboard shortcuts', icon: 'keyboard', key: 'Mod-/', 
 cmd('guide', { label: 'Markdown guide', icon: 'book-open-text', run: () => newDoc(WELCOME, 'Markdown guide') });
 cmd('legal', { label: 'Terms & Privacy', icon: 'scale', run: openLegal });
 cmd('about', { label: 'About Cowdrey.MD', icon: 'info', run: showAbout });
-cmd('checkUpdates', { label: 'Check for updates…', icon: 'refresh-cw', hidden: () => !TAURI, run: () => checkForUpdates(true) });
+cmd('checkUpdates', { label: 'Check for updates…', icon: 'refresh-cw', hidden: () => !TAURI && !ANDROID_APP, run: () => checkForUpdates(true) });
 cmd('wordCount', { label: 'Word count', icon: 'file-digit', key: 'Mod-Alt-w', global: true, run: showStats });
 
 function rebuild() { saveSettings(); buildMd(); render(); refreshState(); }
@@ -2369,13 +2369,15 @@ async function installUpdate(update) {
     });
   }
 }
+// Mac: signed in-place updates. Android (APK from bradcowdrey.com): offer the new APK, which installs over this one.
 async function checkForUpdates(manual) {
-  if (!TAURI) return;
+  if (!TAURI && !ANDROID_APP) return;
+  const native = TAURI || NATIVE;
   let current = '0';
-  try { current = await TAURI.app.getVersion(); } catch {}
+  try { current = await native.app.getVersion(); } catch {}
   if (manual) toast('Checking for updates…');
   // Signed in-place updates, when the release has them
-  if (TAURI.updater && typeof TAURI.updater.check === 'function') {
+  if (TAURI && TAURI.updater && typeof TAURI.updater.check === 'function') {
     let update = null, ok = false;
     try { update = await TAURI.updater.check(); ok = true; } catch {}
     if (ok) {
@@ -2400,22 +2402,24 @@ async function checkForUpdates(manual) {
     if (!r.ok) throw new Error(`GitHub answered ${r.status}`);
     rel = await r.json();
   } catch (e) {
-    if (manual) openDialog({ title: 'Could not check for updates', body: `<p>${esc(e.message || String(e))}. Check your internet connection, or see the downloads page.</p>`, actions: [{ label: 'Close' }, { label: 'Open downloads page', primary: true, run: () => { TAURI.opener.openUrl(RELEASES_PAGE).catch(() => {}); } }] });
+    if (manual) openDialog({ title: 'Could not check for updates', body: `<p>${esc(e.message || String(e))}. Check your internet connection, or see the downloads page.</p>`, actions: [{ label: 'Close' }, { label: 'Open downloads page', primary: true, run: () => { native.opener.openUrl(RELEASES_PAGE).catch(() => {}); } }] });
     return;
   }
   store.set(KEY + ':updateChecked', Date.now());
   const latest = String(rel.tag_name || '').replace(/^v/i, '');
   if (!latest || !isNewer(latest, current)) { if (manual) toast(`You have the latest version (${current}).`); return; }
   if (!manual && store.get(KEY + ':skipVersion', '') === latest) return;
-  const dmg = (rel.assets || []).find((a) => /\.dmg$/i.test(a.name));
+  const file = (rel.assets || []).find((a) => (ANDROID_APP ? /\.apk$/i : /\.dmg$/i).test(a.name));
   const notes = updateNotes(rel.body);
   openDialog({
     title: `Cowdrey.MD ${latest} is available`,
-    body: `<p>You have version ${esc(current)}. Download the new version, open it, and drag Cowdrey.MD into Applications to replace this one. Your documents are kept.</p>${notesBlock(notes)}`,
+    body: `<p>You have version ${esc(current)}. ${ANDROID_APP
+      ? 'Download the new version, then open it and tap <b>Update</b>. It installs over this one, and your documents are kept.'
+      : 'Download the new version, open it, and drag Cowdrey.MD into Applications to replace this one. Your documents are kept.'}</p>${notesBlock(notes)}`,
     actions: [
       { label: 'Skip this version', run: () => { store.set(KEY + ':skipVersion', latest); } },
       { label: 'Later' },
-      { label: 'Download', primary: true, run: () => { TAURI.opener.openUrl(dmg ? dmg.browser_download_url : (rel.html_url || RELEASES_PAGE)).catch(() => {}); toast('Downloading in your browser'); } },
+      { label: 'Download', primary: true, run: () => { native.opener.openUrl(file ? file.browser_download_url : (rel.html_url || RELEASES_PAGE)).catch(() => {}); toast('Downloading in your browser'); } },
     ],
   });
 }
@@ -2686,7 +2690,7 @@ const SHEETS = {
       + mGroup('Document', [mRow('newDoc'), mRow('openFile'), mRow('pasteDoc'), mRow('renameDoc'), mAct('duplicate', 'copy-plus', 'Duplicate'), mAct('share', 'share', 'Share and export…'), mRow('deleteDoc', { danger: true })])
       + mGroup('Tools', [mRow('find', { label: 'Find' }), mRow('replace', { label: 'Find and replace' }), mRow('wordCount'), mAct('outline', 'list-tree', 'Outline'), mAct('docs', 'files', 'All documents')])
       + mGroup('Writing', [mRow('toggleFocus'), mRow('toggleTypewriter'), mRow('toggleLineNumbers')])
-      + mGroup('Help', [mRow('guide'), mRow('legal'), mRow('about'), mAct('shareApp', 'heart', 'Share Cowdrey.MD')]),
+      + mGroup('Help', [mRow('guide'), mRow('checkUpdates'), mRow('legal'), mRow('about'), mAct('shareApp', 'heart', 'Share Cowdrey.MD')]),
   },
 };
 const KEEP_OPEN = new Set(['format']); // like Pages, the Format sheet stays up while you try styles
@@ -2830,6 +2834,8 @@ for (const id of ['newDoc', 'pasteDoc', 'find', 'replace']) {
 // Android Back button: closes an open dialog or panel, then the document list, then leaves editing, like a native app.
 // Each layer adds a history entry, so Back pops it here instead of closing the app.
 if (ANDROID_APP) {
+  // quiet daily check for a newer APK at launch
+  if (Date.now() - (store.get(KEY + ':updateChecked', 0) || 0) > 864e5) setTimeout(() => checkForUpdates(false), 8000);
   const layer = () => dialog.open || !!sheetKind || app.dataset.overlay === 'on' || (mobile && mmode === 'edit');
   const mark = () => { if (layer() && !(history.state && history.state.cmLayer)) history.pushState({ cmLayer: true }, ''); };
   new MutationObserver(mark).observe(app, { attributes: true, attributeFilter: ['data-mmode', 'data-overlay', 'inert'] });

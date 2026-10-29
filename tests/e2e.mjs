@@ -1114,7 +1114,7 @@ await test('Android app: opens and saves through the system file picker; Back cl
     window.__calls = { saved: [], invoke: [] };
     window.__TAURI__ = {
       core: { invoke: async (c) => { window.__calls.invoke.push(c); return null; } },
-      app: { getVersion: async () => '1.0.20' }, event: { listen: async () => {} }, opener: { openUrl: async () => {} },
+      app: { getVersion: async () => '1.0.20' }, event: { listen: async () => {} }, opener: { openUrl: async (u) => { (window.__calls.opened = window.__calls.opened || []).push(u); } },
       dialog: {
         save: async (o) => 'content://com.android.externalstorage.documents/document/primary%3ADocuments%2F' + encodeURIComponent(o.defaultPath),
         open: async () => ['content://com.android.externalstorage.documents/document/primary%3ADocuments%2FTrip%20notes.md'],
@@ -1140,6 +1140,12 @@ await test('Android app: opens and saves through the system file picker; Back cl
   eq(await T.evaluate(() => [!!document.querySelector('#mSheet').hidden, document.querySelector('#app').dataset.mmode]), [true, 'edit'], 'Back closes the panel');
   await T.goBack().catch(() => {}); await settle(T, 250);
   eq(await T.evaluate(() => document.querySelector('#app').dataset.mmode), 'read', 'Back leaves editing');
+  // Check for updates finds a newer APK on GitHub and downloads it through the browser
+  await T.ctx.route('https://api.github.com/**', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify({ tag_name: 'v1.0.99', html_url: 'https://github.com/x', body: '- Faster', assets: [{ name: 'Cowdrey.MD.dmg', browser_download_url: 'https://dl/Cowdrey.MD.dmg' }, { name: 'Cowdrey.MD.apk', browser_download_url: 'https://dl/Cowdrey.MD.apk' }] }) }));
+  await T.click('#mBar [data-m="more"]'); await T.click('#mSheet [data-cmd="checkUpdates"]'); await settle(T, 500);
+  ok((await T.textContent('#dialog')).includes('Cowdrey.MD 1.0.99 is available'), 'update offered');
+  await T.click('#dialog .btn.primary'); await settle(T, 200);
+  eq((await T.evaluate(() => window.__calls.opened || [])).pop(), 'https://dl/Cowdrey.MD.apk', 'downloads the APK, not the DMG');
   // Back closes an open dialog first (here: Word count), and stays in the app
   await T.click('#mBar [data-m="more"]'); await T.click('#mSheet [data-cmd="wordCount"]'); await settle(T, 250);
   ok(await T.evaluate(() => document.querySelector('#dialog').open), 'dialog open');
@@ -1147,6 +1153,19 @@ await test('Android app: opens and saves through the system file picker; Back cl
   eq(await T.evaluate(() => document.querySelector('#dialog').open), false, 'Back closes the dialog');
   eq(T.url(), 'https://app.test/', 'still in the app');
   eq(T.errors, []); await T.ctx.close();
+});
+await test('status bar: nothing in the title bar sits under it (Android 15 and iPad draw behind it)', async () => {
+  for (const [w, h] of [[800, 1280], [412, 915]]) {
+    const Q = await newPage({ width: w, height: h });
+    const cdp = await Q.ctx.newCDPSession(Q);
+    await cdp.send('Emulation.setSafeAreaInsetsOverride', { insets: { top: 48, topMax: 48, left: 0, leftMax: 0, bottom: 24, bottomMax: 24, right: 0, rightMax: 0 } });
+    await settle(Q, 300);
+    const tops = await Q.evaluate(() => ['.titlebar .logo', '#menubar', '#exportBtn', '#shareAppBtn', '#mBar .m-title', '#mBar [data-m="more"]']
+      .map((s) => document.querySelector(s)).filter((e) => e && e.offsetParent).map((e) => Math.round(e.getBoundingClientRect().top)));
+    ok(tops.length >= 2, `${w}px: controls found`);
+    ok(tops.every((t) => t >= 48), `${w}px: all below the 48px status bar: ${tops}`);
+    eq(Q.errors, [], 'page errors'); await Q.ctx.close();
+  }
 });
 await test('no library URL points at a file that does not exist', async () => { eq([...missing], []); });
 await test('no uncaught page errors during the whole run', async () => { eq(P.errors, []); });

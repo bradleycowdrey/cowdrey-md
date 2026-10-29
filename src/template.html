@@ -90,7 +90,7 @@ svg.lucide { width: 16px; height: 16px; stroke-width: 1.8; flex: none; }
 
 /* ---------- title bar (Docs) ---------- */
 .titlebar { flex: none; background: var(--chrome); }
-.tb-inner { display: flex; align-items: center; gap: 12px; padding-block: 6px 0; }
+.tb-inner { display: flex; align-items: center; gap: 12px; padding-block: calc(6px + env(safe-area-inset-top, 0px)) 0; } /* clear the status bar when the app draws behind it (Android 15, iPad) */
 .logo { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); text-decoration: none; }
 .logo svg { width: 26px; height: 26px; }
 .tb-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0; }

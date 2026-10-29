@@ -4165,14 +4165,16 @@ for (const id of ['newDoc', 'pasteDoc', 'find', 'replace']) {
     if (t.clientX - x0 > 70) { x0 = null; mobileAction('docs'); }
   }, { passive: true });
 })();
-// Android Back button: closes the open panel, then the document list, then leaves editing, like a native app.
+// Android Back button: closes an open dialog or panel, then the document list, then leaves editing, like a native app.
 // Each layer adds a history entry, so Back pops it here instead of closing the app.
 if (ANDROID_APP) {
-  const layer = () => !!sheetKind || app.dataset.overlay === 'on' || (mobile && mmode === 'edit');
+  const layer = () => dialog.open || !!sheetKind || app.dataset.overlay === 'on' || (mobile && mmode === 'edit');
   const mark = () => { if (layer() && !(history.state && history.state.cmLayer)) history.pushState({ cmLayer: true }, ''); };
   new MutationObserver(mark).observe(app, { attributes: true, attributeFilter: ['data-mmode', 'data-overlay', 'inert'] });
+  new MutationObserver(mark).observe(dialog, { attributes: true, attributeFilter: ['open'] });
   window.addEventListener('popstate', () => {
-    if (sheetKind) closeSheet({ refocus: false });
+    if (dialog.open) closeDialog();
+    else if (sheetKind) closeSheet({ refocus: false });
     else if (app.dataset.overlay === 'on') toggleOutline(false);
     else if (mobile && mmode === 'edit') setMobileMode('read');
     if (layer()) history.pushState({ cmLayer: true }, ''); // more to close: keep catching Back

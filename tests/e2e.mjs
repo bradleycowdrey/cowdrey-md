@@ -1140,6 +1140,11 @@ await test('Android app: opens and saves through the system file picker; Back cl
   eq(await T.evaluate(() => [!!document.querySelector('#mSheet').hidden, document.querySelector('#app').dataset.mmode]), [true, 'edit'], 'Back closes the panel');
   await T.goBack().catch(() => {}); await settle(T, 250);
   eq(await T.evaluate(() => document.querySelector('#app').dataset.mmode), 'read', 'Back leaves editing');
+  // Back closes an open dialog first (here: Word count), and stays in the app
+  await T.click('#mBar [data-m="more"]'); await T.click('#mSheet [data-cmd="wordCount"]'); await settle(T, 250);
+  ok(await T.evaluate(() => document.querySelector('#dialog').open), 'dialog open');
+  await T.goBack().catch(() => {}); await settle(T, 250);
+  eq(await T.evaluate(() => document.querySelector('#dialog').open), false, 'Back closes the dialog');
   eq(T.url(), 'https://app.test/', 'still in the app');
   eq(T.errors, []); await T.ctx.close();
 });

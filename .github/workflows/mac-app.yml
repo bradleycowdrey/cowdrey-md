@@ -11,6 +11,8 @@ on:
       - .github/workflows/mac-app.yml
   workflow_dispatch:
 
+# contents: write lets the job create the GitHub release and upload the DMG. If a run fails with
+# "Resource not accessible by integration", check Settings → Actions → General → Workflow permissions.
 permissions:
   contents: write
 

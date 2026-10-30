@@ -112,6 +112,25 @@ jobs:
           /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" "$PLIST" || /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption false" "$PLIST"
           # Documents are opened as copies through the Files picker, not edited in place.
           /usr/libexec/PlistBuddy -c "Add :LSSupportsOpeningDocumentsInPlace bool false" "$PLIST" || true
+          # Markdown files: iOS matches documents by type identifier (LSItemContentTypes), never by extension, and
+          # doesn't define a Markdown type itself. Declare it, and declare Cowdrey.MD a default Markdown editor, so it
+          # appears in Files under Open With and Get Info > Always Open With.
+          python3 - "$PLIST" <<'PY' 2>&1 | tee -a "$RUNNER_TEMP/ios-build.log"
+          import plistlib, sys
+          p = sys.argv[1]; d = plistlib.load(open(p, 'rb'))
+          MD = 'net.daringfireball.markdown'
+          d['CFBundleDocumentTypes'] = [{
+              'CFBundleTypeName': 'Markdown document', 'CFBundleTypeRole': 'Editor', 'LSHandlerRank': 'Default',
+              'LSItemContentTypes': [MD],
+          }]
+          d['UTImportedTypeDeclarations'] = [{
+              'UTTypeIdentifier': MD, 'UTTypeDescription': 'Markdown document',
+              'UTTypeConformsTo': ['public.plain-text'],
+              'UTTypeTagSpecification': {'public.filename-extension': ['md', 'markdown', 'mdown', 'mkd', 'mkdn'], 'public.mime-type': ['text/markdown']},
+          }]
+          plistlib.dump(d, open(p, 'wb'))
+          print('Document types:', d['CFBundleDocumentTypes']); print('Imported types:', d['UTImportedTypeDeclarations'])
+          PY
 
       - name: Build, sign and upload to TestFlight
         if: env.HAS_KEY == 'true'

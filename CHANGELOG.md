@@ -2,6 +2,11 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.25
+
+- **Cowdrey.MD can be your default app for Markdown files on iPhone and iPad.** In Files, touch and hold a .md file, tap Get Info, then choose Cowdrey.MD under Always Open With. The app now declares the Markdown file type, so iOS lists it under Open With and Always Open With.
+- A Markdown file handed over while Cowdrey.MD is in the background opens as soon as you switch to it.
+
 ## 1.0.24
 
 - **One tap opens a document** from the document list on iPhone and iPad. Before, the first tap only revealed a hidden delete button (iOS spends a tap on hover-only controls) and a second tap was needed.

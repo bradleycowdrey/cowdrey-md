@@ -4216,6 +4216,7 @@ if (MOBILE_APP) {
   }).catch(() => {});
   NATIVE.event.listen('open-files', takeOpened);
   takeOpened(); // a file that launched the app
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) takeOpened(); }); // handed over while in the background
 }
 if (MOBILE_APP) {
   // A web view has no new tabs, so links that would open one (or leave the page) open in Safari instead.

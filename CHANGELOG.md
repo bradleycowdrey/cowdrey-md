@@ -2,6 +2,11 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.23
+
+- **Undo and Redo grey out** in the ribbon and the Edit menu when there's nothing to undo or redo, instead of doing nothing when pressed (the phone toolbar already did).
+- Every arrow and chevron control was checked at desktop, tablet and phone sizes. A new test fails if any of them ignores a press without being greyed out.
+
 ## 1.0.22
 
 - **‹ Documents** on iPhone and Android now works both ways: the first press opens your document list, the second goes back to the document.

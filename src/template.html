@@ -561,6 +561,8 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
 .m-icon svg { width: 22px; height: 22px; }
 .m-btn:active, .m-icon:active { background: var(--hover); }
 .m-icon:disabled { color: var(--ink-3); opacity: .5; }
+.rb:disabled, .mi:disabled { opacity: .4; cursor: default; }
+.rb:disabled:hover, .mi:disabled:hover { background: none; }
 .m-title { flex: 1; min-width: 0; border: 0; background: none; color: var(--ink); font: 600 calc(16px * var(--dt, 1))/1.2 var(--font-ui); padding: 6px 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; border-radius: 8px; }
 .m-title:active { background: var(--hover); }
 .app[data-mobile="on"][data-mmode="read"] :is(.m-done, [data-m-edit]) { display: none; }

@@ -1287,6 +1287,7 @@ function deleteDoc(id) {
   toast(`Deleted “${d.title}”`);
 }
 function renderTabs() {
+  if (typeof syncDisabled === 'function' && C.undo) syncDisabled(); // a different document has its own undo history
   if (mobileReady) mobileTitle();
   const el = $('#docTabs');
   el.setAttribute('role', 'tablist'); el.setAttribute('aria-label', 'Open documents');
@@ -1701,8 +1702,8 @@ cmd('print', { label: 'Print or save as PDF', icon: 'printer', key: 'Mod-p', glo
 cmd('renameDoc', { label: 'Rename', icon: 'pencil-line', run: () => { titleInput.focus(); titleInput.select(); } });
 cmd('deleteDoc', { label: 'Delete document…', icon: 'trash-2', run: () => openDialog({ title: `Delete “${cur().title}”?`, body: `<p>This removes the document from ${MOBILE_APP ? 'this device' : 'this browser'}. It cannot be undone.</p>`, actions: [{ label: 'Keep it' }, { label: 'Delete', danger: true, run: () => deleteDoc(currentId) }] }) });
 
-cmd('undo', { label: 'Undo', icon: 'undo-2', hint: 'Mod-z', run: () => { cm.undo(); cm.focus(); } });
-cmd('redo', { label: 'Redo', icon: 'redo-2', hint: 'Mod-Shift-z', run: () => { cm.redo(); cm.focus(); } });
+cmd('undo', { label: 'Undo', icon: 'undo-2', hint: 'Mod-z', disabled: () => !cm.historySize().undo, run: () => { cm.undo(); cm.focus(); } });
+cmd('redo', { label: 'Redo', icon: 'redo-2', hint: 'Mod-Shift-z', disabled: () => !cm.historySize().redo, run: () => { cm.redo(); cm.focus(); } });
 cmd('find', { label: 'Find', icon: 'search', key: 'Mod-f', global: true, run: () => openFind(false) });
 cmd('replace', { label: 'Replace', icon: 'replace', key: isMac ? 'Mod-Alt-f' : 'Mod-h', global: true, run: () => openFind(true) });
 cmd('selectAll', { label: 'Select all', icon: 'text-select', hint: 'Mod-a', run: () => { cm.execCommand('selectAll'); cm.focus(); } });
@@ -1841,7 +1842,8 @@ function menuHtml(ids) {
     if (id === '-') return '<div class="msep"></div>';
     const c = C[id];
     const checked = c.checked ? c.checked() : null;
-    return `<button type="button" class="mi" role="${checked === null ? 'menuitem' : 'menuitemcheckbox'}"${checked === null ? '' : ` aria-checked="${checked}"`} data-cmd="${id}">${checked === null ? ic(c.icon) : checked ? `<span class="chk">${ic('check')}</span>` : '<span></span>'}<span>${esc(c.label)}</span><span class="k">${fmtKey(c.key || c.hint)}</span></button>`;
+    const off = c.disabled && c.disabled();
+    return `<button type="button" class="mi" role="${checked === null ? 'menuitem' : 'menuitemcheckbox'}"${checked === null ? '' : ` aria-checked="${checked}"`}${off ? ' disabled' : ''} data-cmd="${id}">${checked === null ? ic(c.icon) : checked ? `<span class="chk">${ic('check')}</span>` : '<span></span>'}<span>${esc(c.label)}</span><span class="k">${fmtKey(c.key || c.hint)}</span></button>`;
   }).join('').replace(/^(<div class="msep"><\/div>)+|(<div class="msep"><\/div>)+$/g, '').replace(/(<div class="msep"><\/div>){2,}/g, '<div class="msep"></div>');
 }
 function openMenu(btn) {
@@ -1987,7 +1989,7 @@ function renderRibbon() {
   renderRibbonTabs();
   $('#ribbon').classList.toggle('collapsed', S.ribbonCollapsed);
   $('#ribbonBody').innerHTML = `<div class="ribbon-panel" role="tabpanel" aria-labelledby="rtab-${S.ribbonTab}">${RIBBON[S.ribbonTab]()}</div>`;
-  refreshIcons(); updateStyleGallery(); updateRibbonOverflow(); placeFindbar();
+  refreshIcons(); updateStyleGallery(); updateRibbonOverflow(); placeFindbar(); syncDisabled();
   if (keep) { const el = $('#ribbon').querySelector(keep); el && el.focus({ preventScroll: true }); }
 }
 function updateRibbonOverflow() {
@@ -2034,7 +2036,13 @@ function updateStyleGallery() {
   const s = currentStyle();
   $$('.g-card', g).forEach((b) => b.setAttribute('aria-pressed', b.dataset.style === s));
 }
+// Buttons for commands that can't run right now (Undo with nothing to undo…) are greyed out instead of ignoring a press.
+function syncDisabled() {
+  $$('#ribbonBody [data-cmd], #mBar [data-cmd]').forEach((b) => { const c = C[b.dataset.cmd]; if (c && c.disabled) b.disabled = !!c.disabled(); });
+}
+cm.on('changes', debounce(syncDisabled, 60));
 function refreshState() {
+  syncDisabled();
   $$('[data-cmd]').forEach((b) => { const c = C[b.dataset.cmd]; if (c && c.checked && b.classList.contains('rb')) b.setAttribute('aria-pressed', !!c.checked()); });
   $$('#sbViews button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.view === S.view));
   updateNativeMenu();

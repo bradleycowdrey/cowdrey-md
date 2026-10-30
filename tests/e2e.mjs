@@ -1172,6 +1172,53 @@ await test('status bar: nothing in the title bar sits under it (Android 15 and i
     eq(Q.errors, [], 'page errors'); await Q.ctx.close();
   }
 });
+await test('desktop: Undo and Redo grey out in the ribbon and the Edit menu when there is nothing to undo or redo', async () => {
+  const Q = await newPage();
+  await Q.evaluate(() => { const cm = document.querySelector('.CodeMirror').CodeMirror; cm.setValue('a'); cm.clearHistory(); cm.focus(); });
+  await settle(Q, 200); await Q.click('[data-tab="home"]'); await settle(Q, 150);
+  eq(await Q.evaluate(() => ['undo', 'redo'].map((c) => document.querySelector(`#ribbonBody [data-cmd="${c}"]`).disabled)), [true, true], 'both greyed');
+  await Q.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.focus());
+  await Q.keyboard.type('b'); await settle(Q, 200);
+  eq(await Q.evaluate(() => ['undo', 'redo'].map((c) => document.querySelector(`#ribbonBody [data-cmd="${c}"]`).disabled)), [false, true], 'undo on after typing');
+  await Q.click('#ribbonBody [data-cmd="undo"]'); await settle(Q, 200);
+  eq(await Q.evaluate(() => ['undo', 'redo'].map((c) => document.querySelector(`#ribbonBody [data-cmd="${c}"]`).disabled)), [true, false], 'redo on after undo');
+  await Q.click('[data-menu="1"]'); await settle(Q, 150);
+  eq(await Q.evaluate(() => [document.querySelector('#popover [data-cmd="undo"]').disabled, document.querySelector('#popover [data-cmd="redo"]').disabled]), [true, false], 'Edit menu matches');
+  await Q.keyboard.press('Escape'); eq(Q.errors, []); await Q.ctx.close();
+});
+await test('every arrow or chevron control (‹ › → ▾, chevrons, panel arrows) responds, or is greyed out when it can\'t', async () => {
+  const ARROWY = /lucide-(chevron|chevrons|arrow|a-arrow|panel-left|move-horizontal|undo|redo)|[‹›→←▾]/.source;
+  const collect = (Q) => Q.evaluate((src) => { const re = new RegExp(src); let n = 0; const out = [];
+    for (const el of document.querySelectorAll('button,a[href],[role=button]')) {
+      if (!el.offsetParent || el.closest('[inert]')) continue; const r = el.getBoundingClientRect(); if (!r.width || !r.height) continue;
+      if (!re.test(el.innerHTML) && !re.test(el.textContent)) continue; el.setAttribute('data-audit', 'a' + n++);
+      out.push([(el.getAttribute('aria-label') || el.title || el.textContent).trim().slice(0, 40), el.disabled]); }
+    return out; }, ARROWY);
+  const state = (Q) => Q.evaluate(() => { const cm = document.querySelector('.CodeMirror').CodeMirror;
+    return JSON.stringify([window.__mut, document.activeElement && document.activeElement.outerHTML.slice(0, 80), cm.getValue(), JSON.stringify(cm.listSelections()),
+      [...document.querySelectorAll('.CodeMirror-scroll,#canvas')].map((e) => e.scrollTop), localStorage.getItem('cowdrey.md:settings')]); });
+  const setups = [
+    ['desktop, Home', 1440, 900, async (Q) => { await setDoc(Q, 'the cat and the dog\n' + 'x\n'.repeat(60) + 'the end'); await Q.keyboard.press('Control+f'); await Q.keyboard.type('the'); await settle(Q, 250); }],
+    ['desktop, View', 1440, 900, async (Q) => { await Q.click('[data-tab="view"]'); await settle(Q); }],
+    ['desktop, Insert', 1440, 900, async (Q) => { await Q.click('[data-tab="insert"]'); await settle(Q); }],
+    ['tablet', 800, 1100, async () => {}],
+    ['phone, reading', 390, 844, async () => {}],
+    ['phone, editing', 390, 844, async (Q) => { await Q.click('#mEdit'); await settle(Q); await setDoc(Q, 'hello'); }],
+  ];
+  const silent = [];
+  for (const [name, w, h, setup] of setups) {
+    let Q = await newPage({ width: w, height: h }); await setup(Q); const list = await collect(Q); await Q.ctx.close();
+    for (let i = 0; i < list.length; i++) {
+      const [label, disabled] = list[i]; if (disabled) continue; // greyed out: tells the user it can't run now
+      Q = await newPage({ width: w, height: h }); await setup(Q); await collect(Q);
+      await Q.evaluate(() => { window.__mut = 0; new MutationObserver((m) => { window.__mut += m.length; }).observe(document.documentElement, { subtree: true, childList: true, attributes: true, characterData: true }); });
+      const before = await state(Q); await Q.click(`[data-audit="a${i}"]`); await settle(Q, 400);
+      if (await state(Q) === before) silent.push(`${name}: ${label}`);
+      eq(Q.errors, [], `${name}: ${label}: page errors`); await Q.ctx.close();
+    }
+  }
+  eq(silent, [], 'controls that ignored a press');
+});
 await test('no library URL points at a file that does not exist', async () => { eq([...missing], []); });
 await test('no uncaught page errors during the whole run', async () => { eq(P.errors, []); });
 

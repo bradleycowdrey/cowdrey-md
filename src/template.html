@@ -199,7 +199,11 @@ svg.lucide { width: 16px; height: 16px; stroke-width: 1.8; flex: none; }
 .doc-item .t { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
 .doc-item .m { font-size: 11px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
 .doc-item .del { opacity: 0; border: 0; background: none; color: var(--ink-3); border-radius: 5px; padding: 3px; display: grid; }
-.doc-item:hover .del, .doc-item .del:focus-visible { opacity: 1; }
+.doc-item .del:focus-visible { opacity: 1; }
+/* Reveal-on-hover only where there is a pointer that hovers. On touch screens iOS spends the first tap showing
+   hover-only content, so a document would take two taps to open; there, the delete button is simply always shown. */
+@media (hover: hover) { .doc-item:hover .del { opacity: 1; } }
+@media (hover: none) { .doc-item .del { opacity: .7; } }
 .doc-item .del:hover { color: var(--danger); background: var(--surface); }
 .doc-item svg.lucide { color: var(--ink-3); }
 .confirm-row { display: flex; gap: 6px; align-items: center; padding: 4px 8px 8px 34px; font-size: 12px; color: var(--ink-2); }
@@ -248,8 +252,12 @@ svg.lucide { width: 16px; height: 16px; stroke-width: 1.8; flex: none; }
 .doc-tab .x .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 .doc-tab.unsaved .x { color: var(--ink); }
 .doc-tab.unsaved .x svg.lucide { display: none; }
-.doc-tab.unsaved .x:hover .dot, .doc-tab.unsaved .x:focus-visible .dot { display: none; }
-.doc-tab.unsaved .x:hover svg.lucide, .doc-tab.unsaved .x:focus-visible svg.lucide { display: block; }
+.doc-tab.unsaved .x:focus-visible .dot { display: none; }
+.doc-tab.unsaved .x:focus-visible svg.lucide { display: block; }
+@media (hover: hover) {
+  .doc-tab.unsaved .x:hover .dot { display: none; }
+  .doc-tab.unsaved .x:hover svg.lucide { display: block; }
+}
 .doc-tab.dragging { opacity: .45; }
 .recent-list { display: flex; flex-direction: column; gap: 2px; max-height: 50vh; overflow: auto; margin: 0 -8px; }
 .recent-list .recent { display: flex; align-items: flex-start; gap: 10px; padding: 8px; border: 0; border-radius: 8px; background: none; color: inherit; text-align: left; font: inherit; }

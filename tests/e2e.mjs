@@ -26,8 +26,8 @@ const browser = await chromium.launch({ executablePath: exe });
 const results = [];
 const missing = new Set();
 
-async function newPage({ width = 1440, height = 900, scheme = 'light', block = [], init, fresh = false, userAgent } = {}) {
-  const ctx = await browser.newContext({ viewport: { width, height }, colorScheme: scheme, ...(userAgent ? { userAgent } : {}), acceptDownloads: true, permissions: ['clipboard-read', 'clipboard-write'] });
+async function newPage({ width = 1440, height = 900, scheme = 'light', block = [], init, fresh = false, userAgent, touch = false } = {}) {
+  const ctx = await browser.newContext({ viewport: { width, height }, colorScheme: scheme, hasTouch: touch, ...(userAgent ? { userAgent } : {}), acceptDownloads: true, permissions: ['clipboard-read', 'clipboard-write'] });
   const page = await ctx.newPage();
   page.errors = [];
   page.on('pageerror', (e) => page.errors.push(e.message));
@@ -1185,6 +1185,32 @@ await test('desktop: Undo and Redo grey out in the ribbon and the Edit menu when
   await Q.click('[data-menu="1"]'); await settle(Q, 150);
   eq(await Q.evaluate(() => [document.querySelector('#popover [data-cmd="undo"]').disabled, document.querySelector('#popover [data-cmd="redo"]').disabled]), [true, false], 'Edit menu matches');
   await Q.keyboard.press('Escape'); eq(Q.errors, []); await Q.ctx.close();
+});
+await test('touch screens: no hover-only controls; one tap opens a document from the list (iOS spends a tap on hover)', async () => {
+  const Q = await newPage({ width: 390, height: 844, touch: true });
+  // emulate a touch-only device: no hover
+  const cdp = await Q.ctx.newCDPSession(Q);
+  await cdp.send('Emulation.setEmulatedMedia', { features: [{ name: 'hover', value: 'none' }, { name: 'pointer', value: 'coarse' }, { name: 'any-hover', value: 'none' }] });
+  await settle(Q, 200);
+  // the stylesheet must not reveal or swap anything on :hover outside (hover: hover)
+  const leaks = await Q.evaluate(() => {
+    const out = [];
+    const walk = (rules, inHover) => { for (const r of rules) {
+      if (r.media) { walk(r.cssRules, inHover || /\(\s*hover:\s*hover\s*\)/.test(r.media.mediaText)); continue; }
+      if (r.selectorText && /:hover/.test(r.selectorText) && !inHover && /(opacity|display|visibility)\s*:/.test(r.style.cssText)) out.push(r.selectorText);
+    } };
+    for (const sh of document.styleSheets) { try { walk(sh.cssRules, false); } catch {} }
+    return out; });
+  eq(leaks, [], 'hover rules that show or hide content');
+  // two documents; one tap on the other one opens it
+  await Q.click('#mBar [data-m="more"]'); await Q.click('#mSheet [data-cmd="newDoc"]'); await settle(Q, 300);
+  await setDoc(Q, '# Second'); await Q.click('#mBar [data-m="done"]'); await settle(Q, 400);
+  await Q.click('#mBar [data-m="docs"]'); await settle(Q, 300);
+  ok(+(await Q.evaluate(() => getComputedStyle(document.querySelector('.doc-item .del')).opacity)) > 0.5, 'delete button visible without hover');
+  const target = await Q.evaluate(() => [...document.querySelectorAll('.doc-item')].find((d) => !d.classList.contains('current')).dataset.id);
+  await Q.tap(`.doc-item[data-id="${target}"] .doc-open`); await settle(Q, 300);
+  eq(await Q.evaluate(() => document.querySelector('.doc-item.current') && document.querySelector('.doc-item.current').dataset.id), target, 'opened with one tap');
+  eq(Q.errors, []); await Q.ctx.close();
 });
 await test('every arrow or chevron control (‹ › → ▾, chevrons, panel arrows) responds, or is greyed out when it can\'t', async () => {
   const ARROWY = /lucide-(chevron|chevrons|arrow|a-arrow|panel-left|move-horizontal|undo|redo)|[‹›→←▾]/.source;

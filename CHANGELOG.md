@@ -2,6 +2,13 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.24
+
+- **One tap opens a document** from the document list on iPhone and iPad. Before, the first tap only revealed a hidden delete button (iOS spends a tap on hover-only controls) and a second tap was needed.
+- On touch screens the delete button in the document list is always shown, so it can be reached at all.
+- On iPad, one tap on the ✕ of a tab with unsaved changes closes it (it used to need two).
+- A test now fails if any control is shown or hidden only on hover outside mouse and trackpad devices.
+
 ## 1.0.23
 
 - **Undo and Redo grey out** in the ribbon and the Edit menu when there's nothing to undo or redo, instead of doing nothing when pressed (the phone toolbar already did).

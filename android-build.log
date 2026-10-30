@@ -1,0 +1,327 @@
+        Info Using installed NDK: /usr/local/lib/android/sdk/ndk/27.2.12479018
+        Info Installing Android Rust targets...
+        Info Installing target i686-linux-android
+info: downloading component rust-std
+Generating Android Studio project...
+        Info "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri" relative to "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/android/cowdrey_md" is "../../../"
+victory: Project generated successfully!
+    Make cool apps! 🌻 🐕 🎉
+     Android Creating mipmap-xxhdpi/ic_launcher.png
+     Android Creating mipmap-xxxhdpi/ic_launcher_round.png
+     Android Creating mipmap-xxxhdpi/ic_launcher.png
+        Info Using installed NDK: /usr/local/lib/android/sdk/ndk/27.2.12479018
+        Info Looking up installed tauri packages to check mismatched versions...
+[1m[92m    Updating[0m crates.io index
+[1m[92m   Compiling[0m tauri v2.12.4
+[1m[92m   Compiling[0m wry v0.57.0
+[1m[92m   Compiling[0m cowdrey-md v1.0.26 (/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri)
+[1m[92m   Compiling[0m tauri-plugin-fs v2.7.1
+[1m[92m   Compiling[0m tauri-plugin-opener v2.7.2
+[1m[92m   Compiling[0m tauri-plugin-dialog v2.8.3
+[1m[92m   Compiling[0m tauri-runtime-wry v2.12.2
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 46.60s
+        Info symlinking lib "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so" in jniLibs dir "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/android/app/src/main/jniLibs/arm64-v8a"
+        Info "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libandroid.so"
+        Info "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libdl.so"
+        Info "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "liblog.so"
+        Info "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libm.so"
+        Info "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libc.so"
+        Info symlink at "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/android/app/src/main/jniLibs/arm64-v8a/libcowdrey_md_lib.so" points to "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so"
+Fetching distribution.
+Downloading https://services.gradle.org/distributions/gradle-9.6.1-bin.zip
+.............10%.............20%..............30%.............40%..............50%.............60%.............70%..............80%.............90%..............100%
+WARNING: The option setting 'android.proguard.failOnMissingFiles=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+Add android.sync.suppressAgpWarnings=UNSUPPORTED_PROJECT_OPTION_USE to the gradle.properties file to suppress this warning.
+WARNING: The option setting 'android.builtInKotlin=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+Add android.sync.suppressAgpWarnings=UNSUPPORTED_PROJECT_OPTION_USE to the gradle.properties file to suppress this warning.
+WARNING: The option setting 'android.newDsl=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+Add android.sync.suppressAgpWarnings=UNSUPPORTED_PROJECT_OPTION_USE to the gradle.properties file to suppress this warning.
+WARNING: API 'applicationVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+    android.newDsl=false
+to this project's gradle.properties file.
+For more information, see http://developer.android.com/build/r/new-dsl.
+
+To determine what is calling applicationVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+Add android.sync.suppressAgpWarnings=DEPRECATED_DSL to the gradle.properties file to suppress this warning.
+WARNING: API 'testVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+    android.newDsl=false
+to this project's gradle.properties file.
+For more information, see http://developer.android.com/build/r/new-dsl.
+
+To determine what is calling testVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+Add android.sync.suppressAgpWarnings=DEPRECATED_DSL to the gradle.properties file to suppress this warning.
+WARNING: API 'unitTestVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+    android.newDsl=false
+to this project's gradle.properties file.
+For more information, see http://developer.android.com/build/r/new-dsl.
+
+To determine what is calling unitTestVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+Add android.sync.suppressAgpWarnings=DEPRECATED_DSL to the gradle.properties file to suppress this warning.
+w: file:///home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/android/app/build.gradle.kts:17:1: 'fun Project.android(configure: Action<BaseAppModuleExtension>): Unit' is deprecated. Replaced by com.android.build.api.dsl.ApplicationExtension.
+This class is not used for the public extensions in AGP when android.newDsl=true, which is the default in AGP 9.0, and will be removed in AGP 10.0.
+WARNING: API 'libraryVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+    android.newDsl=false
+to this project's gradle.properties file.
+For more information, see http://developer.android.com/build/r/new-dsl.
+
+To determine what is calling libraryVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+Add android.sync.suppressAgpWarnings=DEPRECATED_DSL to the gradle.properties file to suppress this warning.
+w: file:///home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.12.4/mobile/android/build.gradle.kts:8:1: 'fun Project.android(configure: Action<LibraryExtension>): Unit' is deprecated. Replaced by com.android.build.api.dsl.LibraryExtension.
+This class is not used for the public extensions in AGP when android.newDsl=true, which is the default in AGP 9.0, and will be removed in AGP 10.0.
+w: file:///home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-plugin-dialog-2.8.3/android/build.gradle.kts:8:1: 'fun Project.android(configure: Action<LibraryExtension>): Unit' is deprecated. Replaced by com.android.build.api.dsl.LibraryExtension.
+This class is not used for the public extensions in AGP when android.newDsl=true, which is the default in AGP 9.0, and will be removed in AGP 10.0.
+w: file:///home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-plugin-fs-2.7.1/android/build.gradle.kts:8:1: 'fun Project.android(configure: Action<LibraryExtension>): Unit' is deprecated. Replaced by com.android.build.api.dsl.LibraryExtension.
+This class is not used for the public extensions in AGP when android.newDsl=true, which is the default in AGP 9.0, and will be removed in AGP 10.0.
+w: file:///home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-plugin-opener-2.7.2/android/build.gradle.kts:8:1: 'fun Project.android(configure: Action<LibraryExtension>): Unit' is deprecated. Replaced by com.android.build.api.dsl.LibraryExtension.
+This class is not used for the public extensions in AGP when android.newDsl=true, which is the default in AGP 9.0, and will be removed in AGP 10.0.
+
+> cowdrey-md-desktop@1.0.26 tauri
+> tauri android android-studio-script --release --target armv7
+
+        Info connection; remote_addr=127.0.0.1:59152 conn_id=0
+        Info connection; remote_addr=127.0.0.1:59158 conn_id=1
+
+> cowdrey-md-desktop@1.0.26 tauri
+> tauri android android-studio-script --release --target x86_64
+
+
+> cowdrey-md-desktop@1.0.26 tauri
+> tauri android android-studio-script --release --target aarch64
+
+        Info connection; remote_addr=127.0.0.1:59170 conn_id=2
+[1m[32m        Info[0m Using installed NDK: /usr/local/lib/android/sdk/ndk/27.2.12479018
+[1m[32m        Info[0m Using installed NDK: /usr/local/lib/android/sdk/ndk/27.2.12479018
+[1m[32m        Info[0m Using installed NDK: /usr/local/lib/android/sdk/ndk/27.2.12479018
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m   Compiling[0m tauri v2.12.4
+[1m[92m   Compiling[0m wry v0.57.0
+[1m[92m   Compiling[0m tauri-plugin-fs v2.7.1
+[1m[92m   Compiling[0m tauri-plugin-opener v2.7.2
+[1m[92m    Blocking[0m waiting for file lock on build directory
+[1m[92m    Blocking[0m waiting for file lock on build directory
+[1m[92m   Compiling[0m tauri-plugin-dialog v2.8.3
+[1m[92m   Compiling[0m cowdrey-md v1.0.26 (/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri)
+[1m[92m   Compiling[0m tauri-runtime-wry v2.12.2
+w: file:///home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.12.4/mobile/android/src/main/java/app/tauri/AppPlugin.kt:35:37 'fun onBackPressed(): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.12.4/mobile/android/src/main/java/app/tauri/plugin/Plugin.kt:125:5 'fun onDestroy(): Unit' is deprecated. use onDestroy(activity: AppCompatActivity) instead.
+w: file:///home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.12.4/mobile/android/src/main/java/app/tauri/plugin/Plugin.kt:130:5 'fun onRestart(): Unit' is deprecated. use onRestart(activity: AppCompatActivity) instead.
+w: file:///home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.12.4/mobile/android/src/main/java/app/tauri/plugin/Plugin.kt:135:5 'fun onPause(): Unit' is deprecated. use onPause(activity: AppCompatActivity) instead.
+w: file:///home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.12.4/mobile/android/src/main/java/app/tauri/plugin/Plugin.kt:140:5 'fun onResume(): Unit' is deprecated. use onResume(activity: AppCompatActivity) instead.
+w: file:///home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.12.4/mobile/android/src/main/java/app/tauri/plugin/Plugin.kt:145:5 'fun onStop(): Unit' is deprecated. use onStop(activity: AppCompatActivity) instead.
+w: file:///home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.12.4/mobile/android/src/main/java/app/tauri/plugin/PluginHandle.kt:159:22 Java type mismatch: inferred type is 'Class<in CapturedType(*)!>?', but 'Class<*>' was expected.
+w: file:///home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/android/app/src/main/java/com/bradcowdrey/cowdreymd/generated/RustWebView.kt:26:18 'var databaseEnabled: Boolean' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/android/app/src/main/java/com/bradcowdrey/cowdreymd/generated/WryActivity.kt:66:46 'fun onBackPressed(): Unit' is deprecated. This method has been deprecated in favor of using the
+      {@link OnBackPressedDispatcher} via {@link #getOnBackPressedDispatcher()}.
+      The OnBackPressedDispatcher controls how back button events are dispatched
+      to one or more {@link OnBackPressedCallback} objects.
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 55.90s
+[1m[92m   Compiling[0m tauri v2.12.4
+[1m[92m   Compiling[0m wry v0.57.0
+[1m[32m        Info[0m symlinking lib "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/x86_64-linux-android/release/libcowdrey_md_lib.so" in jniLibs dir "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/android/app/src/main/jniLibs/x86_64"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/x86_64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libandroid.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/x86_64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libdl.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/x86_64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "liblog.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/x86_64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libm.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/x86_64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libc.so"
+[1m[92m   Compiling[0m tauri-plugin-fs v2.7.1
+[1m[92m   Compiling[0m tauri-plugin-opener v2.7.2
+[1m[92m   Compiling[0m tauri-plugin-dialog v2.8.3
+[1m[92m   Compiling[0m cowdrey-md v1.0.26 (/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri)
+[1m[92m   Compiling[0m tauri-runtime-wry v2.12.2
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 2m 17s
+[1m[32m        Info[0m symlinking lib "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so" in jniLibs dir "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/android/app/src/main/jniLibs/arm64-v8a"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libandroid.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libdl.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "liblog.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libm.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libc.so"
+[1m[92m   Compiling[0m tauri v2.12.4
+[1m[92m   Compiling[0m wry v0.57.0
+[1m[92m   Compiling[0m tauri-plugin-fs v2.7.1
+[1m[92m   Compiling[0m tauri-plugin-opener v2.7.2
+[1m[92m   Compiling[0m tauri-plugin-dialog v2.8.3
+[1m[92m   Compiling[0m cowdrey-md v1.0.26 (/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri)
+[1m[92m   Compiling[0m tauri-runtime-wry v2.12.2
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 2m 58s
+[1m[32m        Info[0m symlinking lib "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/armv7-linux-androideabi/release/libcowdrey_md_lib.so" in jniLibs dir "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/android/app/src/main/jniLibs/armeabi-v7a"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/armv7-linux-androideabi/release/libcowdrey_md_lib.so" requires shared lib "libandroid.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/armv7-linux-androideabi/release/libcowdrey_md_lib.so" requires shared lib "libdl.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/armv7-linux-androideabi/release/libcowdrey_md_lib.so" requires shared lib "liblog.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/armv7-linux-androideabi/release/libcowdrey_md_lib.so" requires shared lib "libm.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/armv7-linux-androideabi/release/libcowdrey_md_lib.so" requires shared lib "libc.so"
+Configuration cache entry stored.
+WARNING: The option setting 'android.proguard.failOnMissingFiles=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+Add android.sync.suppressAgpWarnings=UNSUPPORTED_PROJECT_OPTION_USE to the gradle.properties file to suppress this warning.
+WARNING: The option setting 'android.builtInKotlin=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+Add android.sync.suppressAgpWarnings=UNSUPPORTED_PROJECT_OPTION_USE to the gradle.properties file to suppress this warning.
+WARNING: The option setting 'android.newDsl=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+Add android.sync.suppressAgpWarnings=UNSUPPORTED_PROJECT_OPTION_USE to the gradle.properties file to suppress this warning.
+WARNING: API 'applicationVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+    android.newDsl=false
+to this project's gradle.properties file.
+For more information, see http://developer.android.com/build/r/new-dsl.
+
+To determine what is calling applicationVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+Add android.sync.suppressAgpWarnings=DEPRECATED_DSL to the gradle.properties file to suppress this warning.
+WARNING: API 'testVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+    android.newDsl=false
+to this project's gradle.properties file.
+For more information, see http://developer.android.com/build/r/new-dsl.
+
+To determine what is calling testVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+Add android.sync.suppressAgpWarnings=DEPRECATED_DSL to the gradle.properties file to suppress this warning.
+WARNING: API 'unitTestVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+    android.newDsl=false
+to this project's gradle.properties file.
+For more information, see http://developer.android.com/build/r/new-dsl.
+
+To determine what is calling unitTestVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+Add android.sync.suppressAgpWarnings=DEPRECATED_DSL to the gradle.properties file to suppress this warning.
+WARNING: API 'libraryVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+    android.newDsl=false
+to this project's gradle.properties file.
+For more information, see http://developer.android.com/build/r/new-dsl.
+
+To determine what is calling libraryVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+Add android.sync.suppressAgpWarnings=DEPRECATED_DSL to the gradle.properties file to suppress this warning.
+
+> cowdrey-md-desktop@1.0.26 tauri
+> tauri android android-studio-script --release --target armv7
+
+        Info connection; remote_addr=127.0.0.1:36726 conn_id=3
+
+> cowdrey-md-desktop@1.0.26 tauri
+> tauri android android-studio-script --release --target x86_64
+
+        Info connection; remote_addr=127.0.0.1:36732 conn_id=4
+
+> cowdrey-md-desktop@1.0.26 tauri
+> tauri android android-studio-script --release --target aarch64
+
+[1m[32m        Info[0m Using installed NDK: /usr/local/lib/android/sdk/ndk/27.2.12479018
+        Info connection; remote_addr=127.0.0.1:36738 conn_id=5
+[1m[32m        Info[0m Using installed NDK: /usr/local/lib/android/sdk/ndk/27.2.12479018
+[1m[32m        Info[0m Using installed NDK: /usr/local/lib/android/sdk/ndk/27.2.12479018
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m   Compiling[0m cowdrey-md v1.0.26 (/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri)
+[1m[92m    Blocking[0m waiting for file lock on package cache
+[1m[92m    Blocking[0m waiting for file lock on build directory
+[1m[92m    Blocking[0m waiting for file lock on build directory
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 29.82s
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 29.70s
+[1m[32m        Info[0m symlinking lib "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/armv7-linux-androideabi/release/libcowdrey_md_lib.so" in jniLibs dir "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/android/app/src/main/jniLibs/armeabi-v7a"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/armv7-linux-androideabi/release/libcowdrey_md_lib.so" requires shared lib "libandroid.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/armv7-linux-androideabi/release/libcowdrey_md_lib.so" requires shared lib "libdl.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/armv7-linux-androideabi/release/libcowdrey_md_lib.so" requires shared lib "liblog.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/armv7-linux-androideabi/release/libcowdrey_md_lib.so" requires shared lib "libm.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/armv7-linux-androideabi/release/libcowdrey_md_lib.so" requires shared lib "libc.so"
+[1m[92m   Compiling[0m cowdrey-md v1.0.26 (/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri)
+[1m[32m        Info[0m symlinking lib "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so" in jniLibs dir "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/android/app/src/main/jniLibs/arm64-v8a"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libandroid.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libdl.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "liblog.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libm.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/aarch64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libc.so"
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 58.02s
+[1m[32m        Info[0m symlinking lib "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/x86_64-linux-android/release/libcowdrey_md_lib.so" in jniLibs dir "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/android/app/src/main/jniLibs/x86_64"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/x86_64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libandroid.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/x86_64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libdl.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/x86_64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "liblog.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/x86_64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libm.so"
+[1m[32m        Info[0m "/home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/x86_64-linux-android/release/libcowdrey_md_lib.so" requires shared lib "libc.so"
+Configuration cache entry stored.
+    Finished 1 APK at:
+        /home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk
+
+    Finished 1 AAB at:
+        /home/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/android/app/build/outputs/bundle/universalRelease/app-universal-release.aab
+
+Intent filters in src-tauri/gen/android/app/src/main/AndroidManifest.xml:
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <!-- AndroidTV support -->
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+            <!-- tauri-file-associations. AUTO-GENERATED. DO NOT REMOVE. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:mimeType="text/markdown" />
+APK: desktop/src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk · AAB: desktop/src-tauri/gen/android/app/build/outputs/bundle/universalRelease/app-universal-release.aab
+APK signed with the upload key
+App Bundle signed for Google Play
+Published Cowdrey.MD.apk on release v1.0.26
+Serving...
+All files should be loaded. Notifying the device.
+Performing Incremental Install
+Success
+Install command complete in 4034 ms
+installed
+installed version: versionName=1.0.26
+args: [-p, com.bradcowdrey.cowdreymd, -c, android.intent.category.LAUNCHER, 1]
+ arg: "-p"
+ arg: "com.bradcowdrey.cowdreymd"
+ arg: "-c"
+ arg: "android.intent.category.LAUNCHER"
+ arg: "1"
+data="com.bradcowdrey.cowdreymd"
+data="android.intent.category.LAUNCHER"
+launched
+screenshot 1-first-launch
+tapped "I agree"
+screenshot 2-reading-view
+could not find "Edit" on screen
+screenshot 3-editing
+screenshot 4-after-back
+Night mode: yes
+screenshot 5-dark
+Night mode: no
+app still running: NO (it closed or crashed)

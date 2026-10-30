@@ -1,19 +1,19 @@
 {
-  "version": "1.0.23",
-  "notes": "Cowdrey.MD 1.0.23: Undo and Redo grey out when there's nothing to undo or redo.",
-  "pub_date": "2026-10-30T00:57:51Z",
+  "version": "1.0.24",
+  "notes": "Cowdrey.MD 1.0.24: one tap opens a document on touch screens.",
+  "pub_date": "2026-10-30T01:23:00Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0t6S2dML2ZDWFRSandvNGIvMUsxS2tOcDRQMW8vZkJXUlN0NUxNbS91WDFFcXprL0tmdlRVbzBsUGI2VGtBRjVxcXk4QUJIMHhzQWVXOWtscjZKWkFVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMzIxODcxCWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpxdnVYUjBONndMREExR2NOVU5Od1luam5tS3lnNjRVenpPRFB6KzN1K2IrMDFxMEdzYklqTFExYUFQNmZ4Vm9hZS9QL0kreEhMall1czcwVnlTU0hEQT09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.23/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0FydXU4aGhINUNJR1hXWVhKQjJUMEhSSytHc1J4YnZaSjJNeEZSS3BRVWJtVndJb2VYanZZelhUQS9xaGh1ZkhWbW13dGkrWlFQdzgxVURadE5DYndvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMzIzMzgwCWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negozOFJtUHpvR0lNYjhFQlgzK0Nqa2ttYytDRXdGcW9hU2JneHhxYitiYzdHUVVocmlncEpVL3pXbFpGV1pRaW9xUkR1UEFGSW80YTZHRlIwNkVXMEJEUT09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.24/Cowdrey.MD_universal.app.tar.gz"
     },
     "darwin-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0t6S2dML2ZDWFRSandvNGIvMUsxS2tOcDRQMW8vZkJXUlN0NUxNbS91WDFFcXprL0tmdlRVbzBsUGI2VGtBRjVxcXk4QUJIMHhzQWVXOWtscjZKWkFVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMzIxODcxCWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpxdnVYUjBONndMREExR2NOVU5Od1luam5tS3lnNjRVenpPRFB6KzN1K2IrMDFxMEdzYklqTFExYUFQNmZ4Vm9hZS9QL0kreEhMall1czcwVnlTU0hEQT09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.23/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0FydXU4aGhINUNJR1hXWVhKQjJUMEhSSytHc1J4YnZaSjJNeEZSS3BRVWJtVndJb2VYanZZelhUQS9xaGh1ZkhWbW13dGkrWlFQdzgxVURadE5DYndvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMzIzMzgwCWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negozOFJtUHpvR0lNYjhFQlgzK0Nqa2ttYytDRXdGcW9hU2JneHhxYitiYzdHUVVocmlncEpVL3pXbFpGV1pRaW9xUkR1UEFGSW80YTZHRlIwNkVXMEJEUT09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.24/Cowdrey.MD_universal.app.tar.gz"
     },
     "darwin-universal": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0t6S2dML2ZDWFRSandvNGIvMUsxS2tOcDRQMW8vZkJXUlN0NUxNbS91WDFFcXprL0tmdlRVbzBsUGI2VGtBRjVxcXk4QUJIMHhzQWVXOWtscjZKWkFVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMzIxODcxCWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpxdnVYUjBONndMREExR2NOVU5Od1luam5tS3lnNjRVenpPRFB6KzN1K2IrMDFxMEdzYklqTFExYUFQNmZ4Vm9hZS9QL0kreEhMall1czcwVnlTU0hEQT09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.23/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0FydXU4aGhINUNJR1hXWVhKQjJUMEhSSytHc1J4YnZaSjJNeEZSS3BRVWJtVndJb2VYanZZelhUQS9xaGh1ZkhWbW13dGkrWlFQdzgxVURadE5DYndvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMzIzMzgwCWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negozOFJtUHpvR0lNYjhFQlgzK0Nqa2ttYytDRXdGcW9hU2JneHhxYitiYzdHUVVocmlncEpVL3pXbFpGV1pRaW9xUkR1UEFGSW80YTZHRlIwNkVXMEJEUT09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.24/Cowdrey.MD_universal.app.tar.gz"
     }
   }
 }

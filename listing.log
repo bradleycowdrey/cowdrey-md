@@ -1,0 +1,2 @@
+App: Cowdrey.MD Markdown Editor (6826704085), version 1.0.26
+A version is in App Review, so build 1.0.26 stays in TestFlight. Once that review is done, run this workflow again (or push any change to docs/app-store) to start the next App Store version with it.

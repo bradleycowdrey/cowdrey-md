@@ -1118,16 +1118,20 @@ await test('Android app: opens and saves through the system file picker; Back cl
   const T = await newPage({ width: 412, height: 915, userAgent: 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Mobile Safari/537.36', init: () => {
     window.__calls = { saved: [], invoke: [] };
     window.__TAURI__ = {
-      core: { invoke: async (c) => { window.__calls.invoke.push(c); return null; } },
+      core: { invoke: async (c) => { window.__calls.invoke.push(c); if (c === 'take_opened_files' && !window.__handed) { window.__handed = true; return [{ name: '', path: 'content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3DShared%20notes.md', content: '' }]; } return null; } },
       app: { getVersion: async () => '1.0.20' }, event: { listen: async () => {} }, opener: { openUrl: async (u) => { (window.__calls.opened = window.__calls.opened || []).push(u); } },
       dialog: {
         save: async (o) => 'content://com.android.externalstorage.documents/document/primary%3ADocuments%2F' + encodeURIComponent(o.defaultPath),
         open: async () => ['content://com.android.externalstorage.documents/document/primary%3ADocuments%2FTrip%20notes.md'],
       },
-      fs: { writeTextFile: async (p, d) => { window.__calls.saved.push([p, d.length]); }, readTextFile: async () => '# Trip notes\n\nPack the charger.' },
+      fs: { writeTextFile: async (p, d) => { window.__calls.saved.push([p, d.length]); }, readTextFile: async (u) => /Shared/.test(u) ? '# Shared notes\n\nFrom Drive.' : '# Trip notes\n\nPack the charger.' },
     };
   } });
   ok(await T.evaluate(() => document.documentElement.classList.contains('mobile-app')), 'app mode');
+  // "Open with Cowdrey.MD" from another app hands over a content:// address, read through the file system plugin
+  await settle(T, 300);
+  ok((await cmv(T)).includes('From Drive.'), 'handed-over file opened');
+  eq(await T.evaluate(() => document.querySelector('#docTitle').value), 'Shared notes');
   // Open: system picker → document
   await T.click('#mBar [data-m="more"]'); await T.click('#mSheet [data-cmd="openFile"]'); await settle(T, 400);
   eq(await T.evaluate(() => document.querySelector('#docTitle').value), 'Trip notes');

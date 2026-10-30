@@ -77,6 +77,12 @@ jobs:
           set -o pipefail
           npx tauri android build --apk --aab --ci --target aarch64 --target armv7 --target x86_64 2>&1 | tee -a "$RUNNER_TEMP/android-build.log"
 
+      - name: Show which files Android will offer to open with Cowdrey.MD
+        working-directory: desktop
+        run: |
+          M=$(find src-tauri/gen/android -name AndroidManifest.xml -path '*src/main*' | head -1)
+          { echo "Intent filters in $M:"; grep -A6 '<intent-filter' "$M"; } | tee -a "$RUNNER_TEMP/android-build.log"
+
       - name: Sign the APK
         run: |
           set -eo pipefail

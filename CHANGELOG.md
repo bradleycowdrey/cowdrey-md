@@ -2,6 +2,10 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.26
+
+- **Android: Open with Cowdrey.MD.** Tap a Markdown file in Files, Google Drive, Gmail or any file manager and choose Cowdrey.MD; pick **Always** to make it the default. The file opens as a document, named from the file (or from its first heading when the app sending it gives no name).
+
 ## 1.0.25
 
 - **Cowdrey.MD can be your default app for Markdown files on iPhone and iPad.** In Files, touch and hold a .md file, tap Get Info, then choose Cowdrey.MD under Always Open With. The app now declares the Markdown file type, so iOS lists it under Open With and Always Open With.

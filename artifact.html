@@ -2772,14 +2772,20 @@ async function openAndroid() {
   catch (e) { toast(`Could not open: ${e}`); return; }
   if (!picked) return;
   const files = [];
-  for (const uri of [].concat(picked)) {
-    const u = typeof uri === 'string' ? uri : uri.path;
-    let name = decodeURIComponent(u).split(/[\/:]/).pop() || 'Document.md';
-    if (!/\.(md|markdown|mdown|mkdn?|txt)$/i.test(name)) name += '.md';
-    try { files.push(new File([await NATIVE.fs.readTextFile(u)], name, { type: 'text/markdown' })); }
-    catch (e) { toast(`Could not read ${name}: ${e}`); }
-  }
+  for (const uri of [].concat(picked)) { const f = await readContentUri(typeof uri === 'string' ? uri : uri.path); if (f) files.push(f); }
   if (files.length) openFiles(files);
+}
+// A content:// address (Android's picker, or "Open with" from another app), read as a Markdown file.
+async function readContentUri(u) {
+  // The address usually ends in the file name (…/document/primary:Notes/Trip.md, Drive's …;doc=Trip.md);
+  // when it is only an id (Downloads: …/msf:1234), the first heading names the document instead.
+  let name = decodeURIComponent(u).split(/[\/:;=]/).pop() || '';
+  let text;
+  try { text = await NATIVE.fs.readTextFile(u); }
+  catch (e) { toast(`Could not read ${name || 'that file'}: ${e}`); return null; }
+  if (!/[a-z]/i.test(name.replace(/\.(md|markdown|mdown|mkdn?|txt)$/i, ''))) name = ((/^#{1,6}\s+(.+)$/m.exec(text) || [, 'Document'])[1].trim().slice(0, 80)) + '.md';
+  if (!/\.(md|markdown|mdown|mkdn?|txt)$/i.test(name)) name += '.md';
+  return new File([text], name, { type: 'text/markdown' });
 }
 $('#fileInput').addEventListener('change', (e) => { openFiles([...e.target.files]); e.target.value = ''; });
 $('#imageInput').addEventListener('change', (e) => { insertImages(e.target.files); e.target.value = ''; });
@@ -4201,9 +4207,15 @@ mobileReady = true;
 
 if (MOBILE_APP) {
   // "Open in Cowdrey.MD" from Files, Mail or another app: the file arrives through the native side.
-  const takeOpened = () => NATIVE.core.invoke('take_opened_files').then((files) => {
+  const takeOpened = () => NATIVE.core.invoke('take_opened_files').then(async (files) => {
     if (!files || !files.length) return;
-    openFiles(files.map((f) => new File([f.content], f.name, { type: 'text/markdown' })));
+    const list = [];
+    for (const f of files) {
+      if (f.path && f.path.includes('://')) { const file = await readContentUri(f.path); if (file) list.push(file); } // Android
+      else list.push(new File([f.content], f.name, { type: 'text/markdown' }));
+    }
+    if (!list.length) return;
+    openFiles(list);
     if (mobile) setMobileMode('read');
   }).catch(() => {});
   NATIVE.event.listen('open-files', takeOpened);

@@ -31,10 +31,19 @@ fn load(path: &Path) -> Option<OpenedFile> {
     })
 }
 
+/// A file path is read here. Android hands over a content:// address instead: that comes back with no
+/// content, and the page reads it through the file system plugin, which can open such addresses.
+fn opened(p: &str) -> Option<OpenedFile> {
+    if p.contains("://") {
+        return Some(OpenedFile { name: String::new(), path: p.to_string(), content: String::new() });
+    }
+    load(Path::new(p))
+}
+
 #[tauri::command]
 fn take_opened_files(state: tauri::State<PendingFiles>) -> Vec<OpenedFile> {
     let paths = std::mem::take(&mut *state.0.lock().unwrap());
-    paths.iter().filter_map(|p| load(Path::new(p))).collect()
+    paths.iter().filter_map(|p| opened(p)).collect()
 }
 
 #[tauri::command]
@@ -231,13 +240,17 @@ pub fn run() {
                     flush_then_quit(app);
                 }
             }
-            // Finder "Open With" on the Mac, and "Open in Cowdrey.MD" from Files or Mail on iPhone and iPad.
-            #[cfg(any(target_os = "macos", target_os = "ios"))]
+            // Finder "Open With" on the Mac, "Open in Cowdrey.MD" from Files or Mail on iPhone and iPad, and
+            // "Open with" from a file manager, Drive or Gmail on Android (a content:// address).
+            #[cfg(any(target_os = "macos", target_os = "ios", target_os = "android"))]
             if let RunEvent::Opened { urls } = &event {
                 let paths: Vec<String> = urls
                     .iter()
-                    .filter_map(|u| u.to_file_path().ok())
-                    .map(|p| p.to_string_lossy().into_owned())
+                    .filter_map(|u| match u.to_file_path() {
+                        Ok(p) => Some(p.to_string_lossy().into_owned()),
+                        Err(_) if u.scheme() == "content" => Some(u.to_string()),
+                        Err(_) => None,
+                    })
                     .collect();
                 if !paths.is_empty() {
                     app.state::<PendingFiles>().0.lock().unwrap().extend(paths);

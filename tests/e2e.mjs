@@ -459,6 +459,11 @@ await test('phone: Format, Insert, Share and More sheets, Documents panel and re
   ok(await Q.evaluate(() => document.querySelector('#app').dataset.overlay === 'on' && !document.querySelector('#docsPanel').hidden), 'documents panel');
   await Q.mouse.click(375, 600); await settle(Q, 250);
   eq(await Q.evaluate(() => document.querySelector('#app').dataset.overlay), 'off');
+  // pressing ‹ Documents again goes back to the document
+  await Q.click('#mBar [data-m="docs"]'); await settle(Q, 250);
+  eq(await Q.evaluate(() => document.querySelector('#app').dataset.overlay), 'on', 'opens');
+  await Q.click('#mBar [data-m="docs"]'); await settle(Q, 250);
+  eq(await Q.evaluate(() => document.querySelector('#app').dataset.overlay), 'off', 'second press closes it');
   // a new document opens ready for writing
   await Q.click('#mBar [data-m="more"]'); await Q.click('#mSheet [data-cmd="newDoc"]'); await settle(Q, 300);
   eq(await Q.evaluate(() => document.querySelector('#app').dataset.mmode), 'edit');

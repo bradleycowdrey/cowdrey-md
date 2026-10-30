@@ -2,6 +2,10 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.22
+
+- **‹ Documents** on iPhone and Android now works both ways: the first press opens your document list, the second goes back to the document.
+
 ## 1.0.21
 
 - **The title bar clears the status bar** on Android 15 tablets, foldables and phones held sideways, and on iPad. Before, the clock strip covered the top of the icon, the File/Edit… menus, Share app and Export.

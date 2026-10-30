@@ -4054,7 +4054,7 @@ function closeSheet({ refocus = false } = {}) {
 }
 function mobileAction(m, el) {
   switch (m) {
-    case 'docs': closeSheet(); setSideTab('docs'); toggleOutline(true); break;
+    case 'docs': closeSheet(); if (app.dataset.overlay === 'on') { toggleOutline(false); break; } setSideTab('docs'); toggleOutline(true); break; // second press goes back to the document
     case 'outline': closeSheet(); setSideTab('outline'); toggleOutline(true); break;
     case 'done': setMobileMode('read'); break;
     case 'edit': setMobileMode('edit'); cm.focus(); break;

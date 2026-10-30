@@ -1,19 +1,19 @@
 {
-  "version": "1.0.21",
-  "notes": "Cowdrey.MD 1.0.21: the title bar clears the status bar on tablets; Android can check for updates.",
-  "pub_date": "2026-10-29T06:04:18Z",
+  "version": "1.0.22",
+  "notes": "Cowdrey.MD 1.0.22: small fixes for the phone apps.",
+  "pub_date": "2026-10-30T00:38:49Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0E2WkJuOGZBcEVZMGdMRDh5YzZiVkpQSzhzeGlXZHF3NElGL3N2ZEI2OTZPN0JIMDBySmpYSkZrTjh4SFNLUktmaytTOFQ4OW1PSWZKZk80MElsTGdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMjUzODU4CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpERExmYlRlMkNxSVZEcEt5YkxFYXp0MWVvK2VVaHBtNnR2UWxkZnl2cnlXVnZvMUYzdmlSOHc3aE1qa1hFUkxHRFFNMVVxSEVqejdhRWFiMDU2VzRBdz09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.21/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0dJTmRGT0NaMk5SNWt6RzdWYTNrUSsyeDFpVjNYMmFqcXF2dTc2Mllvb0hyYUlXdG1lSkpGZ0craUE2d1dJNE1rclVsbTJQa0g4cyt3T3Y0WFNuTXdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMzIwNzI5CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negoyeTJFenZsS3hvYVpxMTZ5TElBL1VWY1hXQW9KOFh4TWxQRnpNY3AzNkxMODkrMFJxODIyRG9ValYvNjlOS3RqMDlGVHpUdytSU1pyWmdOT2NiRm9CZz09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.22/Cowdrey.MD_universal.app.tar.gz"
     },
     "darwin-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0E2WkJuOGZBcEVZMGdMRDh5YzZiVkpQSzhzeGlXZHF3NElGL3N2ZEI2OTZPN0JIMDBySmpYSkZrTjh4SFNLUktmaytTOFQ4OW1PSWZKZk80MElsTGdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMjUzODU4CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpERExmYlRlMkNxSVZEcEt5YkxFYXp0MWVvK2VVaHBtNnR2UWxkZnl2cnlXVnZvMUYzdmlSOHc3aE1qa1hFUkxHRFFNMVVxSEVqejdhRWFiMDU2VzRBdz09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.21/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0dJTmRGT0NaMk5SNWt6RzdWYTNrUSsyeDFpVjNYMmFqcXF2dTc2Mllvb0hyYUlXdG1lSkpGZ0craUE2d1dJNE1rclVsbTJQa0g4cyt3T3Y0WFNuTXdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMzIwNzI5CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negoyeTJFenZsS3hvYVpxMTZ5TElBL1VWY1hXQW9KOFh4TWxQRnpNY3AzNkxMODkrMFJxODIyRG9ValYvNjlOS3RqMDlGVHpUdytSU1pyWmdOT2NiRm9CZz09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.22/Cowdrey.MD_universal.app.tar.gz"
     },
     "darwin-universal": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0E2WkJuOGZBcEVZMGdMRDh5YzZiVkpQSzhzeGlXZHF3NElGL3N2ZEI2OTZPN0JIMDBySmpYSkZrTjh4SFNLUktmaytTOFQ4OW1PSWZKZk80MElsTGdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMjUzODU4CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpERExmYlRlMkNxSVZEcEt5YkxFYXp0MWVvK2VVaHBtNnR2UWxkZnl2cnlXVnZvMUYzdmlSOHc3aE1qa1hFUkxHRFFNMVVxSEVqejdhRWFiMDU2VzRBdz09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.21/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0dJTmRGT0NaMk5SNWt6RzdWYTNrUSsyeDFpVjNYMmFqcXF2dTc2Mllvb0hyYUlXdG1lSkpGZ0craUE2d1dJNE1rclVsbTJQa0g4cyt3T3Y0WFNuTXdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMzIwNzI5CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negoyeTJFenZsS3hvYVpxMTZ5TElBL1VWY1hXQW9KOFh4TWxQRnpNY3AzNkxMODkrMFJxODIyRG9ValYvNjlOS3RqMDlGVHpUdytSU1pyWmdOT2NiRm9CZz09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.22/Cowdrey.MD_universal.app.tar.gz"
     }
   }
 }

@@ -4043,7 +4043,7 @@ function shareAnchor() {
   return r && r.width ? { x: r.left + r.width / 2, y: r.bottom } : { x: innerWidth - 40, y: 60 };
 }
 function shareApp() {
-  if (MOBILE_APP) {
+  if (MOBILE_APP && !ANDROID_APP) {
     NATIVE.core.invoke('plugin:sharekit|share_text', { text: `${SHARE_TEXT} ${APP_URL}`, position: shareAnchor() })
       .catch((e) => { if (!/cancel/i.test(String(e))) copyText(APP_URL, 'Link to Cowdrey.MD copied'); });
     return;

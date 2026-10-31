@@ -5,7 +5,6 @@ iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are 
 ## 1.0.28
 
 - **iPhone and iPad: the Share button opens the full share sheet.** Sharing a document (Markdown or web page) or sharing Cowdrey.MD now uses the system share sheet directly, pointing from the Share button. Before, it could open squeezed and cut off at the edge of the screen.
-- **Android: Share Cowdrey.MD** opens the Android share sheet instead of only copying the link.
 
 ## 1.0.27
 

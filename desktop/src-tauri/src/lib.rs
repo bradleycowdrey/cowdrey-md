@@ -226,9 +226,10 @@ pub fn run() {
         });
     #[cfg(target_os = "android")]
     let builder = builder.plugin(tauri_plugin_fs::init());
+    #[cfg(target_os = "ios")]
+    let builder = builder.plugin(tauri_plugin_sharekit::init());
     #[cfg(mobile)]
     let builder = builder
-        .plugin(tauri_plugin_sharekit::init())
         .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, write_share_file, quit_app, allow_exit, hold_quit]);
     builder
         .manage(PendingFiles(Mutex::new(Vec::new())))

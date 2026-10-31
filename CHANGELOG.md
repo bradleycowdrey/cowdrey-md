@@ -2,6 +2,10 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.29
+
+- **iPhone: the share sheet now rises from the bottom of the screen at full width**, like in other apps, instead of opening as a squeezed panel cut off at the right edge. Drag it up for more options. On iPad it points at the Share button.
+
 ## 1.0.28
 
 - **iPhone and iPad: the Share button opens the full share sheet.** Sharing a document (Markdown or web page) or sharing Cowdrey.MD now uses the system share sheet directly, pointing from the Share button. Before, it could open squeezed and cut off at the edge of the screen.

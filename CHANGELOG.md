@@ -2,6 +2,11 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.27
+
+- **Updated terms are asked about automatically.** Whenever the Terms of Use and Privacy change, Cowdrey.MD asks you to agree to the new version, no more than once a month. It notices both new terms built into an update and terms changed on bradcowdrey.com/legal, which it checks at most once a day.
+- **The terms are fuller:** where documents are kept in each app, email sign-ups on bradcowdrey.com, the terms Apple requires for App Store apps, and the usual sections on licences, pre-release versions, open-source software, export controls and security.
+
 ## 1.0.26
 
 - **Android: Open with Cowdrey.MD.** Tap a Markdown file in Files, Google Drive, Gmail or any file manager and choose Cowdrey.MD; pick **Always** to make it the default. The file opens as a document, named from the file (or from its first heading when the app sending it gives no name).

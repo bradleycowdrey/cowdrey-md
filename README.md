@@ -4,16 +4,27 @@ A Markdown editor by **Bradley Cowdrey** · [bradcowdrey.com](https://bradcowdre
 
 It combines MacDown's side-by-side writing, a Docs-style title bar, menus and paper page, and a Word-style ribbon, ruler and status bar. It is one self-contained web page with no build server and no backend.
 
-### [⬇ Download for Mac](https://github.com/bradleycowdrey/cowdrey-md/releases/latest/download/Cowdrey.MD.dmg) · [Open in your browser](https://bradcowdrey.com/cowdrey-md)
+### [⬇ Download for Mac](https://github.com/bradleycowdrey/cowdrey-md/releases/latest/download/Cowdrey.MD.dmg) · [⬇ Download for Android](https://github.com/bradleycowdrey/cowdrey-md/releases/latest/download/Cowdrey.MD.apk) · iPhone and iPad: coming soon to the App Store · [Open in your browser](https://bradcowdrey.com/cowdrey-md)
 
 [![The Cowdrey.MD page at bradcowdrey.com/cowdrey-md, with the editor running in a Mac window. Click to open it.](docs/product-page.png)](https://bradcowdrey.com/cowdrey-md)
 
-**Free. Forever.** The Mac download is a `.dmg` for Apple silicon and Intel Macs: open it and drag Cowdrey.MD into Applications. It's signed with an Apple Developer ID and notarized by Apple, so it opens with a double-click, and it keeps itself up to date.
+**Free. Forever.**
+- **Mac:** a `.dmg` for Apple silicon and Intel Macs. Open it and drag Cowdrey.MD into Applications. It's signed with an Apple Developer ID and notarized by Apple, so it opens with a double-click, and it keeps itself up to date.
+- **Android 8.0 or later:** an `.apk` signed with the Cowdrey.MD upload key. Open it on your phone and tap Install; later versions come from ··· → Check for updates.
+- **iPhone and iPad:** in Apple's App Review now (iOS 15 or later).
+- **Any browser:** [bradcowdrey.com/cowdrey-md/app](https://bradcowdrey.com/cowdrey-md/app).
 
 [![Latest release](https://img.shields.io/github/v/release/bradleycowdrey/cowdrey-md?label=latest%20version)](https://github.com/bradleycowdrey/cowdrey-md/releases/latest)
 
 ## What's new
 
+- **1.0.25 and 1.0.26: make Cowdrey.MD your default Markdown app** on iPhone, iPad and Android, as on the Mac. Tap a `.md` file in Files, Drive or Gmail and choose Cowdrey.MD.
+- **1.0.21 to 1.0.24: polish from testing on real devices.**
+  - One tap opens a document on touch screens.
+  - ‹ Documents goes back on a second press.
+  - The title bar clears the status bar on Android tablets and iPad.
+  - Undo and Redo grey out when there's nothing to undo or redo.
+  - Android can check for updates.
 - **1.0.20: Cowdrey.MD for Android**, with the same phone layout, Android's file picker for Open and Save, and the Back button.
 - **1.0.16: the iPhone layout works like Pages and Word.** Read the page, tap Edit to write, with a formatting bar above the keyboard and Format, Insert, Share and More panels.
 - **1.0.14: Cowdrey.MD for iPhone and iPad**, on its way to the App Store. Export opens the share sheet (Save to Files, AirDrop, Mail), and links open in Safari.
@@ -25,6 +36,12 @@ It combines MacDown's side-by-side writing, a Docs-style title bar, menus and pa
 See the [changelog](CHANGELOG.md) for every release.
 
 ## Features
+
+**On iPhone, iPad and Android**
+- A layout in the style of Pages and Word: read your document as a page, tap **Edit** to write, with a formatting bar above the keyboard and Format, Insert, Share and More panels
+- Open Markdown files from Files, Google Drive, Gmail or any app, and make Cowdrey.MD your default Markdown app
+- Export through the share sheet (iPhone and iPad) or Android's file picker; the Android Back button closes panels and leaves editing
+- Dynamic Type, VoiceOver, dark mode, and pinch to zoom the page
 
 **Writing**
 - Syntax-highlighted Markdown source (CodeMirror) with spell check, auto-closing brackets, and lists that continue and renumber on Enter
@@ -71,7 +88,7 @@ python3 build.py
 
 ## Tests
 
-`tests/e2e.mjs` drives the real app in Chromium through 48 scenarios: editing commands, lists, find and replace, tables, pictures, attempted script injection, math and diagrams, documents across browser tabs, persistence, export, clipboard, sync scroll, zoom, themes, phone layout, accessibility names and large-document speed. GitHub Actions runs it on every push (`.github/workflows/tests.yml`).
+`tests/e2e.mjs` drives the real app in Chromium through 78 scenarios: editing commands, lists, find and replace, tables, pictures, attempted script injection, math and diagrams, tabs and documents, persistence, export, clipboard, sync scroll, zoom, themes, accessibility and large-document speed. It also covers the phone layout (Edit and Done, panels, Back, pinch, edge swipe), the iPhone and Android apps (share sheet, file picker, Open with, update checks), status bars, and touch screens. Two audits run as well: every arrow and chevron control must respond or be greyed out, and no control may appear only on hover. `tests/matrix.mjs` runs every command at five window sizes in light and dark. GitHub Actions runs it on every push (`.github/workflows/tests.yml`).
 
 ```sh
 (cd desktop && npm ci) && npm install --no-save playwright && npx playwright install chromium
@@ -113,7 +130,7 @@ Built with CodeMirror 5, markdown-it, highlight.js, MathJax 3, Mermaid, DOMPurif
 
 ## Terms and privacy
 
-Using Cowdrey.MD means agreeing to the [Terms of Use and Privacy](TERMS.md) (also at [bradcowdrey.com/legal](https://bradcowdrey.com/legal)). In short: it's free and provided as is, you use it at your own risk, and your documents stay on your device. The app asks you to agree the first time it opens, and **Help → Terms & Privacy** opens them any time.
+Using Cowdrey.MD means agreeing to the [Terms of Use and Privacy](TERMS.md) (also at [bradcowdrey.com/legal](https://bradcowdrey.com/legal)). In short: it's free and provided as is, you use it at your own risk, and your documents stay on your device (in the browser, the app's storage, or files you choose), so keep your own copies of anything important. The app asks you to agree the first time it opens, and **Help → Terms & Privacy** (on phones, **··· → Terms & Privacy**) opens them any time.
 
 ## License
 

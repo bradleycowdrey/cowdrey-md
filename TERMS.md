@@ -1,7 +1,7 @@
 # Terms of Use and Privacy
 
 **bradcowdrey.com and everything Bradley Cowdrey publishes: apps, AI skills, books, lessons and more**
-Last updated: October 21, 2026 · Applies to: bradcowdrey.com, Cowdrey.MD, Meridian, Two Degrees, AI skills, books, lessons, articles, and anything I publish in the future
+Last updated: October 31, 2026 · Applies to: bradcowdrey.com, Cowdrey.MD, Meridian, Two Degrees, AI skills, books, lessons, articles, and anything I publish in the future
 
 ---
 
@@ -29,7 +29,7 @@ This summary is for convenience only. The full terms below are what count.
 
 These terms cover the "Services":
 - the website **bradcowdrey.com** and every page on it;
-- the apps **Cowdrey.MD**, **Meridian** and **Two Degrees**, in every form: Mac apps, widgets, menu-bar items, and web versions;
+- the apps **Cowdrey.MD**, **Meridian** and **Two Degrees**, in every form: Mac, iPhone and Android apps, widgets, menu-bar items, and web versions;
 - **all content and products on or linked from bradcowdrey.com**, including:
   - AI skills, prompts, templates, workflows and checklists;
   - lessons, articles, guides and videos;
@@ -189,6 +189,7 @@ What each Service does:
   - The web version loads the app from GitHub Pages and code libraries from jsDelivr.
 - **Meridian:**
   - Your cities stay on your device. The app itself sends them nowhere.
+  - If you choose "Use My Location", Meridian uses your device's location to name the city you're in. Your device's own location service turns it into a city name (Apple's on Mac and iPhone, your phone's on Android); Meridian keeps only that name, on your device. Turn it off any time in Settings → Show My Location.
 - **Two Degrees:**
   - Your cities stay on your device.
   - To get the weather, the app and its widgets send the coordinates of your cities to Open-Meteo, along with any place names you search for.

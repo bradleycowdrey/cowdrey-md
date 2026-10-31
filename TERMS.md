@@ -19,6 +19,7 @@ This summary is for convenience only. The full terms below are what count.
 - **Two Degrees is not a safety tool.** Follow official weather warnings.
 - **Meridian's times can be wrong.** Confirm meetings and travel.
 - **Cowdrey.MD documents saved in a browser or in a phone or tablet app can be erased.** Keep your own copies.
+- **Location is optional.** Meridian and Two Degrees use where you are only if you choose "Use My Location". It never reaches me.
 - **Your local law may give you rights these terms can't remove.** Where it does, these terms apply as far as that law allows.
 - **Each app's disclosures are in one place:** what stays on your device, what leaves it and where it goes, and what each app asks permission for (Section 25).
 
@@ -41,7 +42,7 @@ Notices for each app and for AI content are in Section 6, what each app does wit
 
 ## 2. Agreeing to these terms
 
-**By visiting bradcowdrey.com or by downloading, installing, opening or using any of the Services, you agree to these terms.** Some apps also ask you to agree when they first open; agreeing there and using the Services both count. If you don't agree, don't use the Services. Choosing "I agree" or using the Services is your electronic signature. It is as binding as signing on paper, and you waive any requirement for an original signature or for non-electronic records.
+**By visiting bradcowdrey.com or by downloading, installing, opening or using any of the Services, you agree to these terms.** The Cowdrey.MD, Meridian and Two Degrees apps also ask you to agree when they first open, and again after these terms change (no more than once a month); agreeing there and using the Services both count. If you don't agree, don't use the Services. Choosing "I agree" or using the Services is your electronic signature. It is as binding as signing on paper, and you waive any requirement for an original signature or for non-electronic records.
 
 You must be at least 13 years old to use the Services. You must also be old enough to agree to a contract where you live, or have a parent or guardian agree for you. If you use the Services for an organization, you agree for that organization too, and confirm you have authority to do so.
 
@@ -103,7 +104,7 @@ None of the Services gives professional, legal, medical, financial, tax, investm
 
 To the extent any of it is yours, you assign all rights in it to me, worldwide, permanently and irrevocably. If any right can't be assigned, you grant me an unrestricted, unlimited, irrevocable, perpetual, worldwide, transferable and sublicensable licence covering it. Under that licence I may host, use, copy, reproduce, disclose, sell, resell, publish, broadcast, display, adapt, translate, distribute and make derivative works of it. That includes your name, image and voice where they appear in what you send. I may use it for any purpose, commercial, advertising or otherwise. The assignment and licence are fully paid and royalty-free: no payment, royalty, credit or other compensation is owed to you, now or ever. You waive any moral rights in it, to the extent the law allows, and you confirm you have the right to give me all of this.
 
-My ownership of personal information is subject to the privacy rights that the law gives you (Section 16). If you ask me to delete or stop using your personal information, I will do so where the law requires.
+Personal information is the exception to the selling and advertising uses above: Sections 15 and 16 govern it, and I never sell it or share it for targeted advertising. My ownership of personal information is subject to the privacy rights that the law gives you (Section 16). If you ask me to delete or stop using your personal information, I will do so where the law requires.
 
 **Data that stays on your device.** The apps keep your documents and your city lists on your own device. That data never reaches me, so I don't hold it, can't see it, and can't recover it for you. You are solely responsible for it. If you ever send it to me, the paragraph above applies.
 
@@ -129,8 +130,8 @@ The Services rely on services and code I don't control. These include:
 - **GeoNames**, whose list of world cities is built into Two Degrees for searching without the internet;
 - **jsDelivr**, for web code libraries;
 - **Google Fonts**, for web fonts;
-- **Apple**, for macOS, iOS and iPadOS, the App Store and TestFlight, notarization and widgets;
-- **Google**, for Android and its file picker;
+- **Apple**, for macOS, iOS and iPadOS, the App Store and TestFlight, notarization, widgets, and the location services that find and name where you are;
+- **Google**, for Android, its file picker, and the location services that find and name where you are on Android;
 - **Amazon, Gumroad** and other stores that sell my books and products;
 - **AI tools** (such as Claude, ChatGPT and Gemini) that you use with my AI skills;
 - websites I link to, such as those of companies I work with.
@@ -203,7 +204,8 @@ What each Service does:
 - **Two Degrees:**
   - Your cities stay on your device.
   - To get the weather, the app and its widgets send the coordinates of your cities to Open-Meteo, along with any place names you search for.
-  - If you choose "Use My Location" (Two Degrees asks once, after you agree to these terms), it shows the weather where you are, first in your cities. Your device asks your permission first; on the web, your browser does. Your location is rounded to about a kilometre and sent only to Open-Meteo, to get its weather, and to name the city you're in, to your device's own location service (Apple's on Mac, iPhone and iPad, your phone's on Android; on the web, Open-Meteo). It is never sent to me. Turn it off any time in Two Degrees' settings.
+  - If you choose "Use My Location" (Two Degrees asks once, after you agree to these terms), it shows the weather where you are, first in your cities. Your device asks your permission first; on the web, your browser does. Your location is rounded to about a kilometre and sent only to Open-Meteo, to get its weather, and to name the city you're in, to your device's own location service (Apple's on Mac, iPhone and iPad, your phone's on Android; on the web, Open-Meteo). When those can't name it, the app uses its built-in GeoNames city list, on your device. The place it finds is kept on your device with your cities and removed when you turn Use My Location off. It is never sent to me. Turn it off any time in Two Degrees' settings.
+  - The web version loads from GitHub Pages, along with the GeoNames city list it uses to name places.
 - **Updates:**
   - The Mac apps contact GitHub to check for and download updates.
   - Meridian's apps contact GitHub, at most once a day, to check whether these terms have changed. When they have, the app asks you to agree again, no more than once a month.
@@ -249,7 +251,7 @@ I will answer within the time your law sets (usually 30 to 45 days) and won't tr
 
 **European Economic Area, United Kingdom and Switzerland (GDPR, UK GDPR, Swiss FADP).**
 - I am the controller of the personal information I hold.
-- My legal basis is my legitimate interest in running, securing and improving free Services, or your consent where you give it (for example, by giving your email address, choosing "Use My Location" or sending me a message).
+- My legal basis is my legitimate interest in running, securing and improving free Services, or your consent where you give it (for example, by giving your email address or sending me a message). "Use My Location" works on your device with your permission; the location never reaches me, so I hold none of it.
 - You also have the rights to restrict processing, to object, and to data portability.
 - Where I rely on consent, you may withdraw it at any time.
 - You may complain to your data protection authority.
@@ -343,7 +345,7 @@ This table summarizes Sections 6, 9, 15 and 20 for each app. Where it and those 
 | **Account** | None | None | None |
 | **Ads, analytics, tracking** | None | None | None |
 | **Stays on your device** | Your documents and settings | Your cities and settings | Your cities, settings and the last forecasts |
-| **Leaves your device** | Nothing you write. The web version loads its code from GitHub Pages and jsDelivr | Nothing about you | Your cities' coordinates and place searches, to Open-Meteo. The web version loads from GitHub Pages |
+| **Leaves your device** | Nothing you write. The web version loads its code from GitHub Pages and jsDelivr | Nothing about you, except as the Location row says | Your cities' coordinates and place searches, to Open-Meteo. The web version loads from GitHub Pages |
 | **Location** | Not used | Only if you choose "Use My Location", to name the city you're in. Your device's location service names it; Meridian keeps only the name | Only if you choose "Use My Location". Rounded to about a kilometre; sent to Open-Meteo for its weather and to your device's location service to name it |
 | **Permissions it asks for** | Access to files you choose | Location, only if you choose it | Location, only if you choose it |
 | **Contacts GitHub** | To check whether these terms changed (at most daily); the Mac app and the Android download, for updates | To check whether these terms changed (at most daily); the Mac app, for updates | The Mac app, for updates. The Android download doesn't update itself |
@@ -357,5 +359,5 @@ This table summarizes Sections 6, 9, 15 and 20 for each app. Where it and those 
 
 - **Weather data** in Two Degrees is from [Open-Meteo](https://open-meteo.com), under the Creative Commons Attribution 4.0 licence (CC BY 4.0).
 - **The city list** built into Two Degrees is from [GeoNames](https://www.geonames.org), under CC BY 4.0. I've reduced it to places with at least 15,000 people.
-- **Place names** where you are come from your device's own location service (Apple's or your phone's), or from Open-Meteo on the web.
+- **Place names** where you are come from your device's own location service (Apple's or your phone's) or, on the web, from Open-Meteo; when those can't name a place, from the GeoNames list.
 - **Apple, iPhone, iPad, Mac, App Store and TestFlight** are trademarks of Apple Inc. **Android and Google Play** are trademarks of Google LLC. Other names belong to their owners. Their mention doesn't mean they endorse me or the Services.

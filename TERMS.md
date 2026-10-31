@@ -13,14 +13,14 @@ This summary is for convenience only. The full terms below are what count.
 - **AI skills, lessons and books are for information only.** AI makes mistakes; check its output before you rely on it. Results aren't guaranteed.
 - **You use it at your own risk.** You are responsible for what you do with it, and for backing up your work.
 - **My liability is limited** to the fullest extent the law allows (Section 11).
-- **If your use causes a claim against me, you cover it.**
+- **If your misuse, your content or your breach of these terms causes a claim against me, you cover it** (Section 13).
 - **I collect very little about you:** basic website statistics; your email address if you give it to download an app or join my list; and your name and email if a store like Gumroad shares them when you buy. No accounts, no ads, no tracking. I never sell your personal information. You can unsubscribe at any time.
 - **I can freely use feedback you send me.** Your personal information is different: I use it only as Sections 15 and 16 say.
 - **Two Degrees is not a safety tool.** Follow official weather warnings.
 - **Meridian's times can be wrong.** Confirm meetings and travel.
 - **Cowdrey.MD documents saved in a browser or in a phone or tablet app can be erased.** Keep your own copies.
 - **Location is optional.** Meridian and Two Degrees use where you are only if you choose "Use My Location". It never reaches me.
-- **When these terms change,** the apps ask you to agree again, no more than once a month.
+- **When these terms change,** the apps ask you to agree again, no more than once a month (Section 18).
 - **Your local law may give you rights these terms can't remove.** Where it does, these terms apply as far as that law allows.
 - **Each app's disclosures are in one place:** what stays on your device, what leaves it and where it goes, and what each app asks permission for (Section 25).
 
@@ -45,7 +45,7 @@ Notices for each app and for AI content are in Section 6, what each app does wit
 
 ## 2. Agreeing to these terms
 
-**By visiting bradcowdrey.com or by downloading, installing, opening or using any of the Services, you agree to these terms.** The apps also ask you to agree when they first open, and again after these terms change, as Section 18 describes. Agreeing there and using the Services both count. If you don't agree, don't use the Services. Choosing "I agree" or using the Services is your electronic signature. It is as binding as signing on paper, and you waive any requirement for an original signature or for non-electronic records.
+**By visiting bradcowdrey.com or by downloading, installing, opening or using any of the Services, you agree to these terms.** The downloaded and app-store apps, and the web version of Cowdrey.MD, also ask you to agree when they first open, and again after these terms change, as Section 18 describes. Agreeing there and using the Services both count. If you don't agree, don't use the Services. Choosing "I agree" or using the Services is your electronic signature. It is as binding as signing on paper, and you waive any requirement for an original signature or for non-electronic records.
 
 You must be at least 13 years old to use the Services, or older if your country sets a higher age for using online services without a parent's consent. You must also be old enough to agree to a contract where you live, or have a parent or guardian agree for you. If you use the Services for an organization, you agree for that organization too, and confirm you have authority to do so.
 
@@ -102,9 +102,9 @@ None of the Services gives professional, legal, medical, financial, tax, investm
 
 **Feedback and suggestions.** If you send me feedback, ideas, suggestions, bug reports, screenshots or sample files about the Services, you give me a worldwide, perpetual, irrevocable, royalty-free licence to use, copy, change, build on and share them for any purpose, including improving and selling my products. I owe you no payment or credit for them. You keep whatever rights you have in what you send; this licence just lets me use it freely. Don't send anything confidential or anything you aren't entitled to share.
 
-**Information about you.** Personal information I hold, such as visitor statistics, server logs, error reports, email addresses, and anything that identifies you in what you send, is not covered by the licence above. Sections 15 and 16 govern it: I use it only as they describe, I never sell it or share it for targeted advertising, and you can ask me to see, correct or delete it.
+**Information about you.** The licence above doesn't cover personal information, including anything that identifies you in what you send. Sections 15 and 16 govern it: I use it only as they describe, I never sell it or share it for targeted advertising, and you can ask me to see, correct or delete it.
 
-**Data that stays on your device.** The apps keep your documents and your city lists on your own device. That data never reaches me, so I don't hold it, can't see it, and can't recover it for you. You are solely responsible for it. If you ever send it to me, the two paragraphs above apply to it.
+**Data that stays on your device.** The apps keep your documents, cities and other app data on your own device. That data never reaches me, so I don't hold it, can't see it, and can't recover it for you. You are solely responsible for it. If you ever send it to me, the two paragraphs above apply to it.
 
 **My content is mine.** I own everything else about the Services: the website's text, images and design, and the names, icons and logos of the apps. You may link to the Services and share their pages. Don't use my names or logos in a way that suggests I endorse you or your product. The apps' source code is licensed to you under the MIT License.
 
@@ -123,11 +123,11 @@ Don't use the Services to break the law, or to harm or deceive anyone. Don't try
 The Services rely on services and code I don't control. These include:
 - **Lovable**, which hosts bradcowdrey.com and sends its emails;
 - **Supabase**, which stores the email addresses people give on bradcowdrey.com;
-- **GitHub**, for downloads, updates and GitHub Pages;
+- **GitHub**, for downloads, updates, the terms check, and GitHub Pages, which serves the web versions of the apps;
 - **Open-Meteo**, for weather and place search;
 - **GeoNames**, whose list of world cities is built into Two Degrees for searching without the internet;
 - **jsDelivr**, for web code libraries;
-- **Google Fonts**, for web fonts;
+- **Google Fonts**, for fonts on the product pages and web versions;
 - **Apple**, for macOS, iOS and iPadOS, the App Store and TestFlight, notarization, widgets, and the location services that find and name where you are;
 - **Google**, for Android, its file picker, and the location services that find and name where you are on Android;
 - **Amazon, Gumroad** and other stores that sell my books and products;
@@ -138,7 +138,7 @@ These services have their own terms and privacy policies. I am not responsible f
 
 ## 10. Updates, changes and ending service
 
-The Mac apps, and the Android version of Cowdrey.MD downloaded from bradcowdrey.com, may check for updates and install or offer them. Apps from the App Store are updated by Apple. Updates can add, change or remove features. I may change, suspend or stop offering any Service, version or page at any time, for any reason, without notice and without liability. I have no obligation to provide support, fixes or updates. I may block or end anyone's access to the website at any time, for any reason, including a breach of these terms. The website may contain errors or out-of-date information; I may correct or change it at any time, without notice.
+Some apps check for updates and offer or install them; Section 15 lists which. Apps from an app store are updated by that store. Updates can add, change or remove features. I may change, suspend or stop offering any Service, version or page at any time, for any reason, without notice and without liability. I have no obligation to provide support, fixes or updates. I may block or end anyone's access to the website at any time, for any reason, including a breach of these terms. The website may contain errors or out-of-date information; I may correct or change it at any time, without notice.
 
 ## 11. Limitation of liability
 
@@ -189,7 +189,7 @@ What each Service does:
   - Lovable, the host, keeps the standard server logs any website has (IP address, browser and pages requested).
   - Lovable also gives me basic visitor statistics: pages viewed, referring site, device type and country.
   - When a page breaks, Lovable records an error report.
-  - The product pages load fonts from Google Fonts.
+  - The product pages and the web versions of the apps load fonts from Google Fonts.
   - The site sets no advertising cookies.
 - **Email sign-ups on bradcowdrey.com:**
   - When you download an app or join my list, you give your email address. I store it with where you signed up (for example, "Cowdrey.MD"), in a database hosted by Supabase.
@@ -198,22 +198,24 @@ What each Service does:
   - The site remembers on your device that you've signed up, so it doesn't ask again.
 - **Cowdrey.MD:**
   - Your documents stay on your device: in files you choose and the app's own storage (Mac), in the app's own storage (iPhone, iPad and Android), or, on the web, in your browser's storage.
-  - The web version loads the app from GitHub Pages and code libraries from jsDelivr.
+  - The web version, at bradcowdrey.com/cowdrey-md, loads the app from GitHub Pages and code libraries from jsDelivr.
 - **Meridian:**
   - Your cities stay on your device. The app itself sends them nowhere.
   - If you choose "Use My Location", Meridian uses your device's location to name the city you're in. Your device's own location service turns it into a city name (Apple's on Mac and iPhone, your phone's on Android); Meridian keeps only that name, on your device. Turn it off any time in Settings → Show My Location.
+  - The web version doesn't use your location. It marks your city using your browser's time zone, and sends nothing anywhere.
 - **Two Degrees:**
   - Your cities stay on your device.
   - To get the weather, the app and its widgets send the coordinates of your cities to Open-Meteo, along with any place names you search for.
   - If you choose "Use My Location" (Two Degrees asks once, after you agree to these terms), it shows the weather where you are, first in your cities. Your device asks your permission first; on the web, your browser does. Your location is rounded to about a kilometre and sent only to Open-Meteo, to get its weather, and to name the city you're in, to your device's own location service (Apple's on Mac, iPhone and iPad, your phone's on Android; on the web, Open-Meteo). When those can't name it, the app uses its built-in GeoNames city list, on your device. The place it finds is kept on your device with your cities and removed when you turn Use My Location off. It is never sent to me. Turn it off any time in Two Degrees' settings.
-  - The web version loads from GitHub Pages, along with the GeoNames city list it uses to name places.
+  - The web version, at bradcowdrey.com/two-degrees, loads from GitHub Pages, along with the GeoNames city list it uses to name places.
 - **Updates:**
   - The Mac apps contact GitHub to check for and download updates.
   - Cowdrey.MD for Android, when downloaded from bradcowdrey.com, asks GitHub once a day whether a newer version exists. If you choose to update, it downloads the new version from GitHub.
   - App Store apps are updated by Apple. They contact GitHub only for the terms check below.
 - **Terms checks:**
-  - Cowdrey.MD and Meridian read these terms from GitHub at most once a day, on every platform, to know when they change. The request sends nothing about you, your documents or your cities.
-  - Two Degrees doesn't check online; each new version carries the current terms.
+  - Cowdrey.MD (every version, including the web) and the Meridian apps read these terms from GitHub at most once a day, to know when they change. The request sends nothing about you, your documents or your cities.
+  - Two Degrees doesn't check online; each new version of its apps carries the current terms.
+  - The web versions of Meridian and Two Degrees don't ask you to agree in the app; using them means you agree (Section 2).
 - **Book and product purchases:**
   - The store you buy from handles your payment and personal details under its own privacy policy.
   - Some stores, such as Gumroad, share your name and email address with me as the seller. That information is covered by Sections 15 and 16.
@@ -253,7 +255,7 @@ I will answer within the time your law sets (one month under GDPR, 45 days under
 
 **European Economic Area, United Kingdom and Switzerland (GDPR, UK GDPR, Swiss FADP).**
 - I am the controller of the personal information I hold.
-- My legal basis is my legitimate interest in running, securing and improving free Services, or your consent where you give it (for example, by giving your email address or sending me a message). "Use My Location" works on your device with your permission; the location never reaches me, so I hold none of it.
+- My legal bases are: your consent, for my email list and for messages you send me; performing a contract, to deliver what you buy; and my legitimate interest in running, securing and improving free Services, for visitor statistics, logs and error reports. "Use My Location" works on your device with your permission; the location never reaches me, so I hold none of it.
 - You also have the rights to restrict processing, to object, and to data portability.
 - Where I rely on consent, you may withdraw it at any time.
 - You may complain to your data protection authority.
@@ -285,11 +287,11 @@ To the fullest extent permitted by law:
 
 ## 18. General
 
-- **Changes.** I may update these terms by posting a new version at bradcowdrey.com/legal and changing the "Last updated" date. For a significant change, I will also note it in the apps' release notes. When the terms change, the apps ask you to agree to the new version, no more than once a month: Cowdrey.MD and Meridian once they see the change online, Two Degrees in its next version. A change applies from the date it is posted, and continuing to use the Services after that means you accept it. Changes don't apply to a dispute that arose before they were posted.
+- **Changes.** I may update these terms by posting a new version at bradcowdrey.com/legal and changing the "Last updated" date. For a significant change, I will also note it in the apps' release notes. When the terms change, the apps ask you to agree to the new version, no more than once a month: Cowdrey.MD and the Meridian apps once they see the change online, the Two Degrees apps in their next version (Section 15, Terms checks). A change applies from the date it is posted, and continuing to use the Services after that means you accept it. Changes don't apply to a dispute that arose before they were posted.
 - **Whole agreement.** These terms, together with the MIT License for the source code, are the entire agreement between us about the Services.
 - **Severability.** If any part of these terms can't be enforced, it will be enforced as far as possible, and the rest stays in full effect.
 - **No waiver.** If I don't enforce a term, that doesn't waive it.
-- **Assignment.** You may not transfer your rights under these terms. I may transfer mine.
+- **Assignment.** You may not transfer your rights under these terms. I may transfer mine, for example to a company I set up to run the Services; if I do, I'll update these terms to say so.
 - **No third-party rights.** These terms create no rights for anyone except you and me, except that Apple and its subsidiaries are third-party beneficiaries as described in Section 20.
 - **Copyright complaints.** If you believe something on the website infringes your copyright, email legal@bradcowdrey.com with the details the US Digital Millennium Copyright Act requires (17 U.S.C. § 512(c)(3)). I may remove the material and, where appropriate, end access for repeat infringers.
 - **California users.** Under California Civil Code § 1789.3, you may contact the Complaint Assistance Unit of the Division of Consumer Services, California Department of Consumer Affairs, 1625 North Market Blvd., Suite N 112, Sacramento, CA 95834, or call (800) 952-5210.
@@ -297,7 +299,7 @@ To the fullest extent permitted by law:
 - **Force majeure.** I'm not responsible for any delay or failure caused by events beyond my reasonable control, including outages of the services in Section 9, internet or power failures, natural disasters, war, terrorism, strikes, epidemics and acts of government.
 - **Survival.** Sections 4 to 7, 11 to 18, 20, 22 and 23, and any other terms that by their nature should last, continue after you stop using the Services or these terms end.
 - **Interpretation.** Headings are for convenience only. "Including" means "including without limitation". If these terms are translated, the English version governs.
-- **Contact.** Bradley Cowdrey, Denver, Colorado, United States · legal@bradcowdrey.com
+- **Contact.** Bradley Cowdrey, Denver, Colorado, United States · legal@bradcowdrey.com. This is also the contact for questions, complaints and claims about any app, including apps from the App Store.
 
 ## 19. Your licence to use the apps
 
@@ -314,7 +316,7 @@ If you got an app from Apple's App Store:
 - **Legal compliance.** You confirm that you are not located in a country subject to a US government embargo or designated by the US government as "terrorist supporting", and that you are not on any US government list of prohibited or restricted parties.
 - **Third-party terms.** When you use the app, you must also follow any third-party agreement that applies, such as your wireless data service agreement.
 - **Third-party beneficiary.** Apple and Apple's subsidiaries are third-party beneficiaries of these terms. Once you accept them, Apple has the right, and is deemed to have accepted the right, to enforce them against you as a third-party beneficiary.
-- **Questions and complaints** about the app go to me (Section 18), not Apple.
+- **Developer name and contact.** Questions, complaints and claims about the app go to me, not Apple, at the contact in Section 18.
 
 If you got an app from Google Play or another store, these terms are between you and me, not the store, and I, not the store, am responsible for the app. The store's own terms also apply to your download, and its privacy policy covers what it collects.
 
@@ -324,7 +326,12 @@ I may offer test or early versions of the apps, for example through Apple's Test
 
 ## 22. Open-source software
 
-The apps include open-source software from other people, such as CodeMirror, markdown-it, MathJax, Mermaid, highlight.js, DOMPurify and Lucide; on Android, Kotlin and Google's AndroidX and Jetpack Compose libraries, under the Apache License 2.0; and fonts, such as Inter, under the SIL Open Font License. Each is used under its own licence, which each app's repository on GitHub lists. Nothing in these terms limits your rights under those licences.
+The apps include open-source software from other people, each used under its own licence, which each app's repository on GitHub lists. Examples:
+- in Cowdrey.MD: CodeMirror, markdown-it, MathJax, Mermaid, highlight.js, DOMPurify and Lucide;
+- on Android: Kotlin and Google's AndroidX and Jetpack Compose libraries, under the Apache License 2.0;
+- fonts such as Inter, under the SIL Open Font License.
+
+Nothing in these terms limits your rights under those licences.
 
 ## 23. Export controls
 
@@ -341,16 +348,16 @@ This table summarizes Sections 6, 9, 15 and 20 for each app. Where it and those 
 | | Cowdrey.MD | Meridian | Two Degrees |
 |---|---|---|---|
 | **What it is** | Markdown text editor | World clock and time-zone planner | Weather in °F and °C at once |
-| **Platforms** | Mac, iPhone and iPad, Android, web | Mac, iPhone, Android, web | Mac, iPhone and iPad, Android, web, with widgets |
+| **Platforms** | Mac, iPhone and iPad, Android, web | Mac, iPhone, Android, web (time zones only) | Mac, iPhone and iPad, Android, web, with widgets |
 | **Where you get it** | bradcowdrey.com and GitHub; app stores where listed | bradcowdrey.com and GitHub; app stores where listed | bradcowdrey.com and GitHub; app stores where listed, and TestFlight |
 | **Price** | Free | Free | Free |
 | **Account** | None | None | None |
 | **Ads, analytics, tracking** | None | None | None |
 | **Stays on your device** | Your documents and settings | Your cities and settings | Your cities, settings and the last forecasts |
-| **Leaves your device** | Nothing you write. The web version loads its code from GitHub Pages and jsDelivr | Nothing about you, except as the Location row says | Your cities' coordinates and place searches, to Open-Meteo. The web version loads from GitHub Pages |
-| **Location** | Not used | Only if you choose "Use My Location", to name the city you're in. Your device's location service names it; Meridian keeps only the name | Only if you choose "Use My Location". Rounded to about a kilometre; sent to Open-Meteo for its weather and to your device's location service to name it |
+| **Leaves your device** | Nothing you write. The web version loads its code from GitHub Pages and jsDelivr | Nothing about you, except as the Location row says. The web version sends nothing | Your cities' coordinates and place searches, to Open-Meteo. The web version loads from GitHub Pages |
+| **Location** | Not used | In the apps, only if you choose "Use My Location", to name the city you're in. Your device's location service names it; Meridian keeps only the name. The web version uses only your browser's time zone | Only if you choose "Use My Location". Rounded to about a kilometre; sent to Open-Meteo for its weather and to your device's location service to name it |
 | **Permissions it asks for** | Access to files you choose | Location, only if you choose it | Location, only if you choose it |
-| **Asks you to agree again** | When these terms change (checked online at most daily); at most once a month | When these terms change (checked online at most daily); at most once a month | In the next version after these terms change; at most once a month |
+| **Asks you to agree again** | When these terms change (checked online at most daily); at most once a month | The apps: when these terms change (checked online at most daily); at most once a month. The web version doesn't ask | The apps: in the next version after these terms change; at most once a month. The web version doesn't ask |
 | **Contacts GitHub** | To check whether these terms changed (at most daily); the Mac app and the Android download, for updates | To check whether these terms changed (at most daily); the Mac app, for updates | The Mac app, for updates. The Android download doesn't update itself |
 | **Data it relies on** | None | Your device's clock and time-zone data | Open-Meteo forecasts; the GeoNames city list |
 | **Key warning** | Browser and phone storage can be erased; keep copies (Section 6) | Times can be wrong; confirm meetings and travel (Section 6) | Not a safety tool; follow official warnings (Section 6) |

@@ -20,6 +20,7 @@ This summary is for convenience only. The full terms below are what count.
 - **Meridian's times can be wrong.** Confirm meetings and travel.
 - **Cowdrey.MD documents saved in a browser or in a phone or tablet app can be erased.** Keep your own copies.
 - **Your local law may give you rights these terms can't remove.** Where it does, these terms apply as far as that law allows.
+- **Each app's disclosures are in one place:** what stays on your device, what leaves it and where it goes, and what each app asks permission for (Section 25).
 
 ---
 
@@ -36,7 +37,7 @@ These terms cover the "Services":
   - books such as the *AI Skills Bible*, and any courses, downloads, newsletters or other materials;
 - **every app, website, skill, book or other product I publish in the future**, unless it comes with its own terms.
 
-Notices for each app and for AI content are in Section 6. When I publish something new, I may add a notice for it there. Sections 19 to 24 cover your licence to use the apps, app stores (including terms Apple requires), pre-release versions, open-source software, export controls and security.
+Notices for each app and for AI content are in Section 6, what each app does with your information is in Section 15, and a summary of every app's disclosures is in Section 25. Before I release a new app, I add it to Sections 6, 15 and 25. Until an app has its own entries, everything else in these terms applies to it in full. Sections 19 to 26 cover your licence to use the apps, app stores (including terms Apple requires), pre-release versions, open-source software, export controls, security, each app's disclosures, and data credits.
 
 ## 2. Agreeing to these terms
 
@@ -82,7 +83,7 @@ You accept every risk of using the Services. That includes losing data or work, 
 
 **Meridian** shows times using your device's clock and time-zone data, which can be wrong or out of date, especially around daylight-saving changes. Always confirm meeting and travel times with the people involved and with official sources.
 
-**Two Degrees** shows weather from Open-Meteo, an independent service, and converts between °F and °C. Forecasts are often wrong. **Two Degrees is not a safety tool.** Never use it to make decisions that affect anyone's health, safety or property. For severe weather, follow official warnings from your national weather service (in the US, the National Weather Service at weather.gov) and local authorities.
+**Two Degrees** shows weather from Open-Meteo, an independent service, and converts between °F and °C. Forecasts are often wrong. **Two Degrees is not a safety tool.** Never use it to make decisions that affect anyone's health, safety or property. For severe weather, follow official warnings from your national weather service (in the US, the National Weather Service at weather.gov) and local authorities. Two Degrees does not show weather alerts or warnings. Widgets refresh on a schedule your device controls, and the app and widgets keep showing the last forecast they received when they can't reach Open-Meteo, so what you see can be hours old; the app marks it "Offline". With "Use My Location" on, the place shown is approximate and can be the wrong town, especially near borders or when your device's location is poor.
 
 **AI skills, lessons, books and other content** are for general information and education only. AI tools can produce output that is wrong, biased, outdated, unsafe or infringing, and the same skill can give different results each time. In particular:
 - **Check the output.** You are responsible for reviewing and fact-checking anything an AI tool produces before you use, publish or rely on it.
@@ -125,6 +126,7 @@ The Services rely on services and code I don't control. These include:
 - **Supabase**, which stores the email addresses people give on bradcowdrey.com;
 - **GitHub**, for downloads, updates and GitHub Pages;
 - **Open-Meteo**, for weather and place search;
+- **GeoNames**, whose list of world cities is built into Two Degrees for searching without the internet;
 - **jsDelivr**, for web code libraries;
 - **Google Fonts**, for web fonts;
 - **Apple**, for macOS, iOS and iPadOS, the App Store and TestFlight, notarization and widgets;
@@ -318,7 +320,7 @@ I may offer test or early versions of the apps, for example through Apple's Test
 
 ## 22. Open-source software
 
-The apps include open-source software from other people, such as CodeMirror, markdown-it, MathJax, Mermaid, highlight.js, DOMPurify and Lucide, and fonts under the SIL Open Font License. Each is used under its own licence, which each app's repository on GitHub lists. Nothing in these terms limits your rights under those licences.
+The apps include open-source software from other people, such as CodeMirror, markdown-it, MathJax, Mermaid, highlight.js, DOMPurify and Lucide; on Android, Kotlin and Google's AndroidX and Jetpack Compose libraries, under the Apache License 2.0; and fonts, such as Inter, under the SIL Open Font License. Each is used under its own licence, which each app's repository on GitHub lists. Nothing in these terms limits your rights under those licences.
 
 ## 23. Export controls
 
@@ -327,3 +329,33 @@ You may not use, export or re-export the Services except as US law and the laws 
 ## 24. Security
 
 If you find a security problem in any of the Services, please email legal@bradcowdrey.com with the details, and give me a reasonable time to fix it before telling anyone else. Don't access other people's data, disrupt the Services, or go further than needed to show the problem.
+
+## 25. Each app's disclosures at a glance
+
+This table summarizes Sections 6, 9, 15 and 20 for each app. Where it and those sections differ, those sections govern.
+
+| | Cowdrey.MD | Meridian | Two Degrees |
+|---|---|---|---|
+| **What it is** | Markdown text editor | World clock and time-zone planner | Weather in °F and °C at once |
+| **Platforms** | Mac, iPhone and iPad, Android, web | Mac, iPhone, Android, web | Mac, iPhone and iPad, Android, web, with widgets |
+| **Where you get it** | bradcowdrey.com and GitHub; app stores where listed | bradcowdrey.com and GitHub; app stores where listed | bradcowdrey.com and GitHub; app stores where listed, and TestFlight |
+| **Price** | Free | Free | Free |
+| **Account** | None | None | None |
+| **Ads, analytics, tracking** | None | None | None |
+| **Stays on your device** | Your documents and settings | Your cities and settings | Your cities, settings and the last forecasts |
+| **Leaves your device** | Nothing you write. The web version loads its code from GitHub Pages and jsDelivr | Nothing about you | Your cities' coordinates and place searches, to Open-Meteo. The web version loads from GitHub Pages |
+| **Location** | Not used | Only if you choose "Use My Location", to name the city you're in. Your device's location service names it; Meridian keeps only the name | Only if you choose "Use My Location". Rounded to about a kilometre; sent to Open-Meteo for its weather and to your device's location service to name it |
+| **Permissions it asks for** | Access to files you choose | Location, only if you choose it | Location, only if you choose it |
+| **Contacts GitHub** | To check whether these terms changed (at most daily); the Mac app and the Android download, for updates | To check whether these terms changed (at most daily); the Mac app, for updates | The Mac app, for updates. The Android download doesn't update itself |
+| **Data it relies on** | None | Your device's clock and time-zone data | Open-Meteo forecasts; the GeoNames city list |
+| **Key warning** | Browser and phone storage can be erased; keep copies (Section 6) | Times can be wrong; confirm meetings and travel (Section 6) | Not a safety tool; follow official warnings (Section 6) |
+| **Source code** | MIT License, on GitHub | MIT License, on GitHub | MIT License, on GitHub |
+
+**Apps I publish later** get a column here, and entries in Sections 6 and 15, before they're released.
+
+## 26. Data and credits
+
+- **Weather data** in Two Degrees is from [Open-Meteo](https://open-meteo.com), under the Creative Commons Attribution 4.0 licence (CC BY 4.0).
+- **The city list** built into Two Degrees is from [GeoNames](https://www.geonames.org), under CC BY 4.0. I've reduced it to places with at least 15,000 people.
+- **Place names** where you are come from your device's own location service (Apple's or your phone's), or from Open-Meteo on the web.
+- **Apple, iPhone, iPad, Mac, App Store and TestFlight** are trademarks of Apple Inc. **Android and Google Play** are trademarks of Google LLC. Other names belong to their owners. Their mention doesn't mean they endorse me or the Services.

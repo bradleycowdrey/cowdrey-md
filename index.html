@@ -2864,6 +2864,13 @@ async function saveFile(name, data, mime) {
   }
   if (MOBILE_APP) {
     // iOS has no downloads folder: the share sheet offers Save to Files, AirDrop, Mail and the rest.
+    // Presented natively, from the Share button, so it opens full size (the web view's own sheet came up clipped).
+    try {
+      const path = await NATIVE.core.invoke('write_share_file', { name, contents: data });
+      await NATIVE.core.invoke('plugin:sharekit|share_file', { url: 'file://' + encodeURI(path), mimeType: mime, title: name, position: shareAnchor() });
+      toast(`Shared ${name}`);
+      return;
+    } catch (e) { if (/cancel/i.test(String(e))) return; }
     const file = new File([data], name, { type: mime });
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try { await navigator.share({ files: [file], title: name }); toast(`Shared ${name}`); }
@@ -3216,7 +3223,7 @@ const APP_URL = 'https://bradcowdrey.com/cowdrey-md';
 const MAC_URL = 'https://github.com/bradleycowdrey/cowdrey-md/releases/latest';
 const SHARE_TEXT = 'Cowdrey.MD is a free Markdown editor by Bradley Cowdrey. Free. Forever.';
 $('#shareAppBtn').addEventListener('click', (e) => {
-  const canShare = typeof navigator.share === 'function' && !inArtifact();
+  const canShare = MOBILE_APP || (typeof navigator.share === 'function' && !inArtifact());
   openPopover(e.currentTarget, `<div class="mhead">Share Cowdrey.MD</div><p class="share-blurb" id="shareBlurb">${esc(SHARE_TEXT)} Pass it on to anyone who writes in Markdown.</p>
     ${canShare ? `<button type="button" class="mi" data-share="native">${ic('share')}<span>Share…</span><span></span></button>` : ''}
     <button type="button" class="mi" data-share="web">${ic('link')}<span>Copy link to the web app</span><span></span></button>
@@ -3225,7 +3232,7 @@ $('#shareAppBtn').addEventListener('click', (e) => {
     const b = ev.target.closest('[data-share]'); if (!b) return;
     closePopover();
     const kind = b.dataset.share;
-    if (kind === 'native') navigator.share({ title: 'Cowdrey.MD', text: SHARE_TEXT, url: APP_URL }).catch(() => {});
+    if (kind === 'native') shareApp();
     if (kind === 'web') copyText(APP_URL, 'Link to Cowdrey.MD copied');
     if (kind === 'mac') copyText(MAC_URL, 'Mac download link copied');
     if (kind === 'message') copyText(`${SHARE_TEXT}\n\nUse it in your browser: ${APP_URL}\nGet it for Mac: ${MAC_URL}`, 'Message copied, ready to paste');
@@ -4037,7 +4044,18 @@ function mobileRename() {
     },
   });
 }
+// Where the share sheet points from on iPad (the Share button, or the top-right corner).
+function shareAnchor() {
+  const b = document.querySelector('[data-m="share"]');
+  const r = b && b.getBoundingClientRect();
+  return r && r.width ? { x: r.left + r.width / 2, y: r.bottom } : { x: innerWidth - 40, y: 60 };
+}
 function shareApp() {
+  if (MOBILE_APP) {
+    NATIVE.core.invoke('plugin:sharekit|share_text', { text: `${SHARE_TEXT} ${APP_URL}`, position: shareAnchor() })
+      .catch((e) => { if (!/cancel/i.test(String(e))) copyText(APP_URL, 'Link to Cowdrey.MD copied'); });
+    return;
+  }
   if (typeof navigator.share === 'function' && !inArtifact()) navigator.share({ title: 'Cowdrey.MD', text: SHARE_TEXT, url: APP_URL }).catch(() => {});
   else copyText(APP_URL, 'Link to Cowdrey.MD copied');
 }

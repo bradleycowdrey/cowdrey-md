@@ -1101,17 +1101,21 @@ await test('Find and Replace open to the right of the ribbon buttons, can be dra
   await T.keyboard.press('Escape'); await T.click('#ribbonToggle');
   eq(T.errors, []); await T.ctx.close();
 });
-await test('iPhone app: runs like the web version, shares exports and opens links in Safari', async () => {
+await test('iPhone app: runs like the web version, shares exports through the native share sheet and opens links in Safari', async () => {
   const T = await newPage({ width: 390, height: 844, init: () => {
-    window.__calls = { invoke: [], opened: [], shared: [] };
+    window.__calls = { invoke: [], opened: [], shared: [], written: {} };
     Object.defineProperty(navigator, 'maxTouchPoints', { get: () => 5 });
     window.__TAURI__ = {
-      core: { invoke: async (c) => { window.__calls.invoke.push(c); if (c === 'take_opened_files' && !window.__took) { window.__took = true; return [{ name: 'From Files.md', path: '/Inbox/From Files.md', content: '# Opened from Files' }]; } return null; } },
+      core: { invoke: async (c, a) => {
+        if (c === 'write_share_file') { window.__calls.written[a.name] = a.contents; return '/private/tmp/' + a.name; }
+        if (c === 'plugin:sharekit|share_file') { const name = decodeURI(a.url).split('/').pop(); window.__calls.shared.push({ name, type: a.mimeType, size: (window.__calls.written[name] || '').length, url: a.url, position: a.position }); return null; }
+        if (c === 'plugin:sharekit|share_text') { window.__calls.shared.push({ text: a.text, position: a.position }); return null; }
+        window.__calls.invoke.push(c); if (c === 'take_opened_files' && !window.__took) { window.__took = true; return [{ name: 'From Files.md', path: '/Inbox/From Files.md', content: '# Opened from Files' }]; } return null; } },
       app: { getVersion: async () => '1.0.14' }, dialog: {}, event: { listen: async () => {} },
       opener: { openUrl: async (u) => { window.__calls.opened.push(u); } },
     };
     navigator.canShare = (d) => !!(d && d.files && d.files.length);
-    navigator.share = async (d) => { window.__calls.shared.push({ name: d.files[0].name, type: d.files[0].type, size: d.files[0].size }); };
+    navigator.share = async () => { window.__calls.webShare = true; };
   } });
   // no Mac-only commands, menu bar or file paths
   for (const id of ['saveAs', 'saveAll', 'openRecent', 'checkUpdates', 'print']) {
@@ -1124,6 +1128,13 @@ await test('iPhone app: runs like the web version, shares exports and opens link
   await T.evaluate(() => document.querySelector('#popover [data-cmd="saveMd"]').click()); await settle(T, 300);
   const c = await T.evaluate(() => window.__calls);
   eq(c.shared.length, 1, 'shared once'); ok(/\.md$/.test(c.shared[0].name) && c.shared[0].size > 0, 'a Markdown file');
+  ok(c.shared[0].url.startsWith('file:///private/tmp/') && c.shared[0].type === 'text/markdown', 'a file URL with its type: ' + c.shared[0].url);
+  ok(c.shared[0].position && c.shared[0].position.x > 0 && c.shared[0].position.x <= 390 && c.shared[0].position.y > 0 && c.shared[0].position.y < 200, 'points from the Share button, on screen: ' + JSON.stringify(c.shared[0].position));
+  ok(!c.webShare, "the web view's own share sheet (which opened clipped) is not used");
+  // Share Cowdrey.MD with a friend: the native sheet too, with the link
+  await T.click('#mBar [data-m="share"]'); await settle(T, 150);
+  await T.evaluate(() => document.querySelector('#mSheet [data-m="shareApp"]').click()); await settle(T, 200);
+  { const last = (await T.evaluate(() => window.__calls.shared)).pop(); ok(last.text && last.text.includes('https://bradcowdrey.com/cowdrey-md') && last.position, 'shares the app link natively'); }
   // web links open in Safari, not inside the app
   await T.evaluate(() => document.querySelector('.sb-brand a').click()); await settle(T, 100);
   eq((await T.evaluate(() => window.__calls.opened)).pop(), 'https://bradcowdrey.com/');

@@ -56,6 +56,16 @@ fn write_text_file(path: String, contents: String) -> Result<(), String> {
     std::fs::write(&path, contents).map_err(|e| e.to_string())
 }
 
+/// Writes a copy to share into the app's temporary folder and returns its path, for the share sheet.
+#[cfg(mobile)]
+#[tauri::command]
+fn write_share_file(name: String, contents: String) -> Result<String, String> {
+    let name: String = name.chars().map(|c| if matches!(c, '/' | '\\' | ':') { '-' } else { c }).collect();
+    let path = std::env::temp_dir().join(if name.trim().is_empty() { "Untitled.md".into() } else { name });
+    std::fs::write(&path, contents).map_err(|e| e.to_string())?;
+    Ok(path.to_string_lossy().into_owned())
+}
+
 /// Called just before an update relaunches the app, so the quit handler lets it go.
 #[tauri::command]
 fn allow_exit(app: AppHandle) {
@@ -217,7 +227,9 @@ pub fn run() {
     #[cfg(target_os = "android")]
     let builder = builder.plugin(tauri_plugin_fs::init());
     #[cfg(mobile)]
-    let builder = builder.invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, quit_app, allow_exit, hold_quit]);
+    let builder = builder
+        .plugin(tauri_plugin_sharekit::init())
+        .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, write_share_file, quit_app, allow_exit, hold_quit]);
     builder
         .manage(PendingFiles(Mutex::new(Vec::new())))
         .manage(Quitting(AtomicBool::new(false)))

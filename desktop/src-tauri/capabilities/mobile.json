@@ -11,6 +11,7 @@
   "permissions": [
     "core:default",
     "dialog:default",
-    "opener:default"
+    "opener:default",
+    "sharekit:default"
   ]
 }

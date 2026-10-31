@@ -22,7 +22,18 @@ fonts_css = '\n'.join(
     % (fam, base64.b64encode((root / 'fonts' / f).read_bytes()).decode(), w, st)
     for fam, f, w, st in FACES)
 html = html.replace('/*FONTS_CSS*/', fonts_css)
-html = html.replace('/*APP_JS*/', (root / 'src/app.js').read_text())
+# The terms as they are at build time: their fingerprint and date go into the app, so it can tell
+# when the terms have changed since someone agreed (see askTerms in app.js, which uses the same hash).
+import re
+def terms_hash(text):
+    h = 0x811c9dc5  # FNV-1a, 32-bit, over the UTF-8 bytes of the text with line endings normalized
+    for byte in text.replace('\r\n', '\n').strip().encode('utf-8'):
+        h = ((h ^ byte) * 0x01000193) & 0xffffffff
+    return format(h, '08x')
+terms = (root / 'TERMS.md').read_text()
+terms_date = (re.search(r'Last updated:\s*([^·\n]+?)\s*(?:·|$)', terms, re.M) or [None, ''])[1]
+app_js = (root / 'src/app.js').read_text().replace('__TERMS_HASH__', terms_hash(terms)).replace('__TERMS_DATE__', terms_date)
+html = html.replace('/*APP_JS*/', app_js)
 # artifact.html: the page body only (for hosts that add their own document wrapper)
 (root / 'artifact.html').write_text(html)
 # index.html: a complete standards-mode document (GitHub Pages, the Mac app, any web host)

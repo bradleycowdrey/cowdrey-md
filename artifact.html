@@ -3626,17 +3626,56 @@ function showShortcuts() {
   });
 }
 const LEGAL_URL = 'https://bradcowdrey.com/legal';
-const TERMS_VERSION = '2026-10-21'; // bump when the terms change materially, so everyone is asked again
 function openLegal() { openExternal(LEGAL_URL); }
-// Asked once (and again after a material change). Closing without agreeing asks again next time.
-function askTermsOnce() {
-  if (store.get(KEY + ':terms', null) === TERMS_VERSION) return;
+// Terms: asked on first launch, and again whenever TERMS.md changes, but at most once every 30 days.
+// The newest known version is either the one built into the app (build.py) or the one on GitHub,
+// which bradcowdrey.com/legal also shows, fetched at most once a day. Agreeing stores its fingerprint.
+const TERMS_BUILT = { hash: '2262e2b8', date: 'October 31, 2026' };
+const TERMS_SOURCE = 'https://raw.githubusercontent.com/bradleycowdrey/cowdrey-md/main/TERMS.md';
+const TERMS_GAP = 30 * 864e5; // at most one request to agree a month
+function termsHash(text) {
+  let h = 0x811c9dc5;
+  for (const b of new TextEncoder().encode(text.replace(/\r\n/g, '\n').trim())) h = Math.imul(h ^ b, 0x01000193) >>> 0;
+  return h.toString(16).padStart(8, '0');
+}
+const termsDate = (t) => (/Last updated:\s*([^·\n]+?)\s*(?:·|$)/m.exec(t) || [, ''])[1];
+async function latestTerms() {
+  let net = store.get(KEY + ':termsLatest', null);
+  if (!net || Date.now() - (net.at || 0) > 864e5) {
+    try {
+      const r = await fetch(TERMS_SOURCE, { cache: 'no-store', signal: AbortSignal.timeout ? AbortSignal.timeout(5000) : undefined });
+      if (r.ok) { const t = await r.text(); if (/^# Terms of Use/.test(t)) { net = { hash: termsHash(t), date: termsDate(t), at: Date.now() }; store.set(KEY + ':termsLatest', net); } }
+    } catch {} // offline: use what we know
+  }
+  // The newer of the two; on the same date, GitHub's copy (it may have been corrected that day).
+  if (!net || !net.hash) return TERMS_BUILT;
+  const t = (d) => Date.parse(d) || 0;
+  return t(TERMS_BUILT.date) > t(net.date) ? TERMS_BUILT : net;
+}
+let termsAsking = false;
+async function askTerms() {
+  if (termsAsking) return;
+  const agreed = store.get(KEY + ':terms', null);
+  if (!agreed) { termsAsking = true; return termsDialog(false); } // first launch: always, and right away
+  const latest = await latestTerms();
+  if (agreed === latest.hash) return;
+  if (Date.now() - (store.get(KEY + ':termsAskedAt', 0) || 0) < TERMS_GAP) return; // asked within the last month
+  termsAsking = true; termsDialog(true, latest);
+}
+function termsDialog(updated, latest) {
+  store.set(KEY + ':termsAskedAt', Date.now());
+  const link = `<a href="${LEGAL_URL}" target="_blank" rel="noopener">Terms of Use and Privacy</a>`;
   openDialog({
-    title: 'Terms of Use and Privacy',
-    body: `<p>Cowdrey.MD is free and provided as is, without warranty. You use it at your own risk, and you are responsible for keeping copies of your work.</p>
-      <p>Your documents stay on your device. By choosing <b>I agree</b> and using Cowdrey.MD, you agree to the <a href="${LEGAL_URL}" target="_blank" rel="noopener">Terms of Use and Privacy</a>.</p>`,
-    actions: [{ label: 'Read the terms', run: () => { openLegal(); return false; } }, { label: 'I agree', primary: true, run: () => { store.set(KEY + ':terms', TERMS_VERSION); } }],
+    title: updated ? 'Updated Terms of Use and Privacy' : 'Terms of Use and Privacy',
+    body: updated
+      ? `<p>The ${link} changed${latest && latest.date ? ` on ${esc(latest.date)}` : ''}. Please read them and choose <b>I agree</b> to keep using Cowdrey.MD.</p>
+        <p>Cowdrey.MD is still free and provided as is, and your documents still stay on your device. Continuing to use Cowdrey.MD means you accept the updated terms.</p>`
+      : `<p>Cowdrey.MD is free and provided as is, without warranty. You use it at your own risk, and you are responsible for keeping copies of your work.</p>
+        <p>Your documents stay on your device. By choosing <b>I agree</b> and using Cowdrey.MD, you agree to the ${link}.</p>`,
+    actions: [{ label: 'Read the terms', run: () => { openLegal(); return false; } },
+      { label: 'I agree', primary: true, run: async () => { store.set(KEY + ':terms', (latest || await latestTerms()).hash); termsAsking = false; } }],
   });
+  dialog.addEventListener('close', () => { termsAsking = false; }, { once: true });
 }
 async function showAbout() {
   let version = '';
@@ -4304,7 +4343,8 @@ refreshState(); refreshIcons();
 if (window.innerWidth > 760 && !phoneMQ.matches) cm.focus();
 if (firstRun) persist(); else setSaveState('saved');
 applyMobile(); mobileTitle();
-askTermsOnce();
+askTerms();
+document.addEventListener('visibilitychange', () => { if (!document.hidden) askTerms(); }); // apps stay open for days
 window.addEventListener('resize', debounce(() => { cm.refresh(); sizePage(); buildLineMap(); }, 120));
 document.fonts && document.fonts.ready.then(() => { cm.refresh(); sizePage(); buildLineMap(); });
 })();

@@ -16,6 +16,7 @@ const exe = fs.existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chrom
 const NM = path.join(root, 'desktop/node_modules');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const DOC = html; // index.html is a complete document
+const TERMS_HASH = /TERMS_BUILT = \{ hash: '([0-9a-f]{8})'/.exec(html)[1]; // the terms built into the app
 
 function localFor(url) {
   const m = url.match(/^https:\/\/cdn\.jsdelivr\.net\/npm\/((?:@[^/]+\/)?[^@/]+)@[^/]+\/(.+)$/);
@@ -26,17 +27,18 @@ const browser = await chromium.launch({ executablePath: exe });
 const results = [];
 const missing = new Set();
 
-async function newPage({ width = 1440, height = 900, scheme = 'light', block = [], init, fresh = false, userAgent, touch = false } = {}) {
+async function newPage({ width = 1440, height = 900, scheme = 'light', block = [], init, fresh = false, userAgent, touch = false, routes = [] } = {}) {
   const ctx = await browser.newContext({ viewport: { width, height }, colorScheme: scheme, hasTouch: touch, ...(userAgent ? { userAgent } : {}), acceptDownloads: true, permissions: ['clipboard-read', 'clipboard-write'] });
   const page = await ctx.newPage();
   page.errors = [];
   page.on('pageerror', (e) => page.errors.push(e.message));
   // Tests start with the terms already agreed, unless they ask for a first visit.
-  if (!fresh) await page.addInitScript(() => { if (!localStorage.getItem('cowdrey.md:terms')) localStorage.setItem('cowdrey.md:terms', JSON.stringify('2026-10-21')); });
-  if (init) await page.addInitScript(init);
+  if (!fresh) await page.addInitScript((h) => { if (!localStorage.getItem('cowdrey.md:terms')) localStorage.setItem('cowdrey.md:terms', JSON.stringify(h)); }, TERMS_HASH);
+  if (init) await (Array.isArray(init) ? page.addInitScript(init[0], init[1]) : page.addInitScript(init));
   await ctx.route('**/*', async (route) => {
     const u = route.request().url();
     if (u === 'https://app.test/') return route.fulfill({ body: DOC, contentType: 'text/html' });
+    for (const [match, reply] of routes) if (match.test(u)) return reply(route);
     if (block.some((b) => u.includes(b))) return route.abort();
     const f = localFor(u);
     if (f) {
@@ -909,12 +911,40 @@ await test('first visit asks to agree to the terms once; Help links to them', as
   ok((await T.textContent('#dialog')).includes('Terms of Use and Privacy'), 'titled');
   eq(await T.$eval('#dialog .dlg-body a', (a) => a.href), 'https://bradcowdrey.com/legal');
   await T.click('#dialog [data-a="1"]'); await settle(T, 150);
-  eq(await T.evaluate(() => JSON.parse(localStorage.getItem('cowdrey.md:terms'))), '2026-10-21');
+  eq(await T.evaluate(() => JSON.parse(localStorage.getItem('cowdrey.md:terms'))), TERMS_HASH, 'agreement stores the fingerprint of these terms');
   await T.reload(); await settle(T, 800);
   ok(!(await T.$('#dialog[open]')), 'not asked again after agreeing');
   await T.click('[data-menu="6"]');
   ok(await T.$('#popover [data-cmd="legal"]'), 'Help → Terms & Privacy'); await T.keyboard.press('Escape');
   await T.ctx.close();
+});
+await test('changed terms: asked again, but at most once a month; GitHub\'s newer copy counts', async () => {
+  const seen = async (T) => !!(await T.$('#dialog[open]')) && (await T.textContent('#dialog')).includes('Updated Terms of Use and Privacy');
+  const seed = () => (args) => { if (sessionStorage.getItem('seeded')) return; sessionStorage.setItem('seeded', '1'); localStorage.setItem('cowdrey.md:terms', JSON.stringify(args[0])); localStorage.setItem('cowdrey.md:termsAskedAt', JSON.stringify(args[1] == null ? 0 : Date.now() - args[1] * 864e5)); };
+  // 1. agreed to older terms (the old date-style value), last asked long ago → asked, and agreeing stores the new fingerprint
+  let T = await newPage({ fresh: true, init: [seed(), ['2026-10-21', null]] });
+  ok(await seen(T), 'asked about the updated terms');
+  await T.click('#dialog [data-a="1"]'); await settle(T, 200);
+  eq(await T.evaluate(() => JSON.parse(localStorage.getItem('cowdrey.md:terms'))), TERMS_HASH);
+  await T.reload(); await settle(T, 800); ok(!(await seen(T)), 'not asked again'); await T.ctx.close();
+  // 2. terms changed, but the app already asked 10 days ago → not asked yet
+  T = await newPage({ fresh: true, init: [seed(), ['older', 10]] });
+  ok(!(await seen(T)), 'no second request within a month'); await T.ctx.close();
+  // 3. ...31 days later → asked
+  T = await newPage({ fresh: true, init: [seed(), ['older', 31]] });
+  ok(await seen(T), 'asked again after a month'); await T.ctx.close();
+  // 4. GitHub has newer terms than the app was built with → asked, with their date; agreeing stores GitHub's fingerprint
+  const newer = '# Terms of Use and Privacy\n\nLast updated: December 1, 2099 · Applies to: everything\n\nChanged.';
+  T = await newPage({ fresh: true, init: [seed(), [TERMS_HASH, 40]], routes: [[/raw\.githubusercontent\.com\/bradleycowdrey\/cowdrey-md\/main\/TERMS\.md/, (r) => r.fulfill({ body: newer, contentType: 'text/plain' })]] });
+  await settle(T, 400);
+  ok(await seen(T), 'newer terms on GitHub are asked about');
+  ok((await T.textContent('#dialog')).includes('December 1, 2099'), 'shows when they changed');
+  await T.click('#dialog [data-a="1"]'); await settle(T, 200);
+  ok(await T.evaluate((h) => { const v = JSON.parse(localStorage.getItem('cowdrey.md:terms')); return v !== h && /^[0-9a-f]{8}$/.test(v); }, TERMS_HASH), 'stores the newer fingerprint');
+  await T.ctx.close();
+  // 5. same newer terms on GitHub, but asked 5 days ago → waits
+  T = await newPage({ fresh: true, init: [seed(), [TERMS_HASH, 5]], routes: [[/TERMS\.md/, (r) => r.fulfill({ body: newer, contentType: 'text/plain' })]] });
+  await settle(T, 400); ok(!(await seen(T)), 'GitHub change waits for the month'); await T.ctx.close();
 });
 await test('tabs sit above both panes, not inside the editor', async () => {
   const T = await newPage();

@@ -188,6 +188,7 @@ What each Service does:
 - **Cowdrey.MD:**
   - Your documents stay on your device: in files you choose and the app's own storage (Mac), in the app's own storage (iPhone, iPad and Android), or, on the web, in your browser's storage.
   - The web version loads the app from GitHub Pages and code libraries from jsDelivr.
+  - To know when these terms change, Cowdrey.MD reads their text from GitHub at most once a day. That request sends nothing about you or your documents.
 - **Meridian:**
   - Your cities stay on your device. The app itself sends them nowhere.
   - If you choose "Use My Location", Meridian uses your device's location to name the city you're in. Your device's own location service turns it into a city name (Apple's on Mac and iPhone, your phone's on Android); Meridian keeps only that name, on your device. Turn it off any time in Settings → Show My Location.
@@ -268,7 +269,7 @@ To the fullest extent permitted by law:
 
 ## 18. General
 
-- **Changes.** I may update these terms by posting a new version at bradcowdrey.com/legal and changing the "Last updated" date. For a significant change, I will also note it in the apps' release notes. A change applies from the date it is posted. Continuing to use the Services after that means you accept it.
+- **Changes.** I may update these terms by posting a new version at bradcowdrey.com/legal and changing the "Last updated" date. For a significant change, I will also note it in the apps' release notes. When the terms change, Cowdrey.MD and Meridian ask you to agree to the new version, no more than once a month. A change applies from the date it is posted. Continuing to use the Services after that means you accept it.
 - **Whole agreement.** These terms, together with the MIT License for the source code, are the entire agreement between us about the Services.
 - **Severability.** If any part of these terms can't be enforced, it will be enforced as far as possible, and the rest stays in full effect.
 - **No waiver.** If I don't enforce a term, that doesn't waive it.

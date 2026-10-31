@@ -1,19 +1,19 @@
 {
-  "version": "1.0.28",
-  "notes": "iPhone and iPad: the Share button opens the full share sheet. (No changes to the Mac app.)",
-  "pub_date": "2026-10-31T21:50:24Z",
+  "version": "1.0.29",
+  "notes": "iPhone: the share sheet opens full width from the bottom of the screen. (No changes to the Mac app.)",
+  "pub_date": "2026-10-31T23:36:34Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0h0VEFGcm9BcXFqLzEzM2ZiejVYd3dtdTZET2F1R2Nqekh3eUlCNVRLd0JmeVNpZ0wxQmU3RnExVkQ3eTlQM0dwS0t5RU13SUVGODBCU1dZTDhIK3dvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNDgzNDI0CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpVcTdnMnFpbW9VZXpzeWdSWEV0clEzSmRPcDNFYVd5NWNXNTl5NlZ6WjhPTGpWV2RzaERsdVJkamZPSzNubkZLalNoSlZwZWFqL0VIMllFL2wrZlpDUT09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.28/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV05VRW9ITktLb21yeTNCRGdiZzVzQ1h1ZDNYdkxzNU1KWkgyUWlOVFFIL3FidWk1OTBRSExVT0YvWnh2b3RFbUtuTEJSK2NzQzRiY0J4UjFyYXFNSFE0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNDg5Nzk0CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negoyMG1KUnpjTkVIMGRLaWcrZTZIaE85R00wT1JGa2F0Nm9NOVBRd2FQWDZmbFVSVGdJRjV6NnpSTjdwRlNSYjlIZEg3M2FIaWNIMm5HQ1E3Y0FRbXhEUT09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.29/Cowdrey.MD_universal.app.tar.gz"
     },
     "darwin-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0h0VEFGcm9BcXFqLzEzM2ZiejVYd3dtdTZET2F1R2Nqekh3eUlCNVRLd0JmeVNpZ0wxQmU3RnExVkQ3eTlQM0dwS0t5RU13SUVGODBCU1dZTDhIK3dvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNDgzNDI0CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpVcTdnMnFpbW9VZXpzeWdSWEV0clEzSmRPcDNFYVd5NWNXNTl5NlZ6WjhPTGpWV2RzaERsdVJkamZPSzNubkZLalNoSlZwZWFqL0VIMllFL2wrZlpDUT09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.28/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV05VRW9ITktLb21yeTNCRGdiZzVzQ1h1ZDNYdkxzNU1KWkgyUWlOVFFIL3FidWk1OTBRSExVT0YvWnh2b3RFbUtuTEJSK2NzQzRiY0J4UjFyYXFNSFE0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNDg5Nzk0CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negoyMG1KUnpjTkVIMGRLaWcrZTZIaE85R00wT1JGa2F0Nm9NOVBRd2FQWDZmbFVSVGdJRjV6NnpSTjdwRlNSYjlIZEg3M2FIaWNIMm5HQ1E3Y0FRbXhEUT09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.29/Cowdrey.MD_universal.app.tar.gz"
     },
     "darwin-universal": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0h0VEFGcm9BcXFqLzEzM2ZiejVYd3dtdTZET2F1R2Nqekh3eUlCNVRLd0JmeVNpZ0wxQmU3RnExVkQ3eTlQM0dwS0t5RU13SUVGODBCU1dZTDhIK3dvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNDgzNDI0CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpVcTdnMnFpbW9VZXpzeWdSWEV0clEzSmRPcDNFYVd5NWNXNTl5NlZ6WjhPTGpWV2RzaERsdVJkamZPSzNubkZLalNoSlZwZWFqL0VIMllFL2wrZlpDUT09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.28/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV05VRW9ITktLb21yeTNCRGdiZzVzQ1h1ZDNYdkxzNU1KWkgyUWlOVFFIL3FidWk1OTBRSExVT0YvWnh2b3RFbUtuTEJSK2NzQzRiY0J4UjFyYXFNSFE0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNDg5Nzk0CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negoyMG1KUnpjTkVIMGRLaWcrZTZIaE85R00wT1JGa2F0Nm9NOVBRd2FQWDZmbFVSVGdJRjV6NnpSTjdwRlNSYjlIZEg3M2FIaWNIMm5HQ1E3Y0FRbXhEUT09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.29/Cowdrey.MD_universal.app.tar.gz"
     }
   }
 }

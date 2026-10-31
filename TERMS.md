@@ -15,7 +15,7 @@ This summary is for convenience only. The full terms below are what count.
 - **I am not liable for anything that goes wrong**, to the fullest extent the law allows.
 - **If your use causes a claim against me, you cover it.**
 - **I collect very little about you:** basic website statistics; your email address if you give it to download an app or join my list; and your name and email if a store like Gumroad shares them when you buy. No accounts, no ads, no tracking, nothing sold. You can unsubscribe at any time.
-- **Any data that reaches me is mine,** free and royalty-free. Your privacy rights still apply.
+- **I can freely use feedback you send me.** Your personal information is different: I use it only as the privacy sections say, and I never sell it.
 - **Two Degrees is not a safety tool.** Follow official weather warnings.
 - **Meridian's times can be wrong.** Confirm meetings and travel.
 - **Cowdrey.MD documents saved in a browser or in a phone or tablet app can be erased.** Keep your own copies.
@@ -95,20 +95,15 @@ You accept every risk of using the Services. That includes losing data or work, 
 
 None of the Services gives professional, legal, medical, financial, tax, investment, safety or other advice. Get advice from a qualified professional before you act on anything important.
 
-## 7. Ownership of data and content
+## 7. Feedback, your information, and my content
 
-**All data that reaches me belongs to me.** That covers everything the Services, or the providers in Section 9, send to me or hold for me, including:
-- visitor statistics, server logs and error reports;
-- anything you send me, such as messages, emails, feedback, ideas, suggestions, bug reports, screenshots and sample files;
-- anything you share with me or post publicly about the Services.
+**Feedback and suggestions.** If you send me feedback, ideas, suggestions, bug reports, screenshots or sample files about the Services, you give me a worldwide, perpetual, irrevocable, royalty-free licence to use, copy, change, build on and share them for any purpose, including improving and selling my products. I owe you no payment or credit for them. You keep whatever rights you have in what you send; this licence just lets me use it freely. Don't send anything confidential or anything you aren't entitled to share.
 
-To the extent any of it is yours, you assign all rights in it to me, worldwide, permanently and irrevocably. If any right can't be assigned, you grant me an unrestricted, unlimited, irrevocable, perpetual, worldwide, transferable and sublicensable licence covering it. Under that licence I may host, use, copy, reproduce, disclose, sell, resell, publish, broadcast, display, adapt, translate, distribute and make derivative works of it. That includes your name, image and voice where they appear in what you send. I may use it for any purpose, commercial, advertising or otherwise. The assignment and licence are fully paid and royalty-free: no payment, royalty, credit or other compensation is owed to you, now or ever. You waive any moral rights in it, to the extent the law allows, and you confirm you have the right to give me all of this.
+**Information about you.** Personal information I hold, such as visitor statistics, server logs, error reports, email addresses, and anything that identifies you in what you send, is not covered by the licence above. Sections 15 and 16 govern it: I use it only as they describe, I never sell it or share it for targeted advertising, and you can ask me to see, correct or delete it.
 
-Personal information is the exception to the selling and advertising uses above: Sections 15 and 16 govern it, and I never sell it or share it for targeted advertising. My ownership of personal information is subject to the privacy rights that the law gives you (Section 16). If you ask me to delete or stop using your personal information, I will do so where the law requires.
+**Data that stays on your device.** The apps keep your documents and your city lists on your own device. That data never reaches me, so I don't hold it, can't see it, and can't recover it for you. You are solely responsible for it. If you ever send it to me, the two paragraphs above apply to it.
 
-**Data that stays on your device.** The apps keep your documents and your city lists on your own device. That data never reaches me, so I don't hold it, can't see it, and can't recover it for you. You are solely responsible for it. If you ever send it to me, the paragraph above applies.
-
-**My content is mine.** I own everything else about the Services: the website's text, images and design, the names, icons and logos of the apps, and the data in the paragraph above. You may link to the Services and share their pages. Don't use my names or logos in a way that suggests I endorse you or your product. The apps' source code is licensed to you under the MIT License.
+**My content is mine.** I own everything else about the Services: the website's text, images and design, and the names, icons and logos of the apps. You may link to the Services and share their pages. Don't use my names or logos in a way that suggests I endorse you or your product. The apps' source code is licensed to you under the MIT License.
 
 **Using my AI skills, books and other content.** Unless a product says otherwise:
 - **Your licence.** I give you a personal, non-exclusive, non-transferable, revocable licence to use my AI skills, prompts, templates, lessons and books for your own work and your organization's internal work.
@@ -214,7 +209,7 @@ What each Service does:
   - App Store apps are updated by Apple and don't contact GitHub.
 - **Book and product purchases:**
   - The store you buy from handles your payment and personal details under its own privacy policy.
-  - Some stores, such as Gumroad, share your name and email address with me as the seller. That information is covered by Sections 7, 15 and 16.
+  - Some stores, such as Gumroad, share your name and email address with me as the seller. That information is covered by Sections 15 and 16.
 - **AI skills:**
   - My skills run inside AI tools you choose. What you type into those tools goes to the tool's provider, not to me.
 

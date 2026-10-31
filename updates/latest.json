@@ -1,19 +1,19 @@
 {
-  "version": "1.0.26",
-  "notes": "Cowdrey.MD 1.0.26: Open with Cowdrey.MD on Android.",
-  "pub_date": "2026-10-30T15:48:39Z",
+  "version": "1.0.27",
+  "notes": "Cowdrey.MD 1.0.27: when the Terms of Use and Privacy change, Cowdrey.MD asks you to agree to the new version, no more than once a month.",
+  "pub_date": "2026-10-31T18:36:59Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV05EUzJEdDc0YVd2ZUFJYVJVRUdmMlRIQ3crdXZzUDlYVWZlUHNHbUtVdVBkNjRKcHN3ZjFkQTlXOGIxRGVMY0pldzJMRW43TmdGUFZNRHRNazhsdlFBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMzc1MzE5CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpSSW05RVBlTFVLMERvNUVMSFJqb3lhREcxRHdSd3F5ZDJZYUR1WjJNcGxMenF5a3dvT2xqM2FhaHUwb0N4eVN4cDB1VkxRTG1LM0pQTytXUXRITUZDUT09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.26/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0xUZXo5TlFsYUoyUXlRM2RxRkhZNjVsbnJEODdUTWRnSjJGK2dkNG1BVGxZNk02emFpeVZsRDAwOUVwNUp2VW9hRlQyUkNNNWZ3aEU1ZUZBY1hCdGd3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNDcxODE5CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpXK1lzekdZKzdNTnc4R1F2YXFnMzVwRVVkR2hnR1UvdjRtckRzR0xNUmwwTVpPd1N3WmVEQ0lkRlBHU1NFb2RIcm1rZ2lqRDU1bmM1alVUUlV3QU1DQT09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.27/Cowdrey.MD_universal.app.tar.gz"
     },
     "darwin-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV05EUzJEdDc0YVd2ZUFJYVJVRUdmMlRIQ3crdXZzUDlYVWZlUHNHbUtVdVBkNjRKcHN3ZjFkQTlXOGIxRGVMY0pldzJMRW43TmdGUFZNRHRNazhsdlFBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMzc1MzE5CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpSSW05RVBlTFVLMERvNUVMSFJqb3lhREcxRHdSd3F5ZDJZYUR1WjJNcGxMenF5a3dvT2xqM2FhaHUwb0N4eVN4cDB1VkxRTG1LM0pQTytXUXRITUZDUT09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.26/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0xUZXo5TlFsYUoyUXlRM2RxRkhZNjVsbnJEODdUTWRnSjJGK2dkNG1BVGxZNk02emFpeVZsRDAwOUVwNUp2VW9hRlQyUkNNNWZ3aEU1ZUZBY1hCdGd3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNDcxODE5CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpXK1lzekdZKzdNTnc4R1F2YXFnMzVwRVVkR2hnR1UvdjRtckRzR0xNUmwwTVpPd1N3WmVEQ0lkRlBHU1NFb2RIcm1rZ2lqRDU1bmM1alVUUlV3QU1DQT09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.27/Cowdrey.MD_universal.app.tar.gz"
     },
     "darwin-universal": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV05EUzJEdDc0YVd2ZUFJYVJVRUdmMlRIQ3crdXZzUDlYVWZlUHNHbUtVdVBkNjRKcHN3ZjFkQTlXOGIxRGVMY0pldzJMRW43TmdGUFZNRHRNazhsdlFBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzMzc1MzE5CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpSSW05RVBlTFVLMERvNUVMSFJqb3lhREcxRHdSd3F5ZDJZYUR1WjJNcGxMenF5a3dvT2xqM2FhaHUwb0N4eVN4cDB1VkxRTG1LM0pQTytXUXRITUZDUT09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.26/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0xUZXo5TlFsYUoyUXlRM2RxRkhZNjVsbnJEODdUTWRnSjJGK2dkNG1BVGxZNk02emFpeVZsRDAwOUVwNUp2VW9hRlQyUkNNNWZ3aEU1ZUZBY1hCdGd3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNDcxODE5CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpXK1lzekdZKzdNTnc4R1F2YXFnMzVwRVVkR2hnR1UvdjRtckRzR0xNUmwwTVpPd1N3WmVEQ0lkRlBHU1NFb2RIcm1rZ2lqRDU1bmM1alVUUlV3QU1DQT09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v1.0.27/Cowdrey.MD_universal.app.tar.gz"
     }
   }
 }

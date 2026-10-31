@@ -130,7 +130,7 @@ Built with CodeMirror 5, markdown-it, highlight.js, MathJax 3, Mermaid, DOMPurif
 
 ## Terms and privacy
 
-Using Cowdrey.MD means agreeing to the [Terms of Use and Privacy](TERMS.md) (also at [bradcowdrey.com/legal](https://bradcowdrey.com/legal)). In short: it's free and provided as is, you use it at your own risk, and your documents stay on your device (in the browser, the app's storage, or files you choose), so keep your own copies of anything important. The app asks you to agree the first time it opens, and **Help → Terms & Privacy** (on phones, **··· → Terms & Privacy**) opens them any time.
+Using Cowdrey.MD means agreeing to the [Terms of Use and Privacy](TERMS.md) (also at [bradcowdrey.com/legal](https://bradcowdrey.com/legal)). In short: it's free and provided as is, you use it at your own risk, and your documents stay on your device (in the browser, the app's storage, or files you choose), so keep your own copies of anything important. bradcowdrey.com keeps the email addresses people give it to download the apps, and you can unsubscribe at any time. The app asks you to agree the first time it opens, and **Help → Terms & Privacy** (on phones, **··· → Terms & Privacy**) opens them any time.
 
 ## License
 

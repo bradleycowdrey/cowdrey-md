@@ -14,7 +14,7 @@ This summary is for convenience only. The full terms below are what count.
 - **You use it at your own risk.** You are responsible for what you do with it, and for backing up your work.
 - **I am not liable for anything that goes wrong**, to the fullest extent the law allows.
 - **If your use causes a claim against me, you cover it.**
-- **I collect almost nothing about you:** basic website statistics, and your name and email only if a store like Gumroad shares them when you buy. No accounts, no ads, no tracking, nothing sold.
+- **I collect very little about you:** basic website statistics; your email address if you give it to download an app or join my list; and your name and email if a store like Gumroad shares them when you buy. No accounts, no ads, no tracking, nothing sold. You can unsubscribe at any time.
 - **Any data that reaches me is mine,** free and royalty-free. Your privacy rights still apply.
 - **Two Degrees is not a safety tool.** Follow official weather warnings.
 - **Meridian's times can be wrong.** Confirm meetings and travel.
@@ -36,7 +36,7 @@ These terms cover the "Services":
   - books such as the *AI Skills Bible*, and any courses, downloads, newsletters or other materials;
 - **every app, website, skill, book or other product I publish in the future**, unless it comes with its own terms.
 
-Notices for each app and for AI content are in Section 6. When I publish something new, I may add a notice for it there.
+Notices for each app and for AI content are in Section 6. When I publish something new, I may add a notice for it there. Sections 19 to 24 cover your licence to use the apps, app stores (including terms Apple requires), pre-release versions, open-source software, export controls and security.
 
 ## 2. Agreeing to these terms
 
@@ -121,7 +121,8 @@ Don't use the Services to break the law, or to harm or deceive anyone. Don't try
 ## 9. Other people's services
 
 The Services rely on services and code I don't control. These include:
-- **Lovable**, which hosts bradcowdrey.com;
+- **Lovable**, which hosts bradcowdrey.com and sends its emails;
+- **Supabase**, which stores the email addresses people give on bradcowdrey.com;
 - **GitHub**, for downloads, updates and GitHub Pages;
 - **Open-Meteo**, for weather and place search;
 - **jsDelivr**, for web code libraries;
@@ -185,6 +186,11 @@ What each Service does:
   - When a page breaks, Lovable records an error report.
   - The product pages load fonts from Google Fonts.
   - The site sets no advertising cookies.
+- **Email sign-ups on bradcowdrey.com:**
+  - When you download an app or join my list, you give your email address. I store it with where you signed up (for example, "Cowdrey.MD"), in a database hosted by Supabase.
+  - I use it to email you the download link, and to send occasional updates about my apps, AI lessons, books and other work.
+  - Every update email lets you unsubscribe, or you can email legal@bradcowdrey.com. I then stop emailing you and, if you ask, delete your address.
+  - The site remembers on your device that you've signed up, so it doesn't ask again.
 - **Cowdrey.MD:**
   - Your documents stay on your device: in files you choose and the app's own storage (Mac), in the app's own storage (iPhone, iPad and Android), or, on the web, in your browser's storage.
   - The web version loads the app from GitHub Pages and code libraries from jsDelivr.
@@ -209,17 +215,20 @@ What each Service does:
 
 Each of these services receives the technical information any connection reveals, such as your IP address, and handles it under its own privacy policy.
 
-**Information I hold.** I hold three kinds of information:
+**Information I hold.** I hold four kinds of information:
 - the visitor statistics and error reports described above;
+- email addresses people give on bradcowdrey.com;
 - anything you send me directly;
-- where it identifies you, any personal information in either of those.
+- where it identifies you, any personal information in any of those.
 
-I use it only to run, secure, fix and improve the Services, to deliver and support what you buy, and to answer you. I keep it only as long as I need it for those purposes, and no longer than 36 months after it was last needed, unless the law requires me to keep it longer. I protect it with reasonable safeguards, but no system is perfectly secure.
+I use it only to run, secure, fix and improve the Services, to deliver and support what you buy, to send the emails you signed up for, and to answer you. I keep email addresses until you unsubscribe or ask me to delete them. I keep everything else only as long as I need it for those purposes, and no longer than 36 months after it was last needed, unless the law requires me to keep it longer. I protect it with reasonable safeguards, but no system is perfectly secure.
 
 **No selling, no sharing, no profiling.** I do not:
 - sell personal information or share it for targeted advertising;
 - use it for profiling or automated decisions with legal effects;
 - collect sensitive personal information.
+
+**Storage on your device.** The apps and the web version keep your documents, settings and choices (such as having agreed to these terms) in your device's or browser's own storage. This storage is not a tracking cookie: nothing in it is sent to me.
 
 **Do Not Track.** No part of the Services tracks you across other sites, so browser Do Not Track and Global Privacy Control signals change nothing. Treat them as already honoured.
 
@@ -237,7 +246,7 @@ I will answer within the time your law sets (usually 30 to 45 days) and won't tr
 
 **European Economic Area, United Kingdom and Switzerland (GDPR, UK GDPR, Swiss FADP).**
 - I am the controller of the personal information I hold.
-- My legal basis is my legitimate interest in running, securing and improving free Services, or your consent where you give it (for example, by choosing "Use My Location" or sending me a message).
+- My legal basis is my legitimate interest in running, securing and improving free Services, or your consent where you give it (for example, by giving your email address, choosing "Use My Location" or sending me a message).
 - You also have the rights to restrict processing, to object, and to data portability.
 - Where I rely on consent, you may withdraw it at any time.
 - You may complain to your data protection authority.
@@ -245,7 +254,7 @@ I will answer within the time your law sets (usually 30 to 45 days) and won't tr
 
 **California (CCPA/CPRA, CalOPPA, Shine the Light).**
 - In the last 12 months I have held these categories of information, for the purposes above:
-  - identifiers, such as IP addresses, and, for some purchases, names and email addresses;
+  - identifiers, such as IP addresses, email addresses people give on bradcowdrey.com and, for some purchases, names;
   - commercial information, such as which product you bought;
   - internet activity, such as pages viewed, device type and approximate country.
 - I have not sold or shared personal information, as the CCPA defines those terms.
@@ -274,7 +283,46 @@ To the fullest extent permitted by law:
 - **Severability.** If any part of these terms can't be enforced, it will be enforced as far as possible, and the rest stays in full effect.
 - **No waiver.** If I don't enforce a term, that doesn't waive it.
 - **Assignment.** You may not transfer your rights under these terms. I may transfer mine.
-- **No third-party rights.** These terms create no rights for anyone except you and me.
+- **No third-party rights.** These terms create no rights for anyone except you and me, except that Apple and its subsidiaries are third-party beneficiaries as described in Section 20.
 - **Copyright complaints.** If you believe something on the website infringes your copyright, email legal@bradcowdrey.com with the details the US Digital Millennium Copyright Act requires.
 - **California users.** Under California Civil Code § 1789.3, you may contact the Complaint Assistance Unit of the Division of Consumer Services, California Department of Consumer Affairs, 1625 North Market Blvd., Suite N 112, Sacramento, CA 95834, or call (800) 952-5210.
-- **Contact.** legal@bradcowdrey.com
+- **Notices and electronic communications.** I may give you notices by posting them on bradcowdrey.com or in the apps, or by email if you've given me your address. You agree to receive these electronically, and they satisfy any requirement that notices be in writing. Send notices to me at legal@bradcowdrey.com.
+- **Force majeure.** I'm not responsible for any delay or failure caused by events beyond my reasonable control, including outages of the services in Section 9, internet or power failures, natural disasters, war, terrorism, strikes, epidemics and acts of government.
+- **Survival.** Sections 4, 5, 7, 11 to 18, 20, 22 and 23, and any other terms that by their nature should last, continue after you stop using the Services or these terms end.
+- **Interpretation.** Headings are for convenience only. "Including" means "including without limitation". If these terms are translated, the English version governs.
+- **Contact.** Bradley Cowdrey, Denver, Colorado, United States · legal@bradcowdrey.com
+
+## 19. Your licence to use the apps
+
+I give you a personal, non-exclusive, non-transferable, revocable licence to download, install and use the apps, for your personal or internal business use, on devices you own or control. If you got an app from an app store, you may use it only as that store's rules allow (for the App Store, the Usage Rules in Apple's Media Services Terms and Conditions, including Family Sharing). Except as the MIT License allows for the source code, you may not sell, rent or lend the apps, or present a modified copy as my official release. This licence ends automatically if you break these terms.
+
+## 20. Apps from the App Store, Google Play and other stores
+
+If you got an app from Apple's App Store:
+- **The agreement is with me, not Apple.** These terms are between you and me only. I, not Apple, am solely responsible for the app and its content.
+- **Support.** I am solely responsible for any maintenance and support, as these terms describe. Apple has no obligation to provide any maintenance or support for the app.
+- **Warranty.** If the app fails to conform to any warranty that applies despite Section 4, you may notify Apple, and Apple will refund the price you paid for the app, if any. To the maximum extent the law allows, Apple has no other warranty obligation for the app. Any other claims, losses, liabilities, damages, costs or expenses from a failure to conform to a warranty are mine to deal with, as limited by these terms.
+- **Claims.** I, not Apple, am responsible for addressing any claims by you or anyone else relating to the app or your possession or use of it, including product liability claims, claims that the app fails to meet a legal or regulatory requirement, and claims under consumer protection, privacy or similar laws.
+- **Intellectual property.** If anyone claims that the app or your possession and use of it infringes their intellectual property rights, I, not Apple, am responsible for the investigation, defence, settlement and discharge of that claim.
+- **Legal compliance.** You confirm that you are not located in a country subject to a US government embargo or designated by the US government as "terrorist supporting", and that you are not on any US government list of prohibited or restricted parties.
+- **Third-party terms.** When you use the app, you must also follow any third-party agreement that applies, such as your wireless data service agreement.
+- **Third-party beneficiary.** Apple and Apple's subsidiaries are third-party beneficiaries of these terms. Once you accept them, Apple has the right, and is deemed to have accepted the right, to enforce them against you as a third-party beneficiary.
+- **Questions and complaints** about the app go to me (Section 18), not Apple.
+
+If you got an app from Google Play or another store, the same applies with that store in place of Apple, as far as that store's rules require. The store's own terms also apply to your download, and its privacy policy covers what it collects.
+
+## 21. Pre-release versions
+
+I may offer test or early versions of the apps, for example through Apple's TestFlight or as a test download. They may be unfinished, contain more bugs than released versions, stop working, or change or lose data, and I may end them at any time. Use them only with data you have backed up. Everything in these terms applies to them.
+
+## 22. Open-source software
+
+The apps include open-source software from other people, such as CodeMirror, markdown-it, MathJax, Mermaid, highlight.js, DOMPurify and Lucide, and fonts under the SIL Open Font License. Each is used under its own licence, which each app's repository on GitHub lists. Nothing in these terms limits your rights under those licences.
+
+## 23. Export controls
+
+You may not use, export or re-export the Services except as US law and the laws of the place where you got them allow. In particular, you may not use them in, or send them to, any US-embargoed country, or to anyone on a US government list of prohibited or restricted parties.
+
+## 24. Security
+
+If you find a security problem in any of the Services, please email legal@bradcowdrey.com with the details, and give me a reasonable time to fix it before telling anyone else. Don't access other people's data, disrupt the Services, or go further than needed to show the problem.

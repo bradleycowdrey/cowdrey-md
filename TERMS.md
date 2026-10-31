@@ -197,6 +197,7 @@ What each Service does:
   - The web version can use your location only if you choose "Use My Location" and your browser asks your permission.
 - **Updates:**
   - The Mac apps contact GitHub to check for and download updates.
+  - Meridian's apps contact GitHub, at most once a day, to check whether these terms have changed. When they have, the app asks you to agree again, no more than once a month.
   - Cowdrey.MD for Android, when downloaded from bradcowdrey.com, asks GitHub once a day whether a newer version exists. If you choose to update, it downloads the new version from GitHub.
   - App Store apps are updated by Apple and don't contact GitHub.
 - **Book and product purchases:**

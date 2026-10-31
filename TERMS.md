@@ -201,10 +201,11 @@ What each Service does:
 - **Two Degrees:**
   - Your cities stay on your device.
   - To get the weather, the app and its widgets send the coordinates of your cities to Open-Meteo, along with any place names you search for.
-  - The web version can use your location only if you choose "Use My Location" and your browser asks your permission.
+  - If you choose "Use My Location" (Two Degrees asks once, after you agree to these terms), it shows the weather where you are, first in your cities. Your device asks your permission first; on the web, your browser does. Your location is rounded to about a kilometre and sent only to Open-Meteo, to get its weather, and to name the city you're in, to your device's own location service (Apple's on Mac, iPhone and iPad, your phone's on Android; on the web, Open-Meteo). It is never sent to me. Turn it off any time in Two Degrees' settings.
 - **Updates:**
   - The Mac apps contact GitHub to check for and download updates.
   - Meridian's apps contact GitHub, at most once a day, to check whether these terms have changed. When they have, the app asks you to agree again, no more than once a month.
+  - When these terms change in a way that affects Two Degrees, its next version asks you to agree again, no more than once a month.
   - Cowdrey.MD for Android, when downloaded from bradcowdrey.com, asks GitHub once a day whether a newer version exists. If you choose to update, it downloads the new version from GitHub.
   - App Store apps are updated by Apple and don't contact GitHub.
 - **Book and product purchases:**
@@ -278,7 +279,7 @@ To the fullest extent permitted by law:
 
 ## 18. General
 
-- **Changes.** I may update these terms by posting a new version at bradcowdrey.com/legal and changing the "Last updated" date. For a significant change, I will also note it in the apps' release notes. When the terms change, Cowdrey.MD and Meridian ask you to agree to the new version, no more than once a month. A change applies from the date it is posted. Continuing to use the Services after that means you accept it.
+- **Changes.** I may update these terms by posting a new version at bradcowdrey.com/legal and changing the "Last updated" date. For a significant change, I will also note it in the apps' release notes. When the terms change, Cowdrey.MD, Meridian and Two Degrees ask you to agree to the new version, no more than once a month. A change applies from the date it is posted. Continuing to use the Services after that means you accept it.
 - **Whole agreement.** These terms, together with the MIT License for the source code, are the entire agreement between us about the Services.
 - **Severability.** If any part of these terms can't be enforced, it will be enforced as far as possible, and the rest stays in full effect.
 - **No waiver.** If I don't enforce a term, that doesn't waive it.

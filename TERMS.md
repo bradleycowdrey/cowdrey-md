@@ -1,7 +1,7 @@
 # Terms of Use and Privacy
 
 **bradcowdrey.com and everything Bradley Cowdrey publishes: apps, AI skills, books, lessons and more**
-Last updated: October 31, 2026 · Applies to: bradcowdrey.com, Cowdrey.MD, Meridian, Two Degrees, AI skills, books, lessons, articles, and anything I publish in the future
+Last updated: November 1, 2026 · Applies to: bradcowdrey.com, Cowdrey.MD, Meridian, Two Degrees, AI skills, books, lessons, articles, and anything I publish in the future
 
 ---
 
@@ -87,7 +87,7 @@ You accept every risk of using the Services. That includes losing data or work, 
 
 **Meridian** shows times using your device's clock and time-zone data, which can be wrong or out of date, especially around daylight-saving changes. Always confirm meeting and travel times with the people involved and with official sources.
 
-**Two Degrees** shows weather from Open-Meteo, an independent service, and converts between °F and °C. Forecasts are often wrong. **Two Degrees is not a safety tool.** Never use it to make decisions that affect anyone's health, safety or property. For severe weather, follow official warnings from your national weather service (in the US, the National Weather Service at weather.gov) and local authorities. Two Degrees does not show weather alerts or warnings. Widgets refresh on a schedule your device controls, and the app and widgets keep showing the last forecast they received when they can't reach Open-Meteo, so what you see can be hours old; the app marks it "Offline". With "Use My Location" on, the place shown is approximate and can be the wrong town, especially near borders or when your device's location is poor.
+**Two Degrees** shows weather from Open-Meteo, an independent service, and converts between °F and °C. Forecasts are often wrong. **Two Degrees is not a safety tool.** Never use it to make decisions that affect anyone's health, safety or property. For severe weather, follow official warnings from your national weather service (in the US, the National Weather Service at weather.gov) and local authorities. Two Degrees shows severe weather alerts for places in the United States, copied from the US National Weather Service. Alerts can be late, incomplete or missing, a notification can arrive late or not at all (your device decides when the app may check), and there are no alerts for places outside the United States: never rely on Two Degrees for them. The rain map, the next-two-hours rain forecast, air quality, pollen, normals and records come from the services in Section 9 and can be wrong, late or missing too. Widgets refresh on a schedule your device controls, and the app and widgets keep showing the last forecast they received when they can't reach Open-Meteo, so what you see can be hours old; the app marks it "Offline". With "Use My Location" on, the place shown is approximate and can be the wrong town, especially near borders or when your device's location is poor.
 
 **AI skills, lessons, books and other content** are for general information and education only. AI tools can produce output that is wrong, biased, outdated, unsafe or infringing, and the same skill can give different results each time. In particular:
 - **Check the output.** You are responsible for reviewing and fact-checking anything an AI tool produces before you use, publish or rely on it.
@@ -124,7 +124,9 @@ The Services rely on services and code I don't control. These include:
 - **Lovable**, which hosts bradcowdrey.com and sends its emails;
 - **Supabase**, which stores the email addresses people give on bradcowdrey.com;
 - **GitHub**, for downloads, updates, the terms check, and GitHub Pages, which serves the web versions of the apps;
-- **Open-Meteo**, for weather and place search;
+- **Open-Meteo**, for weather, air quality and pollen, past weather (for normals and records), and place search;
+- **the US National Weather Service**, for severe weather alerts in Two Degrees;
+- **RainViewer**, for the radar images on Two Degrees' rain map, shown on map tiles from **CARTO** made from **OpenStreetMap** data;
 - **GeoNames**, whose list of world cities is built into Two Degrees for searching without the internet;
 - **jsDelivr**, for web code libraries;
 - **Google Fonts**, for fonts on the product pages and web versions;
@@ -205,7 +207,10 @@ What each Service does:
   - The web version doesn't use your location. It marks your city using your browser's time zone, and sends nothing anywhere.
 - **Two Degrees:**
   - Your cities stay on your device.
-  - To get the weather, the app and its widgets send the coordinates of your cities to Open-Meteo, along with any place names you search for.
+  - To get the weather, the app and its widgets send the coordinates of your cities to Open-Meteo, along with any place names you search for. The same coordinates go to Open-Meteo for air quality and pollen, and, for a city you view, for its past weather (to work out normals and records).
+  - For cities in the United States, the app sends the city's coordinates, rounded to about a kilometre, to the US National Weather Service, to get its severe weather alerts.
+  - The rain map loads from GitHub Pages, its radar images from RainViewer and its map from CARTO. They receive the area of the map you're looking at, as any online map does.
+  - Notifications are off unless you turn them on. When they're on, the app checks the forecast and alerts for My Location (or your first city) in the background, as often as your device allows, and decides on your device whether to notify you. Nothing about the notifications is sent to me.
   - If you choose "Use My Location" (Two Degrees asks once, after you agree to these terms), it shows the weather where you are, first in your cities. Your device asks your permission first; on the web, your browser does. Your location is rounded to about a kilometre and sent only to Open-Meteo, to get its weather, and to name the city you're in, to your device's own location service (Apple's on Mac, iPhone and iPad, your phone's on Android; on the web, Open-Meteo). When those can't name it, the app uses its built-in GeoNames city list, on your device. The place it finds is kept on your device with your cities and removed when you turn Use My Location off. It is never sent to me. Turn it off any time in Two Degrees' settings.
   - The web version, at bradcowdrey.com/two-degrees, loads from GitHub Pages, along with the GeoNames city list it uses to name places.
 - **Updates:**
@@ -329,6 +334,7 @@ I may offer test or early versions of the apps, for example through Apple's Test
 The apps include open-source software from other people, each used under its own licence, which each app's repository on GitHub lists. Examples:
 - in Cowdrey.MD: CodeMirror, markdown-it, MathJax, Mermaid, highlight.js, DOMPurify and Lucide;
 - on Android: Kotlin and Google's AndroidX and Jetpack Compose libraries, under the Apache License 2.0;
+- in Two Degrees' rain map: Leaflet, under the BSD 2-Clause License;
 - fonts such as Inter, under the SIL Open Font License.
 
 Nothing in these terms limits your rights under those licences.
@@ -354,13 +360,13 @@ This table summarizes Sections 6, 9, 15 and 20 for each app. Where it and those 
 | **Account** | None | None | None |
 | **Ads, analytics, tracking** | None | None | None |
 | **Stays on your device** | Your documents and settings | Your cities and settings | Your cities, settings and the last forecasts |
-| **Leaves your device** | Nothing you write. The web version loads its code from GitHub Pages and jsDelivr | Nothing about you, except as the Location row says. The web version sends nothing | Your cities' coordinates and place searches, to Open-Meteo. The web version loads from GitHub Pages |
+| **Leaves your device** | Nothing you write. The web version loads its code from GitHub Pages and jsDelivr | Nothing about you, except as the Location row says. The web version sends nothing | Your cities' coordinates and place searches, to Open-Meteo; US cities' coordinates, rounded, to the National Weather Service for alerts. The rain map loads from GitHub Pages, RainViewer and CARTO. The web version loads from GitHub Pages |
 | **Location** | Not used | In the apps, only if you choose "Use My Location", to name the city you're in. Your device's location service names it; Meridian keeps only the name. The web version uses only your browser's time zone | Only if you choose "Use My Location". Rounded to about a kilometre; sent to Open-Meteo for its weather and to your device's location service to name it |
-| **Permissions it asks for** | Access to files you choose | Location, only if you choose it | Location, only if you choose it |
+| **Permissions it asks for** | Access to files you choose | Location, only if you choose it | Location and notifications, each only if you choose it |
 | **Asks you to agree again** | When these terms change (checked online at most daily); at most once a month | The apps: when these terms change (checked online at most daily); at most once a month. The web version doesn't ask | The apps: in the next version after these terms change; at most once a month. The web version doesn't ask |
 | **Contacts GitHub** | To check whether these terms changed (at most daily); the Mac app and the Android download, for updates | To check whether these terms changed (at most daily); the Mac app, for updates | The Mac app, for updates. The Android download doesn't update itself |
-| **Data it relies on** | None | Your device's clock and time-zone data | Open-Meteo forecasts; the GeoNames city list |
-| **Key warning** | Browser and phone storage can be erased; keep copies (Section 6) | Times can be wrong; confirm meetings and travel (Section 6) | Not a safety tool; follow official warnings (Section 6) |
+| **Data it relies on** | None | Your device's clock and time-zone data | Open-Meteo forecasts, air quality and past weather; National Weather Service alerts (US only); RainViewer radar; the GeoNames city list |
+| **Key warning** | Browser and phone storage can be erased; keep copies (Section 6) | Times can be wrong; confirm meetings and travel (Section 6) | Not a safety tool: alerts can be late or missing; follow official warnings (Section 6) |
 | **Source code** | MIT License, on GitHub | MIT License, on GitHub | MIT License, on GitHub |
 
 **Apps I publish later** get a column here, and entries in Sections 6 and 15 (and 9, 22 and 26 where needed), before they're released, as Section 1 says.
@@ -368,6 +374,9 @@ This table summarizes Sections 6, 9, 15 and 20 for each app. Where it and those 
 ## 26. Data and credits
 
 - **Weather data** in Two Degrees is from [Open-Meteo](https://open-meteo.com), under the Creative Commons Attribution 4.0 licence (CC BY 4.0).
+- **Air quality, pollen and past weather** in Two Degrees are from Open-Meteo's air-quality and historical-weather services (data from CAMS and ERA5), under CC BY 4.0.
+- **Severe weather alerts** in Two Degrees are from the [US National Weather Service](https://www.weather.gov), a US government work in the public domain. They're shown as issued, and the National Weather Service doesn't endorse Two Degrees.
+- **Radar images** on Two Degrees' rain map are from [RainViewer](https://www.rainviewer.com). **Map tiles** are © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors (Open Database License) and © [CARTO](https://carto.com/attributions).
 - **The city list** built into Two Degrees is from [GeoNames](https://www.geonames.org), under CC BY 4.0. I've reduced it to places with at least 15,000 people.
 - **Place names** where you are come from your device's own location service (Apple's or your phone's) or, on the web, from Open-Meteo; when those can't name a place, from the GeoNames list.
 - **Apple, iPhone, iPad, Mac, App Store and TestFlight** are trademarks of Apple Inc. **Android and Google Play** are trademarks of Google LLC. Other names belong to their owners. Their mention doesn't mean they endorse me or the Services.

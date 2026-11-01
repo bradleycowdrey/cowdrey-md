@@ -1,18 +1,18 @@
 # Playbook for a new Bradley Cowdrey app
 
-Read this before starting a new app. It sums up how the three existing apps are built, released and documented, so a new app matches them. The repositories are the source of truth: when this page and the code differ, the code wins.
+Read this before starting a new app. It sums up how the existing apps are built, released and documented, so a new app matches them. The repositories are the source of truth: when this page and the code differ, the code wins.
 
-## The three apps
+## The apps
 
-| | Cowdrey.MD | Meridian | Two Degrees |
-|---|---|---|---|
-| Repo | [bradleycowdrey/cowdrey-md](https://github.com/bradleycowdrey/cowdrey-md) | [bradleycowdrey/meridian](https://github.com/bradleycowdrey/meridian) | [bradleycowdrey/two-degrees](https://github.com/bradleycowdrey/two-degrees) |
-| What it is | Markdown editor | World clock and time-zone planner | Weather in °F and °C at once |
-| How it's built | One web app (`src/`, built by `build.py` into `index.html`) wrapped by **Tauri 2** for Mac, iPhone, iPad and Android (`desktop/src-tauri`) | **SwiftUI** for Mac and iPhone, with widgets; **Kotlin and Jetpack Compose** for Android; web version hosted on bradcowdrey.com | **SwiftUI** for Mac, iPhone and iPad, with widgets; **Kotlin** for Android; web version on GitHub Pages, served through bradcowdrey.com |
-| Mac | Notarized DMG on GitHub Releases, in-place updates (Tauri updater, signed `updates/latest.json`) | DMG on GitHub Releases, update check against the GitHub releases API | DMG on GitHub Releases, update banner |
-| iPhone and iPad | App Store (TestFlight builds from CI) | App Store (iPhone only) | App Store and TestFlight |
-| Android | Signed APK on the GitHub release | APK | Signed APK on the GitHub release |
-| Web | bradcowdrey.com/cowdrey-md | bradcowdrey.com/meridian | bradcowdrey.com/two-degrees |
+| | Cowdrey.MD | Meridian | Two Degrees | True North |
+|---|---|---|---|---|
+| Repo | [bradleycowdrey/cowdrey-md](https://github.com/bradleycowdrey/cowdrey-md) | [bradleycowdrey/meridian](https://github.com/bradleycowdrey/meridian) | [bradleycowdrey/two-degrees](https://github.com/bradleycowdrey/two-degrees) | [bradleycowdrey/true-north](https://github.com/bradleycowdrey/true-north) |
+| What it is | Markdown editor | World clock and time-zone planner | Weather in °F and °C at once | Compass with coordinates, elevation and a map on one screen |
+| How it's built | One web app (`src/`, built by `build.py` into `index.html`) wrapped by **Tauri 2** for Mac, iPhone, iPad and Android (`desktop/src-tauri`) | **SwiftUI** for Mac and iPhone, with widgets; **Kotlin and Jetpack Compose** for Android; web version hosted on bradcowdrey.com | **SwiftUI** for Mac, iPhone and iPad, with widgets; **Kotlin** for Android; web version on GitHub Pages, served through bradcowdrey.com | **SwiftUI** for Mac, iPhone and iPad (one shared screen, MapKit); **Kotlin and Jetpack Compose** for Android (MapLibre with OpenFreeMap, no Play services); web version on GitHub Pages. Coordinate maths tested against one shared fixture on all three |
+| Mac | Notarized DMG on GitHub Releases, in-place updates (Tauri updater, signed `updates/latest.json`) | DMG on GitHub Releases, update check against the GitHub releases API | DMG on GitHub Releases, update banner | DMG on GitHub Releases, update banner (no compass on a Mac: coordinates, elevation, map) |
+| iPhone and iPad | App Store (TestFlight builds from CI) | App Store (iPhone only) | App Store and TestFlight | App Store and TestFlight (workflow ready) |
+| Android | Signed APK on the GitHub release | APK | Signed APK on the GitHub release | Signed APK on the GitHub release |
+| Web | bradcowdrey.com/cowdrey-md | bradcowdrey.com/meridian | bradcowdrey.com/two-degrees | bradcowdrey.com/true-north |
 
 Read each repo's `README.md`, `CHANGELOG.md` and `.github/workflows/` to see the patterns in full.
 

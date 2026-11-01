@@ -1110,6 +1110,7 @@ await test('iPhone app: runs like the web version, shares exports through the na
         if (c === 'write_share_file') { window.__calls.written[a.name] = a.contents; return '/private/tmp/' + a.name; }
         if (c === 'plugin:sharekit|share_file') { const name = decodeURI(a.url).split('/').pop(); window.__calls.shared.push({ name, type: a.mimeType, size: (window.__calls.written[name] || '').length, url: a.url, position: a.position }); return null; }
         if (c === 'plugin:sharekit|share_text') { window.__calls.shared.push({ text: a.text, position: a.position }); return null; }
+        if (c === 'plugin:sharekit|native' && a.method === 'shareLink') { window.__calls.shared.push({ text: a.args.text + ' ' + a.args.url, title: a.args.title, position: a.args.position }); return null; }
         window.__calls.invoke.push(c); if (c === 'take_opened_files' && !window.__took) { window.__took = true; return [{ name: 'From Files.md', path: '/Inbox/From Files.md', content: '# Opened from Files' }]; } return null; } },
       app: { getVersion: async () => '1.0.14' }, dialog: {}, event: { listen: async () => {} },
       opener: { openUrl: async (u) => { window.__calls.opened.push(u); } },
@@ -1136,7 +1137,7 @@ await test('iPhone app: runs like the web version, shares exports through the na
   // Share Cowdrey.MD with a friend: the native sheet too, with the link
   await T.click('#mBar [data-m="share"]'); await settle(T, 150);
   await T.evaluate(() => document.querySelector('#mSheet [data-m="shareApp"]').click()); await settle(T, 200);
-  { const last = (await T.evaluate(() => window.__calls.shared)).pop(); ok(last.text && last.text.includes('https://bradcowdrey.com/cowdrey-md') && last.position, 'shares the app link natively'); }
+  { const last = (await T.evaluate(() => window.__calls.shared)).pop(); ok(last.text && last.text.includes('https://bradcowdrey.com/cowdrey-md') && last.title === 'Cowdrey.MD' && last.position, 'shares the app as a link with its name: ' + JSON.stringify(last)); }
   // web links open in Safari, not inside the app
   await T.evaluate(() => document.querySelector('.sb-brand a').click()); await settle(T, 100);
   eq((await T.evaluate(() => window.__calls.opened)).pop(), 'https://bradcowdrey.com/');
@@ -1483,6 +1484,16 @@ await test('iPhone app: Open keeps the file where it is and saves edits back to 
   await setDoc(T, '# Fresh\n\nmore'); await settle(T, 1800);
   eq(await T.evaluate(() => window.__files.bm2), '# Fresh\n\nmore', 'and later edits go to it');
   eq(T.errors, []); await T.ctx.close();
+});
+await test('About shows the app icon, in light and dark', async () => {
+  for (const scheme of ['light', 'dark']) {
+    const Q = await newPage({ width: 430, height: 900, scheme });
+    await Q.evaluate(() => window.__cowdreyTest.run('about')); await settle(Q, 300);
+    const icon = await Q.$eval('#dialog .app-icon', (i) => ({ w: i.naturalWidth, h: i.naturalHeight, shown: i.getBoundingClientRect().width }));
+    ok(icon.w >= 128 && icon.h === icon.w && icon.shown >= 60, 'the icon loads and shows: ' + JSON.stringify(icon));
+    if (process.env.SHOTS) await Q.screenshot({ path: path.join(process.env.SHOTS, `about-${scheme}.png`) });
+    eq(Q.errors, []); await Q.ctx.close();
+  }
 });
 await test('no library URL points at a file that does not exist', async () => { eq([...missing], []); });
 await test('no uncaught page errors during the whole run', async () => { eq(P.errors, []); });

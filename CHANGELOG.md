@@ -2,6 +2,12 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.32
+
+- **About shows the Cowdrey.MD icon**, in light and dark mode (the mark had blended into its square), and the version number on iPhone, iPad and Android too.
+- **Sharing Cowdrey.MD shows its name and icon** at the top of the share sheet, and sends the link with a short message. On Android, Share Cowdrey.MD opens the Android share sheet.
+- The iPhone app is checked in the iPhone Simulator on every change: the share sheet, PDF, print panel, file picker and About box are photographed and reviewed.
+
 ## 1.0.31
 
 - **iPhone and iPad: the share sheet, file pickers and print panel open where they should.** They could open from the middle of the screen, partly off it (as Share Cowdrey.MD with a friend did). They now open in a window of their own that covers the screen.

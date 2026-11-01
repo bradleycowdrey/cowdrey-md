@@ -51,7 +51,7 @@ pub async fn share_file<R: Runtime>(
 /// Cowdrey.MD's own native features on iPhone, iPad and Android (printing, PDF, files and folders),
 /// each a method of the platform plugin. Only the methods listed here can be called.
 const NATIVE_METHODS: &[&str] = &[
-    "printPage", "exportPdf",
+    "shareLink", "printPage", "exportPdf",
     "pickFiles", "saveAsFile", "readFile", "writeFile",
     "pickFolder", "listFolder", "readInFolder", "writeInFolder", "deleteInFolder",
 ];

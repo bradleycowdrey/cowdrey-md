@@ -8,6 +8,7 @@
 //   reads, writes and deletes, so every device that uses the same folder sees the same documents.
 
 import Foundation
+import LinkPresentation
 import SwiftRs
 import Tauri
 import UIKit
@@ -57,6 +58,53 @@ struct FolderOptions: Decodable {
   let bookmark: String
   let path: String?
   let content: String?
+}
+
+struct LinkOptions: Decodable {
+  let url: String
+  let title: String?
+  let text: String?
+  let position: SharePosition?
+}
+
+/// A link for the share sheet with the app's name and icon at the top, as other apps show theirs.
+class LinkItem: NSObject, UIActivityItemSource {
+  let url: URL
+  let title: String
+  init(url: URL, title: String) { self.url = url; self.title = title }
+  func activityViewControllerPlaceholderItem(_ controller: UIActivityViewController) -> Any { url }
+  func activityViewController(_ controller: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? { url }
+  func activityViewController(_ controller: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String { title }
+  func activityViewControllerLinkMetadata(_ controller: UIActivityViewController) -> LPLinkMetadata? {
+    let m = LPLinkMetadata()
+    m.originalURL = url
+    m.url = url
+    m.title = title
+    if let icon = LinkItem.appIcon() {
+      m.iconProvider = NSItemProvider(object: icon)
+      m.imageProvider = NSItemProvider(object: icon)
+    }
+    return m
+  }
+  /// The app's own icon, from its bundle.
+  static func appIcon() -> UIImage? {
+    if let icons = Bundle.main.infoDictionary?["CFBundleIcons"] as? [String: Any],
+      let primary = icons["CFBundlePrimaryIcon"] as? [String: Any],
+      let files = primary["CFBundleIconFiles"] as? [String] {
+      for name in files.reversed() { if let img = UIImage(named: name) { return img } }
+    }
+    return UIImage(named: "AppIcon")
+  }
+}
+
+/// The message that goes with the link, for apps that take text (Messages, Mail, Notes).
+class TextItem: NSObject, UIActivityItemSource {
+  let text: String
+  init(_ text: String) { self.text = text }
+  func activityViewControllerPlaceholderItem(_ controller: UIActivityViewController) -> Any { text }
+  func activityViewController(_ controller: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
+    activityType == .copyToPasteboard ? nil : text
+  }
 }
 
 enum NativeError: Error, LocalizedError {
@@ -186,6 +234,19 @@ class SharePlugin: Plugin {
         return
       }
       self.present([fileUrl], position: args.position, invoke: invoke)
+    }
+  }
+
+  @objc func shareLink(_ invoke: Invoke) throws {
+    let args = try invoke.parseArgs(LinkOptions.self)
+    DispatchQueue.main.async {
+      guard let url = URL(string: args.url) else {
+        invoke.reject("Invalid link")
+        return
+      }
+      var items: [Any] = [LinkItem(url: url, title: args.title ?? url.host ?? "Link")]
+      if let text = args.text, !text.isEmpty { items.insert(TextItem(text), at: 0) }
+      self.present(items, position: args.position, invoke: invoke)
     }
   }
 

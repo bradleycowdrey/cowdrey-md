@@ -3094,10 +3094,10 @@ function termsDialog(updated, latest) {
 }
 async function showAbout() {
   let version = '';
-  if (TAURI) { try { version = ' ' + await TAURI.app.getVersion(); } catch {} }
+  if (NATIVE) { try { version = ' ' + await NATIVE.app.getVersion(); } catch {} }
   openDialog({
     title: 'About Cowdrey.MD',
-    body: `<div class="about-mark"><a class="logo" href="https://bradcowdrey.com" target="_blank" rel="noopener" aria-label="bradcowdrey.com">${$('.titlebar .logo').innerHTML}</a><div><b>Cowdrey.MD${esc(version)}</b>by Bradley Cowdrey · <a href="https://bradcowdrey.com" target="_blank" rel="noopener">bradcowdrey.com</a></div></div>
+    body: `<div class="about-mark"><img class="app-icon" src="__APP_ICON__" width="64" height="64" alt="Cowdrey.MD icon"><div><b>Cowdrey.MD${esc(version)}</b>by Bradley Cowdrey · <a href="https://bradcowdrey.com" target="_blank" rel="noopener">bradcowdrey.com</a></div></div>
       <p>A Markdown editor with MacDown’s side-by-side writing, a Docs-style page and menus, and a Word-style ribbon, ruler and status bar.</p>
       <p>Supports GitHub Flavored Markdown, tables, task lists, footnotes, callouts, LaTeX math, Mermaid diagrams, emoji, front matter and highlighted code.</p>
       <p>Free and provided as is. <a href="${LEGAL_URL}" target="_blank" rel="noopener">Terms of Use and Privacy</a></p>
@@ -3449,7 +3449,7 @@ function mobileRename() {
 // Automated checks in the iPhone Simulator open one panel (see .github/workflows/ios-qa.yml).
 window.__cowdreyQA = (kind) => {
   try { if (!store.get(KEY + ':terms', null)) { store.set(KEY + ':terms', TERMS_BUILT.hash); termsAsking = false; closeDialog(); } } catch {}
-  const run = { shareApp, shareMd: () => runCmd('saveMd'), shareDocx: () => runCmd('exportDocx'), pdf: () => runCmd('exportPdf'), print: () => runCmd('print'), open: () => runCmd('openFile'), saveAs: () => runCmd('saveAs'), folder: chooseSyncFolder, sheet: () => mobileAction('share') }[kind];
+  const run = { shareApp, shareMd: () => runCmd('saveMd'), shareDocx: () => runCmd('exportDocx'), pdf: () => runCmd('exportPdf'), print: () => runCmd('print'), open: () => runCmd('openFile'), saveAs: () => runCmd('saveAs'), folder: chooseSyncFolder, sheet: () => mobileAction('share'), about: () => runCmd('about') }[kind];
   if (run) setTimeout(run, 300);
 };
 // Where the share sheet points from on iPad (the Share button, or the top-right corner).
@@ -3459,8 +3459,14 @@ function shareAnchor() {
   return r && r.width ? { x: r.left + r.width / 2, y: r.bottom } : { x: innerWidth - 40, y: 60 };
 }
 function shareApp() {
-  if (MOBILE_APP && !ANDROID_APP) {
-    NATIVE.core.invoke('plugin:sharekit|share_text', { text: `${SHARE_TEXT} ${APP_URL}`, position: shareAnchor() })
+  if (ANDROID_APP) {
+    NATIVE.core.invoke('plugin:sharekit|share_text', { text: `${SHARE_TEXT} ${APP_URL}`, title: 'Cowdrey.MD' })
+      .catch(() => copyText(APP_URL, 'Link to Cowdrey.MD copied'));
+    return;
+  }
+  if (MOBILE_APP) {
+    // A link with the app's name and icon at the top of the share sheet, and the message for apps that take text.
+    nativeCall('shareLink', { url: APP_URL, title: 'Cowdrey.MD', text: SHARE_TEXT, position: shareAnchor() })
       .catch((e) => { if (!/cancel/i.test(String(e))) copyText(APP_URL, 'Link to Cowdrey.MD copied'); });
     return;
   }

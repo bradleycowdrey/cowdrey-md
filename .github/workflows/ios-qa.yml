@@ -82,7 +82,7 @@ jobs:
           xcrun simctl bootstatus "$DEV" -b > /dev/null
           xcrun simctl install "$DEV" "$APP"
           mkdir -p "$RUNNER_TEMP/qa"
-          for k in none shareApp sheet shareMd pdf print open; do
+          for k in none about shareApp sheet shareMd pdf print open; do
             SIMCTL_CHILD_COWDREY_QA=$k xcrun simctl launch "$DEV" com.bradcowdrey.cowdreymd > /dev/null
             sleep 18
             xcrun simctl io "$DEV" screenshot "$RUNNER_TEMP/qa/$k.png" > /dev/null 2>&1

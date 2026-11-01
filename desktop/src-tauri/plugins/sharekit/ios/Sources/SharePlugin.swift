@@ -1,5 +1,6 @@
 // Native features of Cowdrey.MD on iPhone and iPad, adapted from tauri-plugin-sharekit 0.3.1 (MIT, see LICENSE).
-// - The share sheet: a full-width sheet from the bottom on iPhone; a popover from the Share button on iPad.
+// - The share sheet: the standard sheet on iPhone; a popover from the Share button on iPad. Sheets, pickers and
+//   the print panel are shown from a full-screen window of their own (see overlayController).
 // - Printing and PDF: the page as it prints (the web view's print layout), with the margins the app passes.
 // - Files edited in place: a file chosen in the Files picker stays where it is (iCloud Drive, On My iPhone,
 //   or another provider); the app keeps a bookmark to it and saves changes back to it.
@@ -81,35 +82,67 @@ class SharePlugin: Plugin {
 
   // MARK: presenting
 
-  /// The controller to present from: the top of whatever is already presented.
-  private func presenter() -> UIViewController? {
-    var top = self.manager.viewController ?? self.webview.window?.rootViewController
-    while let next = top?.presentedViewController, !next.isBeingDismissed { top = next }
-    return top
+  // Sheets, pickers and the print panel are shown from a window of their own that covers the screen.
+  // Shown from the app's own window, iOS placed them from the middle of the screen, partly off it.
+  private var overlay: UIWindow?
+
+  private func overlayController() -> UIViewController? {
+    if let w = overlay, let vc = w.rootViewController {
+      var top: UIViewController = vc
+      while let next = top.presentedViewController, !next.isBeingDismissed { top = next }
+      return top
+    }
+    let screen = self.webview.window?.windowScene?.screen ?? UIScreen.main
+    let w: UIWindow
+    if let scene = self.webview.window?.windowScene {
+      w = UIWindow(windowScene: scene)
+    } else {
+      w = UIWindow(frame: screen.bounds)
+    }
+    w.frame = screen.bounds
+    w.windowLevel = UIWindow.Level(rawValue: UIWindow.Level.normal.rawValue + 1)
+    w.backgroundColor = .clear
+    let vc = UIViewController()
+    vc.view.backgroundColor = .clear
+    w.rootViewController = vc
+    w.overrideUserInterfaceStyle = self.webview.window?.traitCollection.userInterfaceStyle ?? .unspecified
+    w.makeKeyAndVisible()
+    overlay = w
+    return vc
   }
 
-  /// A point on the web view for iPad popovers, clamped on screen.
+  private func closeOverlay() {
+    guard let w = overlay else { return }
+    overlay = nil
+    w.isHidden = true
+    w.rootViewController = nil
+    self.webview.window?.makeKeyAndVisible()
+  }
+
+  /// A point for iPad popovers (from the Share button), in the overlay's coordinates, clamped on screen.
   private func anchor(_ position: SharePosition?) -> CGRect {
     let b = self.webview.bounds
     let x = min(max(position?.x ?? Double(b.maxX - 40), 1), Double(b.maxX - 1))
     let y = min(max(position?.y ?? Double(b.minY + 60), 1), Double(b.maxY - 1))
-    return CGRect(x: x, y: y, width: 1, height: 1)
+    let r = CGRect(x: x, y: y, width: 1, height: 1)
+    let screen = self.webview.window?.windowScene?.screen ?? UIScreen.main
+    return self.webview.convert(r, to: screen.coordinateSpace)
   }
 
   private func present(_ items: [Any], position: SharePosition?, invoke: Invoke) {
+    guard let from = overlayController() else {
+      invoke.reject("Nothing to present the share sheet from")
+      return
+    }
     let sheet = UIActivityViewController(activityItems: items, applicationActivities: nil)
     if UIDevice.current.userInterfaceIdiom == .pad {
       sheet.modalPresentationStyle = .popover
-      sheet.popoverPresentationController?.sourceView = self.webview
+      sheet.popoverPresentationController?.sourceView = from.view
       sheet.popoverPresentationController?.sourceRect = anchor(position)
       sheet.popoverPresentationController?.permittedArrowDirections = [.up, .down]
-    } else {
-      sheet.modalPresentationStyle = .pageSheet
-      if #available(iOS 15.0, *), let s = sheet.sheetPresentationController {
-        s.detents = [.medium(), .large()]
-      }
     }
-    sheet.completionWithItemsHandler = { _, completed, _, error in
+    sheet.completionWithItemsHandler = { [weak self] _, completed, _, error in
+      self?.closeOverlay()
       if let error = error {
         invoke.reject(error.localizedDescription)
       } else if completed {
@@ -118,25 +151,21 @@ class SharePlugin: Plugin {
         invoke.reject("Share cancelled")
       }
     }
-    guard let from = presenter() else {
-      invoke.reject("Nothing to present the share sheet from")
-      return
-    }
     from.present(sheet, animated: true, completion: nil)
   }
 
   private func showPicker(_ picker: UIDocumentPickerViewController, invoke: Invoke, done: @escaping ([URL]) -> Void) {
+    guard let from = overlayController() else {
+      invoke.reject("Nothing to present the file picker from")
+      return
+    }
     let delegate = PickerDelegate { [weak self] urls in
       self?.pickerDelegate = nil
+      self?.closeOverlay()
       done(urls)
     }
     self.pickerDelegate = delegate
     picker.delegate = delegate
-    guard let from = presenter() else {
-      self.pickerDelegate = nil
-      invoke.reject("Nothing to present the file picker from")
-      return
-    }
     from.present(picker, animated: true, completion: nil)
   }
 
@@ -180,7 +209,8 @@ class SharePlugin: Plugin {
       let pc = UIPrintInteractionController.shared
       pc.printInfo = info
       pc.printPageRenderer = self.renderer(args)
-      let done: UIPrintInteractionController.CompletionHandler = { _, completed, error in
+      let done: UIPrintInteractionController.CompletionHandler = { [weak self] _, completed, error in
+        self?.closeOverlay()
         if let error = error {
           invoke.reject(error.localizedDescription)
         } else if completed {
@@ -189,8 +219,12 @@ class SharePlugin: Plugin {
           invoke.reject("Print cancelled")
         }
       }
+      guard let from = self.overlayController() else {
+        invoke.reject("Nothing to present the print panel from")
+        return
+      }
       if UIDevice.current.userInterfaceIdiom == .pad {
-        pc.present(from: self.anchor(args.position), in: self.webview, animated: true, completionHandler: done)
+        pc.present(from: self.anchor(args.position), in: from.view, animated: true, completionHandler: done)
       } else {
         pc.present(animated: true, completionHandler: done)
       }

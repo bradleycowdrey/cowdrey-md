@@ -2,6 +2,10 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.31
+
+- **iPhone and iPad: the share sheet, file pickers and print panel open where they should.** They could open from the middle of the screen, partly off it (as Share Cowdrey.MD with a friend did). They now open in a window of their own that covers the screen.
+
 ## 1.0.30
 
 - **PDF everywhere.** Print or save as PDF now works in the Mac, iPhone, iPad and Android apps, not just in a browser. On iPhone and iPad, **Share PDF** makes the PDF and opens the share sheet (Save to Files, Mail, AirDrop). The page prints on its own, at your paper size and margins.

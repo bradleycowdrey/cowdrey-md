@@ -1,0 +1,78 @@
+Using /Applications/Xcode_26.6.0.app
+Xcode 26.6
+Build version 17F113
+⚙️  Generating project...
+⚙️  Writing project...
+Created project at /Users/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/apple/cowdrey-md.xcodeproj
+victory: Project generated successfully!
+    Make cool apps! 🌻 🐕 🎉
+    /usr/bin/touch -c /Users/runner/Library/Developer/Xcode/DerivedData/cowdrey-md-ghovclyfxnrmbigfdvflvuzogehw/Build/Products/debug-iphonesimulator/Cowdrey.MD.app
+
+note: Run script build phase 'Build Rust Code' will be run during every build because the option to run the script phase "Based on dependency analysis" is unchecked. (in target 'cowdrey-md_iOS' from project 'cowdrey-md')
+** BUILD SUCCEEDED **
+
+Setting version of project cowdrey-md to: 
+    2.0.0.
+
+Also setting CFBundleVersion key (assuming it exists)
+
+Updating CFBundleVersion in Info.plist(s)...
+
+Updated CFBundleVersion in "cowdrey-md.xcodeproj/../cowdrey-md_iOS/Info.plist" to 2.0.0
+
+
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:iOS Simulator, id:dvtdevice-DVTiOSDeviceSimulatorPlaceholder-iphonesimulator:placeholder, name:Any iOS Simulator Device }
+{ platform:iOS, id:dvtdevice-DVTiPhonePlaceholder-iphoneos:placeholder, name:Any iOS Device }
+{ platform:iOS Simulator, arch:arm64, id:DF8E4AC6-573D-4149-8C5A-5B77B8F64476, OS:26.2, name:iPad (A16) }
+{ platform:iOS Simulator, arch:arm64, id:096038CB-2973-4E2D-B146-C2498D064137, OS:26.4.1, name:iPad (A16) }
+{ platform:iOS Simulator, arch:arm64, id:D9DB98A1-6C9C-4B6A-B040-BE7C4207F458, OS:26.5, name:iPad (A16) }
+{ platform:iOS Simulator, arch:arm64, id:18866364-84AA-48A2-8689-54B7193027F7, OS:26.2, name:iPad Air 11-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:29776D2E-C01F-4E39-9119-2ECBECD38424, OS:26.4.1, name:iPad Air 11-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:94FC0298-D3C7-45DD-8FA7-B3FD9568B5AA, OS:26.5, name:iPad Air 11-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:D0008160-9463-4687-ADF5-C11C78A03E51, OS:26.2, name:iPad Air 13-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:62263D5E-3902-41D6-9DE8-728A03F8A745, OS:26.4.1, name:iPad Air 13-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:6E9B9307-9F97-4A96-9D8B-EC4700403089, OS:26.5, name:iPad Air 13-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:8F6DC875-6828-4C3A-9AD8-2FE226E75159, OS:26.2, name:iPad Pro 11-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:A5AE3A46-EF94-42C1-B782-C4456CC83B28, OS:26.4.1, name:iPad Pro 11-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:C537AD9E-8EAF-4CEA-93EB-BE5126F42823, OS:26.5, name:iPad Pro 11-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:C71BAB90-949C-4EAB-9916-0C31AF11B17F, OS:26.2, name:iPad Pro 13-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:306F9837-3E76-4BB4-B887-65CAB5862076, OS:26.4.1, name:iPad Pro 13-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:3593632A-CE78-4177-B6DD-E03EA2DEDFB7, OS:26.5, name:iPad Pro 13-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:6871C188-89E1-4B32-8785-1D808CEBED64, OS:26.2, name:iPad mini (A17 Pro) }
+{ platform:iOS Simulator, arch:arm64, id:5B15BF82-629F-44A5-8030-EEA2ECD78947, OS:26.4.1, name:iPad mini (A17 Pro) }
+{ platform:iOS Simulator, arch:arm64, id:A1BBB2ED-CC79-4E5C-82CF-1489A77F232D, OS:26.5, name:iPad mini (A17 Pro) }
+{ platform:iOS Simulator, arch:arm64, id:F6F146B6-18AA-4FE2-9F0B-AA6D02028DDA, OS:26.2, name:iPhone 16e }
+{ platform:iOS Simulator, arch:arm64, id:7575462E-E469-49BC-9003-BB78E48CCF46, OS:26.2, name:iPhone 17 }
+{ platform:iOS Simulator, arch:arm64, id:EC7C4F25-3F36-44A2-8CC3-9CE1CD34AFD3, OS:26.4.1, name:iPhone 17 }
+{ platform:iOS Simulator, arch:arm64, id:062CFAA4-9ACF-40ED-A1E2-3625F5ED4DA9, OS:26.5, name:iPhone 17 }
+{ platform:iOS Simulator, arch:arm64, id:F5C4661C-7B05-4238-BF71-BF2845D2630A, OS:26.2, name:iPhone 17 Pro }
+{ platform:iOS Simulator, arch:arm64, id:7EFC6246-6BDB-4FD4-AE32-9345E3B28BD8, OS:26.4.1, name:iPhone 17 Pro }
+{ platform:iOS Simulator, arch:arm64, id:F0C70C77-E423-4478-B648-3D25045B311B, OS:26.5, name:iPhone 17 Pro }
+{ platform:iOS Simulator, arch:arm64, id:DCA2A4ED-7625-458E-B4A3-EA3CF230C9AB, OS:26.2, name:iPhone 17 Pro Max }
+{ platform:iOS Simulator, arch:arm64, id:71126E5B-B92E-4504-8F35-E6FB05950616, OS:26.4.1, name:iPhone 17 Pro Max }
+{ platform:iOS Simulator, arch:arm64, id:9E8558CA-F3AF-4CCC-92CD-B7E993A49F8A, OS:26.5, name:iPhone 17 Pro Max }
+{ platform:iOS Simulator, arch:arm64, id:A8AB901F-6672-49C0-818C-72ACF53131A5, OS:26.4.1, name:iPhone 17e }
+{ platform:iOS Simulator, arch:arm64, id:8A537B0A-2793-48DC-AA9E-DEC8874B183B, OS:26.5, name:iPhone 17e }
+{ platform:iOS Simulator, arch:arm64, id:0B44C686-A087-4854-A304-CE4506F7DE37, OS:26.2, name:iPhone Air }
+{ platform:iOS Simulator, arch:arm64, id:D529479B-2FD8-4F0C-8B24-CBAD8C819B55, OS:26.4.1, name:iPhone Air }
+{ platform:iOS Simulator, arch:arm64, id:1F0A9C4B-2DFC-444E-B162-696E5078A72B, OS:26.5, name:iPhone Air }
+{ platform:visionOS Simulator, arch:arm64, variant:Designed for [iPad,iPhone], id:A271C4C1-B959-49E7-9FC2-9DDE3C30705C, OS:26.2, name:Apple Vision Pro }
+{ platform:visionOS Simulator, arch:arm64, variant:Designed for [iPad,iPhone], id:F2226894-B182-4B98-95E0-78331EA57D3F, OS:26.4.1, name:Apple Vision Pro }
+{ platform:visionOS Simulator, arch:arm64, variant:Designed for [iPad,iPhone], id:847A0652-202A-452A-A9EF-93C3320AAA91, OS:26.5, name:Apple Vision Pro }
+{ platform:macOS, arch:arm64, variant:Designed for [iPad,iPhone], id:ec9b7569085af928200c81ef6e11d6d36582cb78, name:My Mac }
+        Info connection; remote_addr=127.0.0.1:49228 conn_id=1
+warning: The application supports opening files, but doesn't declare whether it supports opening them in place. You can add an LSSupportsOpeningDocumentsInPlace entry or an UISupportsDocumentBrowser entry to your Info.plist to declare support. (in target 'cowdrey-md_iOS' from project 'cowdrey-md')
+note: Run script build phase 'Build Rust Code' will be run during every build because the option to run the script phase "Based on dependency analysis" is unchecked. (in target 'cowdrey-md_iOS' from project 'cowdrey-md')
+failed to rename app /Users/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/apple/build/cowdrey-md_iOS.xcarchive/Products/Applications/Cowdrey.app: No such file or directory (os error 2)
+       Error failed to rename app /Users/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/apple/build/cowdrey-md_iOS.xcarchive/Products/Applications/Cowdrey.app: No such file or directory (os error 2)
+App: src-tauri/gen/apple/build/cowdrey-md_iOS.xcarchive/Products/Applications/Cowdrey.MD.app
+com.apple.CoreSimulator.SimRuntime.iOS-26-5 iPhone 17 Pro
+photographed none
+photographed about
+photographed shareApp
+photographed sheet
+photographed shareMd
+photographed pdf
+photographed print
+photographed open

@@ -37,6 +37,10 @@ pub struct ShareKit<R: Runtime> {
 }
 
 impl<R: Runtime> ShareKit<R> {
+    pub fn native(&self, _method: &str, _args: serde_json::Value) -> crate::Result<serde_json::Value> {
+        Ok(serde_json::Value::Null)
+    }
+
     pub fn new(app: AppHandle<R>) -> Self {
         // Initialize Windows Runtime if needed
         unsafe {

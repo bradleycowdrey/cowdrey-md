@@ -1118,7 +1118,9 @@ await test('iPhone app: runs like the web version, shares exports through the na
     navigator.share = async () => { window.__calls.webShare = true; };
   } });
   // no Mac-only commands, menu bar or file paths
-  for (const id of ['saveAs', 'saveAll', 'openRecent', 'checkUpdates', 'print']) {
+  // Save to Files, Print and Share PDF are in the iPhone app; Mac-only file commands are not
+  eq(await T.evaluate(() => [window.__cowdreyTest.label('saveAs'), window.__cowdreyTest.label('print'), window.__cowdreyTest.label('exportPdf')]), ['Save to Files…', 'Print…', 'Share PDF…']);
+  for (const id of ['saveAll', 'openRecent', 'checkUpdates']) {
     eq(await T.evaluate((id) => { for (let i = 0; i < 7; i++) { const m = document.querySelector(`[data-menu="${i}"]`); if (!m) continue; m.click(); const hit = !!document.querySelector(`#popover [data-cmd="${id}"]`); document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); if (hit) return true; } return false; }, id), false, `${id} hidden`);
   }
   await T.waitForFunction(() => !document.querySelector('#saveState').textContent.includes('Saving'), null, { timeout: 5000 }).catch(() => {});
@@ -1289,6 +1291,198 @@ await test('every arrow or chevron control (‹ › → ▾, chevrons, panel arr
     }
   }
   eq(silent, [], 'controls that ignored a press');
+});
+await test('Documents: search every document, folders, pins and sorting', async () => {
+  const Q = await newPage({ init: () => {
+    if (sessionStorage.getItem('seeded')) return; sessionStorage.setItem('seeded', '1');
+    const docs = [
+      ['d1', 'Trip plan', '# Trip plan\n\nPack the blue umbrella and the maps.', 3000],
+      ['d2', 'Groceries', '# Groceries\n\n- apples\n- umbrella stand? no', 2000],
+      ['d3', 'Umbrella notes', '# Umbrella notes\n\nNothing here.', 1000],
+    ];
+    localStorage.setItem('cowdrey.md:index', JSON.stringify(docs.map(([id, title, , updated]) => ({ id, title, autoTitle: false, updated }))));
+    for (const [id, , content] of docs) localStorage.setItem('cowdrey.md:doc:' + id, JSON.stringify(content));
+    localStorage.setItem('cowdrey.md:current', JSON.stringify('d1'));
+    localStorage.setItem('cowdrey.md:settings', JSON.stringify({ sideTab: 'docs', outline: true }));
+  } });
+  await settle(Q, 300);
+  await Q.fill('#docSearch', 'umbrella'); await settle(Q, 150);
+  const hits = await Q.$$eval('#docsList .doc-item', (els) => els.map((e) => [e.querySelector('.t').textContent, e.querySelector('.m').textContent, (e.querySelector('.snip mark') || {}).textContent || '']));
+  eq(hits.map((h) => h[0]), ['Umbrella notes', 'Trip plan', 'Groceries'], 'title matches first, then by number of matches');
+  ok(hits[1][2].toLowerCase() === 'umbrella' && /1 match/.test(hits[1][1]), 'snippet with the match marked: ' + JSON.stringify(hits[1]));
+  await Q.click('#docsList [data-id="d2"] .doc-open'); await settle(Q, 250);
+  eq(await Q.$eval('#docTitle', (e) => e.value), 'Groceries', 'the result opens');
+  ok(!(await Q.$eval('#findbar', (e) => e.hidden)) && (await Q.$eval('#findInput', (e) => e.value)) === 'umbrella', 'and shows the matches with Find');
+  await Q.keyboard.press('Escape');
+  await Q.fill('#docSearch', 'zzz'); await settle(Q, 100);
+  ok((await Q.textContent('#docsList')).includes('No matches'), 'no matches says so');
+  await Q.fill('#docSearch', ''); await settle(Q, 100);
+  // a folder, a document moved into it, and the folder filter
+  await Q.click('#newFolderBtn'); await Q.fill('#folderName', 'Travel'); await Q.click('#dialog [data-a="1"]'); await settle(Q, 150);
+  eq(await Q.$$eval('#docFolders .chip', (b) => b.map((x) => x.textContent.trim())), ['All', 'Travel']);
+  eq((await Q.$$eval('#docsList .doc-item', (e) => e.length)), 0, 'the new folder is empty');
+  await Q.click('#docFolders [data-folder=""]'); await settle(Q, 100);
+  await Q.click('#docsList [data-more="d1"]'); await Q.click('#popover [data-da="move"]'); await settle(Q, 100);
+  await Q.click('#dialog [data-mv="Travel"]'); await settle(Q, 150);
+  await Q.click('#docFolders [data-folder="Travel"]'); await settle(Q, 100);
+  eq(await Q.$$eval('#docsList .doc-item .t', (e) => e.map((x) => x.textContent)), ['Trip plan'], 'only the folder\'s documents');
+  ok(JSON.parse(await Q.evaluate(() => localStorage.getItem('cowdrey.md:index'))).find((m) => m.id === 'd1').folder === 'Travel', 'the folder is saved');
+  await Q.click('#docFolders [data-folder=""]'); await settle(Q, 100);
+  // pin, then sort by title
+  await Q.click('#docsList [data-more="d3"]'); await Q.click('#popover [data-da="pin"]'); await settle(Q, 100);
+  eq(await Q.$$eval('#docsList .side-heading', (e) => e.map((x) => x.textContent)), ['Pinned', 'Documents']);
+  eq(await Q.$eval('#docsList [role="list"] .doc-item .t', (e) => e.textContent), 'Umbrella notes', 'pinned first');
+  await Q.selectOption('#docSort', 'title'); await settle(Q, 100);
+  eq(await Q.$$eval('#docsList [aria-labelledby="docsHeading"] .doc-item .t', (e) => e.map((x) => x.textContent)), ['Groceries', 'Trip plan']);
+  eq(Q.errors, []); await Q.ctx.close();
+});
+await test('Version history: versions are kept, shown and restored (undoably)', async () => {
+  const Q = await newPage();
+  await Q.evaluate(() => window.__cowdreyTest.run('newDoc')); await settle(Q, 200);
+  await setDoc(Q, '# Draft\n\nFirst version.'); await settle(Q, 800);
+  // a version is kept when a document is opened; this one, then the next edit
+  await Q.evaluate(() => window.__cowdreyTest.run('history')); await settle(Q, 400);
+  await Q.click('#dialog [data-close]');
+  await setDoc(Q, '# Draft\n\nSecond version, much better.'); await settle(Q, 800);
+  await Q.evaluate(() => window.__cowdreyTest.run('history')); await settle(Q, 400);
+  const items = await Q.$$eval('#dialog .hv', (b) => b.map((x) => x.textContent));
+  ok(items.length >= 2, 'two versions listed: ' + JSON.stringify(items));
+  ok(/Same as now/.test(items[0]), 'the newest is the current text');
+  await Q.click('#dialog .hv[data-v="1"]'); await settle(Q, 100);
+  ok((await Q.textContent('#historyText')).includes('First version.'), 'the older text is shown');
+  await Q.click('#dialog [data-a="2"]'); await settle(Q, 300);
+  ok((await cmv(Q)).includes('First version.'), 'restored');
+  await Q.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.undo()); await settle(Q, 100);
+  ok((await cmv(Q)).includes('Second version'), 'Undo brings back the text from before restoring');
+  eq(Q.errors, []); await Q.ctx.close();
+});
+await test('Word export: a valid .docx with headings, lists, a table, a link, code and a picture', async () => {
+  const Q = await newPage();
+  const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+  await setDoc(Q, `# Report & notes\n\nSome **bold**, *italic*, \`code\` and a [link](https://example.com).\n\n## Lists\n\n- one\n  - nested\n- two\n\n1. first\n2. second\n\n- [x] done\n- [ ] todo\n\n> A quote.\n\n| A | B |\n|---|--:|\n| 1 | 2 |\n\n\`\`\`js\nlet x = 1;\n\`\`\`\n\n![dot](data:image/png;base64,${png})\n\n---\n\nThe end.`);
+  await settle(Q, 600);
+  const dl = Q.waitForEvent('download');
+  await Q.evaluate(() => window.__cowdreyTest.run('exportDocx'));
+  const file = await dl;
+  ok(/\.docx$/.test(file.suggestedFilename()), 'named .docx: ' + file.suggestedFilename());
+  const out = path.join(root, 'tests', '.tmp-export.docx');
+  await file.saveAs(out);
+  const { execFileSync } = await import('node:child_process');
+  const names = execFileSync('python3', ['-c', `import zipfile,sys
+z=zipfile.ZipFile(sys.argv[1]); assert z.testzip() is None
+from xml.dom import minidom
+for n in z.namelist():
+    if n.endswith('.xml') or n.endswith('.rels'): minidom.parseString(z.read(n))
+print('\\n'.join(z.namelist()))
+print('---'); print(z.read('word/document.xml').decode())`, out]).toString();
+  fs.unlinkSync(out);
+  const [list, xml] = names.split('---');
+  for (const part of ['[Content_Types].xml', 'word/document.xml', 'word/styles.xml', 'word/numbering.xml', 'word/_rels/document.xml.rels', 'word/media/image1.png']) ok(list.includes(part), 'contains ' + part);
+  for (const bit of ['w:val="Heading1"', 'Report &amp; notes', '<w:b/>', '<w:i/>', 'Courier New', '<w:hyperlink', '<w:numId w:val="1"/>', '<w:ilvl w:val="1"/>', '☒ <', '☐ <', '>done<', '>todo<', 'w:val="Quote"', '<w:tbl>', 'w:val="Code"', 'let x = 1;', '<w:drawing>', 'The end.']) ok(xml.includes(bit), 'document has ' + bit);
+  eq(Q.errors, []); await Q.ctx.close();
+});
+await test('Print and PDF: the page prints alone at the chosen paper size; the Mac app opens its print dialog', async () => {
+  const Q = await newPage({ init: () => { window.__printed = 0; window.print = () => { window.__printed++; }; } });
+  await Q.evaluate(() => window.__cowdreyTest.run('print')); await settle(Q, 200);
+  eq(await Q.evaluate(() => window.__printed), 1, 'the browser prints');
+  ok(/@page \{ size: letter; margin: 1in; \}/.test(await Q.evaluate(() => document.querySelector('#printPageCss').textContent)), '@page set');
+  await Q.emulateMedia({ media: 'print' });
+  eq(await Q.evaluate(() => ['.ribbon', '.sidebar', '.editor-pane', '.statusbar'].map((s) => getComputedStyle(document.querySelector(s)).display)), ['none', 'none', 'none', 'none'], 'only the page prints');
+  await Q.ctx.close();
+  const M = await newPage({ init: () => {
+    window.__calls = []; localStorage.setItem('cowdrey.md:updateChecked', String(Date.now()));
+    window.__TAURI__ = { core: { invoke: async (c) => { window.__calls.push(c); return null; } }, app: { getVersion: async () => '1.0.30' }, dialog: {}, opener: {}, event: { listen: async () => {} } };
+  } });
+  await M.evaluate(() => window.__cowdreyTest.run('exportPdf')); await settle(M, 300);
+  ok((await M.evaluate(() => window.__calls)).includes('print_page'), 'the Mac app asks for its print dialog');
+  eq(M.errors, []); await M.ctx.close();
+});
+await test('Mac app: sync folder: documents become files, changes go both ways, conflicts keep both, deletes and renames follow', async () => {
+  const Q = await newPage({ init: () => {
+    window.__calls = []; localStorage.setItem('cowdrey.md:updateChecked', String(Date.now()));
+    let t = 1000;
+    window.__fs = { '/Sync/From phone.md': { c: '# From phone\n\nhello', m: 500 }, '/Sync/Work/Plan.md': { c: '# Plan', m: 600 } };
+    window.__TAURI__ = {
+      core: { invoke: async (cmd, a) => {
+        window.__calls.push([cmd, a && (a.path || a.dir)]);
+        const fs = window.__fs;
+        if (cmd === 'list_folder') return { name: 'Sync', folders: ['Work'], files: Object.keys(fs).filter((p) => p.startsWith(a.dir + '/')).map((p) => ({ path: p.slice(a.dir.length + 1), modified: fs[p].m })) };
+        if (cmd === 'read_text_file') { if (!fs[a.path]) throw new Error('missing'); return { path: a.path, name: a.path.split('/').pop(), content: fs[a.path].c }; }
+        if (cmd === 'write_in_folder') { fs[a.path] = { c: a.contents, m: ++t }; return t; }
+        if (cmd === 'remove_file') { delete fs[a.path]; return null; }
+        return null;
+      } },
+      app: { getVersion: async () => '1.0.30' }, dialog: { open: async () => '/Sync' }, opener: {}, event: { listen: async () => {} },
+    };
+  } });
+  await Q.evaluate(() => window.__cowdreyTest.run('newDoc')); await settle(Q, 200);
+  await setDoc(Q, '# Local note\n\nwritten on the Mac'); await settle(Q, 800);
+  await Q.evaluate(() => window.__cowdreyTest.run('syncFolder')); await settle(Q, 150);
+  await Q.click('#dialog [data-a="1"]'); await settle(Q, 800);
+  const fsNow = () => Q.evaluate(() => Object.fromEntries(Object.entries(window.__fs).map(([k, v]) => [k, v.c])));
+  let f = await fsNow();
+  eq(f['/Sync/Local note.md'], '# Local note\n\nwritten on the Mac', 'the local document became a file');
+  ok(!Object.keys(f).some((k) => /Welcome/.test(k)), 'the untouched welcome document stays out of the folder');
+  const titles = () => Q.evaluate(() => JSON.parse(localStorage.getItem('cowdrey.md:index')).map((m) => [m.title, m.folder || '', m.lib || '']));
+  let t = await titles();
+  ok(t.some(([a, , l]) => a === 'From phone' && l === 'From phone.md'), 'the file from the folder became a document');
+  ok(t.some(([a, fo]) => a === 'Plan' && fo === 'Work'), 'a subfolder is a folder');
+  // an edit on another device comes in; an edit here goes out
+  await Q.evaluate(() => { window.__fs['/Sync/From phone.md'] = { c: '# From phone\n\nhello again', m: 5000 }; });
+  await Q.evaluate(() => document.dispatchEvent(new Event('visibilitychange'))); await settle(Q, 600);
+  const content = (title) => Q.evaluate((title) => { const m = JSON.parse(localStorage.getItem('cowdrey.md:index')).find((x) => x.title === title); return m && JSON.parse(localStorage.getItem('cowdrey.md:doc:' + m.id)); }, title);
+  eq(await content('From phone'), '# From phone\n\nhello again', 'the newer file is taken');
+  await setDoc(Q, '# Local note\n\nedited again'); await settle(Q, 3500);
+  eq((await fsNow())['/Sync/Local note.md'], '# Local note\n\nedited again', 'the edit is written to the file');
+  // changed in both places: both kept
+  await setDoc(Q, '# Local note\n\nmine'); await Q.evaluate(() => { window.__fs['/Sync/Local note.md'] = { c: '# Local note\n\ntheirs', m: 9000 }; });
+  await Q.evaluate(() => document.dispatchEvent(new Event('visibilitychange'))); await settle(Q, 800);
+  eq(await cmv(Q), '# Local note\n\ntheirs', 'the document takes the folder\'s version');
+  eq(await content('Local note (conflict)'), '# Local note\n\nmine', 'and a copy keeps this one');
+  // deleted on another device: gone here too; renamed here: the file moves
+  await Q.evaluate(() => { delete window.__fs['/Sync/From phone.md']; });
+  await Q.evaluate(() => document.dispatchEvent(new Event('visibilitychange'))); await settle(Q, 600);
+  ok(!(await titles()).some(([a]) => a === 'From phone'), 'a file deleted elsewhere is removed');
+  await Q.fill('#docTitle', 'Renamed note'); await settle(Q, 2200);
+  f = await fsNow();
+  ok(f['/Sync/Renamed note.md'] && !f['/Sync/Local note.md'], 'renaming moves the file: ' + JSON.stringify(Object.keys(f)));
+  // deleting a document deletes its file
+  await Q.evaluate(() => window.__cowdreyTest.run('deleteDoc')); await settle(Q, 100); await Q.click('#dialog [data-a="1"]'); await settle(Q, 400);
+  ok(!(await fsNow())['/Sync/Renamed note.md'], 'deleting the document deletes its file');
+  eq(Q.errors, []); await Q.ctx.close();
+});
+await test('iPhone app: Open keeps the file where it is and saves edits back to it; Save to Files links a document', async () => {
+  const T = await newPage({ width: 390, height: 844, init: () => {
+    window.__files = { bm1: '# Notes\n\nin iCloud Drive' }; window.__writes = [];
+    Object.defineProperty(navigator, 'maxTouchPoints', { get: () => 5 });
+    window.__TAURI__ = {
+      core: { invoke: async (c, a) => {
+        if (c !== 'plugin:sharekit|native') return null;
+        const { method, args } = a;
+        if (method === 'pickFiles') return { files: [{ name: 'Notes.md', content: window.__files.bm1, bookmark: 'bm1', modified: 1 }] };
+        if (method === 'readFile') return { name: 'x', content: window.__files[args.bookmark], modified: 2 };
+        if (method === 'writeFile') { window.__files[args.bookmark] = args.content; window.__writes.push(args.bookmark); return { modified: 3 }; }
+        if (method === 'saveAsFile') { window.__files.bm2 = args.content; return { name: args.name, bookmark: 'bm2', modified: 4 }; }
+        return null;
+      } },
+      app: { getVersion: async () => '1.0.30' }, dialog: {}, event: { listen: async () => {} }, opener: { openUrl: async () => {} },
+    };
+  } });
+  await T.evaluate(() => window.__cowdreyTest.run('openFile')); await settle(T, 400);
+  eq(await cmv(T), '# Notes\n\nin iCloud Drive', 'opened');
+  await T.evaluate(() => { const cm = document.querySelector('.CodeMirror').CodeMirror; cm.replaceRange('\n\nadded on the phone', { line: cm.lastLine() }); }); await settle(T, 1800);
+  eq(await T.evaluate(() => window.__files.bm1), '# Notes\n\nin iCloud Drive\n\nadded on the phone', 'the edit is saved back to the file');
+  ok((await T.textContent('#saveState')).includes('Saved to “Notes.md”'), 'says where it is saved: ' + await T.textContent('#saveState'));
+  // changed in another app while away: shown when the app comes back
+  await T.evaluate(() => { window.__files.bm1 = '# Notes\n\nchanged on the Mac'; document.dispatchEvent(new Event('visibilitychange')); }); await settle(T, 400);
+  eq(await cmv(T), '# Notes\n\nchanged on the Mac', 'the newer file is shown');
+  await T.evaluate(() => window.__cowdreyTest.run('newDoc')); await settle(T, 200);
+  await setDoc(T, '# Fresh'); await settle(T, 300);
+  await T.evaluate(() => window.__cowdreyTest.run('saveAs')); await settle(T, 400);
+  eq(await T.evaluate(() => window.__files.bm2), '# Fresh', 'Save to Files writes the file');
+  await setDoc(T, '# Fresh\n\nmore'); await settle(T, 1800);
+  eq(await T.evaluate(() => window.__files.bm2), '# Fresh\n\nmore', 'and later edits go to it');
+  eq(T.errors, []); await T.ctx.close();
 });
 await test('no library URL points at a file that does not exist', async () => { eq([...missing], []); });
 await test('no uncaught page errors during the whole run', async () => { eq(P.errors, []); });

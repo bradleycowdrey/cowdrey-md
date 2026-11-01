@@ -2,6 +2,17 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.30
+
+- **PDF everywhere.** Print or save as PDF now works in the Mac, iPhone, iPad and Android apps, not just in a browser. On iPhone and iPad, **Share PDF** makes the PDF and opens the share sheet (Save to Files, Mail, AirDrop). The page prints on its own, at your paper size and margins.
+- **Word documents.** Export a `.docx` that opens in Word, Pages and Google Docs, with headings, lists, checklists, quotes, tables, links, code, pictures, and equations and diagrams as pictures.
+- **Files stay where they are on iPhone, iPad and Android.** A file you open with Open… stays in iCloud Drive, On My iPhone or wherever it is, and your edits are saved back to it. **Save to Files** does the same for a new document. If the file was also changed in another app, that version is kept in Version history.
+- **Sync folder.** Choose a folder, for example in iCloud Drive, and every document is also kept there as a Markdown file. Use the same folder on your Mac, iPhone, iPad or Android phone and they all show the same documents. Subfolders become folders in the Documents list. A document changed in two places keeps both versions.
+- **Search every document** from the Documents list. Results show each match in context; open one and Find shows the matches.
+- **Folders, pins and sorting.** Make folders, move documents into them, pin documents to the top, and sort by last edited, title or date created.
+- **Version history.** Cowdrey.MD keeps earlier versions of each document on your device for 90 days: when you open it, every 10 minutes while you edit, and before anything replaces its text. Restore one from Version history (Undo takes you back).
+- The terms describe files and sync folders you choose, and the cloud services that hold them.
+
 ## 1.0.29
 
 - **iPhone: the share sheet now rises from the bottom of the screen at full width**, like in other apps, instead of opening as a squeezed panel cut off at the right edge. Drag it up for more options. On iPad it points at the Share button.

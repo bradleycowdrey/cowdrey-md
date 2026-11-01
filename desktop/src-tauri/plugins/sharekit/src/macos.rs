@@ -43,6 +43,10 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct ShareKit<R: Runtime>(AppHandle<R>);
 
 impl<R: Runtime> ShareKit<R> {
+    pub fn native(&self, _method: &str, _args: serde_json::Value) -> crate::Result<serde_json::Value> {
+        Ok(serde_json::Value::Null)
+    }
+
     pub fn share_text(
         &self,
         window: WebviewWindow<R>,

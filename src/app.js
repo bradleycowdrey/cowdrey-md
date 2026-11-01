@@ -162,9 +162,9 @@ function mathPlugin(md) {
     t.block = true; t.content = content; t.map = [start, state.line];
     return true;
   }, { alt: ['paragraph', 'reference', 'blockquote', 'list'] });
-  md.renderer.rules.math_inline = (ts, i) => `<span class="math-inline">\\(${esc(ts[i].content)}\\)</span>`;
-  md.renderer.rules.math_display_inline = (ts, i) => `<span class="math-display">\\[${esc(ts[i].content)}\\]</span>`;
-  md.renderer.rules.math_block = (ts, i) => `<div class="math-block" data-line="${ts[i].map[0]}">\\[${esc(ts[i].content)}\\]</div>\n`;
+  md.renderer.rules.math_inline = (ts, i) => `<span class="math-inline" data-tex="${esc(ts[i].content)}">\\(${esc(ts[i].content)}\\)</span>`;
+  md.renderer.rules.math_display_inline = (ts, i) => `<span class="math-display" data-tex="${esc(ts[i].content)}">\\[${esc(ts[i].content)}\\]</span>`;
+  md.renderer.rules.math_block = (ts, i) => `<div class="math-block" data-line="${ts[i].map[0]}" data-tex="${esc(ts[i].content)}">\\[${esc(ts[i].content)}\\]</div>\n`;
 }
 
 const CALLOUTS = { note: 'Note', tip: 'Tip', important: 'Important', warning: 'Warning', caution: 'Caution' };
@@ -292,7 +292,7 @@ let headings = [], lineMap = [], fm = null;
 const mermaidCache = new Map();
 let mermaidSeq = 0, mathReady = !!(window.MathJax && MathJax.typesetPromise);
 
-const PURIFY = { ADD_ATTR: ['target', 'data-line', 'data-src', 'data-task-line', 'checked'], FORBID_TAGS: ['style', 'form', 'base'] };
+const PURIFY = { ADD_ATTR: ['target', 'data-line', 'data-src', 'data-tex', 'data-task-line', 'checked'], FORBID_TAGS: ['style', 'form', 'base'] };
 
 function render() {
   const src = cm.getValue();
@@ -1078,12 +1078,19 @@ const deletedIds = new Set();
 let seenInStore = new Set((store.get(KEY + ':index', []) || []).map((m) => m.id));
 let applyingRemote = false;
 const markDirty = (id = currentId) => { dirtyIds.add(id); };
+// A document linked to a file says where it's saved.
+function linkedState() {
+  const d = cur(); if (!isLinked(d)) return '';
+  if (d.linkError) return `${ic('triangle-alert')}<span>Saved on this device, not yet to “${esc(d.linkName)}”</span>`;
+  if (d.readOnly) return `${ic('check')}<span>Saved on this device (“${esc(d.linkName)}” is read-only)</span>`;
+  return `${ic('check')}<span>Saved to “${esc(d.linkName)}”</span>`;
+}
 let setSaveState = function (kind) {
   const el = saveStateEl;
   el.classList.toggle('error', kind === 'error');
   el.innerHTML = kind === 'saving' ? `${ic('loader')}<span>Saving…</span>`
     : kind === 'error' ? `${ic('triangle-alert')}<span>Not saved. Browser storage is full or blocked, so export to keep your work.</span>`
-    : `${ic('check')}<span>Saved ${MOBILE_APP ? 'on this device' : 'to this browser'}</span>`;
+    : linkedState() || `${ic('check')}<span>Saved ${MOBILE_APP ? 'on this device' : 'to this browser'}</span>`;
   refreshIcons();
 };
 // Pull in documents created, edited or deleted in other browser tabs. Returns true when anything changed.
@@ -1123,6 +1130,7 @@ function persist() {
     const d = docs.find((x) => x.id === id);
     if (!d) { dirtyIds.delete(id); continue; }
     if (store.set(DOC_KEY(id), d.content) && (d.diskContent == null || store.set(DISK_KEY(id), d.diskContent))) dirtyIds.delete(id); else ok = false;
+    versions.save(d, 'auto');
   }
   for (const id of deletedIds) { try { localStorage.removeItem(DOC_KEY(id)); localStorage.removeItem(DISK_KEY(id)); } catch {} }
   deletedIds.clear();
@@ -1141,10 +1149,99 @@ window.addEventListener('storage', (e) => {
   titleInput.value = cur().title; renderTabs(); renderDocsList();
   if (!dirtyIds.has(currentId)) render();
 });
+/* ---------------- version history ---------------- */
+// Earlier versions of each document, kept in IndexedDB on this device: when a document is opened, every 10 minutes
+// while it changes, and before anything replaces its text (restoring, reverting, or a newer copy from a file or sync folder).
+const HISTORY_GAP = 10 * 60e3, HISTORY_KEEP = 100, HISTORY_DAYS = 90;
+const versions = {
+  db: null, last: new Map(), // per document: { at, content } of the newest saved version
+  open() {
+    if (this.db) return this.db;
+    this.db = new Promise((res, rej) => {
+      let r; try { r = indexedDB.open(KEY + ':history', 1); } catch (e) { rej(e); return; }
+      r.onupgradeneeded = () => { const os = r.result.createObjectStore('versions', { keyPath: 'key', autoIncrement: true }); os.createIndex('doc', 'doc'); };
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+    });
+    this.db.catch(() => {});
+    return this.db;
+  },
+  async tx(mode, fn) {
+    const db = await this.open();
+    return new Promise((res, rej) => { const t = db.transaction('versions', mode); const out = fn(t.objectStore('versions')); t.oncomplete = () => res(out && 'result' in out ? out.result : out); t.onerror = () => rej(t.error); });
+  },
+  async list(doc) {
+    const rows = await this.tx('readonly', (os) => os.index('doc').getAll(doc));
+    return (rows || []).sort((a, b) => b.at - a.at);
+  },
+  async latest(doc) {
+    if (this.last.has(doc)) return this.last.get(doc);
+    const rows = await this.list(doc).catch(() => []);
+    const v = rows[0] ? { at: rows[0].at, content: rows[0].content } : null;
+    this.last.set(doc, v); return v;
+  },
+  // Save a version unless it matches the newest one. force skips the 10-minute spacing.
+  async save(d, reason = 'auto', force = false, content = d.content) {
+    if (!d || !content.trim()) return;
+    try {
+      const prev = await this.latest(d.id);
+      if (prev && prev.content === content) return;
+      if (!force && prev && Date.now() - prev.at < HISTORY_GAP) return;
+      const v = { doc: d.id, at: Date.now(), content, title: d.title, reason };
+      await this.tx('readwrite', (os) => os.add(v));
+      this.last.set(d.id, { at: v.at, content });
+      this.prune(d.id);
+    } catch {}
+  },
+  async prune(doc) {
+    const rows = await this.list(doc).catch(() => []);
+    const old = Date.now() - HISTORY_DAYS * 864e5;
+    const drop = rows.filter((r, i) => i >= HISTORY_KEEP || (i >= 10 && r.at < old));
+    if (drop.length) await this.tx('readwrite', (os) => drop.forEach((r) => os.delete(r.key))).catch(() => {});
+  },
+  async forget(doc) {
+    this.last.delete(doc);
+    const rows = await this.list(doc).catch(() => []);
+    if (rows.length) await this.tx('readwrite', (os) => rows.forEach((r) => os.delete(r.key))).catch(() => {});
+  },
+};
+const REASONS = { open: 'Opened', auto: 'While editing', restore: 'Before restoring', revert: 'Before reverting', remote: 'Before a newer copy replaced it', closed: 'Before closing' };
+async function showHistory() {
+  const d = cur(); if (!d) return;
+  await versions.save(d, 'auto', true);
+  let rows = [];
+  try { rows = await versions.list(d.id); } catch { toast('Version history is not available here.'); return; }
+  const words = (t) => nf.format(countWords(t).count);
+  const when = (t) => new Date(t).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  let sel = rows.findIndex((r) => r.content !== d.content); if (sel < 0) sel = 0;
+  openDialog({
+    title: `Version history: ${d.title}`,
+    body: rows.length ? `<div class="history"><div class="history-list" role="listbox" aria-label="Versions">${rows.map((r, i) => `<button type="button" class="hv" role="option" data-v="${i}" aria-selected="${i === sel}"><b>${esc(when(r.at))}</b><small>${esc(REASONS[r.reason] || '')} · ${words(r.content)} words${r.content === d.content ? ' · Same as now' : ''}</small></button>`).join('')}</div><pre class="history-text" id="historyText" tabindex="0" aria-label="Text of the selected version"></pre></div>`
+      : `<p>No earlier versions yet. Cowdrey.MD keeps a version when you open a document and every 10 minutes while you edit it, on this device, for ${HISTORY_DAYS} days.</p>`,
+    actions: rows.length ? [{ label: 'Copy text', run: () => { copyText(rows[sel].content, 'Version copied'); return false; } }, { label: 'Close' }, { label: 'Restore this version', primary: true, run: () => { restoreVersion(d, rows[sel]); } }] : [{ label: 'Close', primary: true }],
+    onOpen: (dlg) => {
+      if (!rows.length) return;
+      dlg.classList.add('wide');
+      const show = (i) => { sel = i; $$('.hv', dlg).forEach((b) => b.setAttribute('aria-selected', String(+b.dataset.v === i))); $('#historyText', dlg).textContent = rows[i].content; const r = dlg.querySelector('[data-a="2"]'); if (r) r.disabled = rows[i].content === d.content; };
+      $('.history-list', dlg).addEventListener('click', (e) => { const b = e.target.closest('[data-v]'); if (b) show(+b.dataset.v); });
+      $('.history-list', dlg).addEventListener('keydown', (e) => { if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return; e.preventDefault(); const i = clamp(sel + (e.key === 'ArrowDown' ? 1 : -1), 0, rows.length - 1); show(i); $(`[data-v="${i}"]`, dlg).focus(); });
+      show(sel); $(`[data-v="${sel}"]`, dlg).focus();
+    },
+  });
+}
+async function restoreVersion(d, v) {
+  await versions.save(d, 'restore', true);
+  if (d.id !== currentId) openDoc(d.id);
+  cm.replaceRange(v.content, { line: 0, ch: 0 }, { line: cm.lastLine(), ch: cm.getLine(cm.lastLine()).length }); // undoable
+  toast(`Restored the version from ${new Date(v.at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`);
+}
 const scheduleSave = debounce(persist, 600);
 function flushSave() { if (dirtyIds.size) persist(); store.set(KEY + ':settings', S); }
 window.addEventListener('pagehide', flushSave);
-document.addEventListener('visibilitychange', () => { if (document.hidden) flushSave(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { flushSave(); return; }
+  if (isLinked(cur())) refreshLinked(cur());
+  if (S.lib) syncLibrary();
+});
 
 function autoTitle() {
   const d = cur(); if (!d || !d.autoTitle) return;
@@ -1156,6 +1253,7 @@ function autoTitle() {
 titleInput.addEventListener('input', () => {
   const d = cur(); d.title = titleInput.value.trim() || 'Untitled document'; d.autoTitle = false; d.updated = Date.now();
   markDirty(d.id); scheduleSave(); renderTabs(); renderDocsList();
+  if (S.lib && d.lib) scheduleRenameMove();
 });
 titleInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); cm.focus(); } });
 
@@ -1170,6 +1268,8 @@ function openDoc(id) {
   if (!cd) { cd = CodeMirror.Doc(d.content, MODE); cmDocs.set(id, cd); }
   cm.swapDoc(cd);
   titleInput.value = d.title;
+  versions.save(d, 'open');
+  if (isLinked(d)) refreshLinked(d);
   closeFind();
   render(); renderTabs(); renderDocsList();
   canvas.scrollTop = 0;
@@ -1209,6 +1309,7 @@ function confirmClose(id) {
   });
 }
 function revertToDisk(d) {
+  versions.save(d, 'revert', true);
   d.content = d.diskContent; d.updated = Date.now();
   cmDocs.get(d.id)?.setValue(d.diskContent);
   markDirty(d.id); scheduleSave();
@@ -1277,14 +1378,21 @@ function duplicateDoc(id) {
 }
 function newDocSilently() { const d = makeDoc(); docs.unshift(d); markDirty(d.id); persist(); return d; }
 function deleteDoc(id) {
+  const d = docs.find((x) => x.id === id);
+  if (d && S.lib && d.lib) libApi.remove(d.lib).catch((e) => toast(`Could not delete the file in ${S.lib.name}: ${e}`));
+  removeDoc(id);
+}
+// Takes a document out of the app (quiet: it was deleted on another device).
+function removeDoc(id, { quiet = false } = {}) {
   const i = docs.findIndex((d) => d.id === id); if (i < 0) return;
   const [d] = docs.splice(i, 1);
   cmDocs.delete(id); dirtyIds.delete(id); deletedIds.add(id);
+  versions.forget(id);
   S.openTabs = S.openTabs.filter((x) => x !== id);
   if (!docs.length) { const n = makeDoc(); docs.push(n); markDirty(n.id); }
   if (id === currentId) { currentId = (S.openTabs[0] && docs.find((x) => x.id === S.openTabs[0])) ? S.openTabs[0] : docs[0].id; persist(); openDoc(currentId); }
   else { persist(); renderTabs(); renderDocsList(); }
-  toast(`Deleted “${d.title}”`);
+  if (!quiet) toast(`Deleted “${d.title}”`);
 }
 function renderTabs() {
   if (typeof syncDisabled === 'function' && C.undo) syncDisabled(); // a different document has its own undo history
@@ -1380,22 +1488,166 @@ const rel = (t) => {
   return new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 };
 let confirmDelete = null;
+/* ---------------- library: search every document, folders, pins and sorting ---------------- */
+const createdAt = (d) => d.created || parseInt(d.id.slice(1, -4), 36) || d.updated;
+const folderOf = (d) => d.folder || '';
+let docQuery = '';
+function allFolders() {
+  return [...new Set([...(S.folders || []), ...docs.map(folderOf).filter(Boolean)])].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+}
+// Every document whose title or text contains the words, best matches first, with a snippet around the first hit.
+function searchDocs(q) {
+  const ql = q.toLowerCase(), out = [];
+  for (const d of docs) {
+    const inTitle = d.title.toLowerCase().includes(ql);
+    const lc = d.content.toLowerCase();
+    let first = lc.indexOf(ql), n = 0;
+    for (let i = first; i >= 0 && n < 999; i = lc.indexOf(ql, i + ql.length)) n++;
+    if (!inTitle && !n) continue;
+    let snip = '';
+    if (first >= 0) {
+      const a = Math.max(0, first - 48), b = Math.min(d.content.length, first + q.length + 72);
+      const flat = (t) => esc(t.replace(/\s+/g, ' '));
+      snip = (a ? '…' : '') + flat(d.content.slice(a, first)) + '<mark>' + flat(d.content.slice(first, first + q.length)) + '</mark>' + flat(d.content.slice(first + q.length, b)) + (b < d.content.length ? '…' : '');
+    }
+    out.push({ d, n, inTitle, snip });
+  }
+  return out.sort((x, y) => (y.inTitle - x.inTitle) || (y.n - x.n) || (y.d.updated - x.d.updated));
+}
+const SORTS = { updated: ['Last edited', (a, b) => b.updated - a.updated], title: ['Title', (a, b) => a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' })], created: ['Date created', (a, b) => createdAt(b) - createdAt(a)] };
+function docRow(d, extra = '') {
+  const where = [d.folder && !S.docFolder ? d.folder : '', d.path ? baseName(d.path) : d.linkName || ''].filter(Boolean).map(esc).join(' · ');
+  return `<div class="doc-item${d.id === currentId ? ' current' : ''}" data-id="${d.id}" role="listitem">
+      <button type="button" class="doc-open"${d.id === currentId ? ' aria-current="page"' : ''}>${ic(d.pinned ? 'pin' : 'file-text')}<span style="min-width:0"><span class="t">${esc(d.title)}</span>${extra || `<span class="m">${rel(d.updated)} · ${nf.format(countWords(d.content).count)} words${where ? ' · ' + where : ''}</span>`}</span></button>
+      <button class="more" type="button" data-more="${d.id}" title="More" aria-label="More for ${esc(d.title)}" aria-haspopup="menu">${ic('ellipsis')}</button>
+      <button class="del" type="button" data-del="${d.id}" title="Delete document" aria-label="Delete ${esc(d.title)}">${ic('trash-2')}</button>
+    </div>${confirmDelete === d.id ? `<div class="confirm-row">Delete for good?<button class="mini-btn danger" type="button" data-yes="${d.id}">Delete</button><button class="mini-btn" type="button" data-no>Keep</button></div>` : ''}`;
+}
 function renderDocsList() {
   const el = $('#docsPanel');
-  const sorted = [...docs].sort((a, b) => b.updated - a.updated);
-  el.innerHTML = `<div class="side-heading" id="docsHeading">Recent documents</div><div role="list" aria-labelledby="docsHeading">` + sorted.map((d) => `
-    <div class="doc-item${d.id === currentId ? ' current' : ''}" data-id="${d.id}" role="listitem">
-      <button type="button" class="doc-open"${d.id === currentId ? ' aria-current="page"' : ''}>${ic('file-text')}<span style="min-width:0"><span class="t">${esc(d.title)}</span><span class="m">${rel(d.updated)} · ${nf.format(countWords(d.content).count)} words</span></span></button>
-      <button class="del" type="button" data-del="${d.id}" title="Delete document" aria-label="Delete ${esc(d.title)}">${ic('trash-2')}</button>
-    </div>${confirmDelete === d.id ? `<div class="confirm-row">Delete for good?<button class="mini-btn danger" type="button" data-yes="${d.id}">Delete</button><button class="mini-btn" type="button" data-no>Keep</button></div>` : ''}`).join('')
-    + `</div><p class="empty-note">Documents are saved ${ON_DEVICE}. Export anything you want to keep elsewhere.</p>`;
+  if (!$('#docsList', el)) {
+    el.innerHTML = `<div class="lib-tools">
+      <label class="lib-search">${ic('search')}<input id="docSearch" type="search" placeholder="Search all documents" aria-label="Search all documents" autocomplete="off" spellcheck="false"></label>
+      <div class="lib-row"><label class="sr-only" for="docSort">Sort documents by</label><select id="docSort" class="sel"></select><button type="button" class="mini-btn" id="newFolderBtn">${ic('folder-plus')}<span>New folder</span></button></div>
+      <div class="lib-folders" id="docFolders" role="group" aria-label="Folders"></div>
+    </div><div id="docsList"></div>`;
+    $('#docSort', el).innerHTML = Object.entries(SORTS).map(([k, [l]]) => `<option value="${k}">${l}</option>`).join('');
+    $('#docSearch', el).addEventListener('input', (e) => { docQuery = e.target.value; renderDocsList(); });
+    $('#docSearch', el).addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && docQuery) { e.preventDefault(); e.stopPropagation(); e.target.value = docQuery = ''; renderDocsList(); }
+      if (e.key === 'Enter') { const first = $('#docsList [data-hit]'); if (first) { e.preventDefault(); first.click(); } }
+    });
+    $('#docSort', el).addEventListener('change', (e) => { S.docSort = e.target.value; saveSettings(); renderDocsList(); });
+    $('#newFolderBtn', el).addEventListener('click', () => askFolderName('New folder', '', (name) => { S.folders = [...new Set([...(S.folders || []), name])]; S.docFolder = name; saveSettings(); renderDocsList(); }));
+    $('#docFolders', el).addEventListener('click', (e) => {
+      const f = e.target.closest('[data-folder]'); if (!f) return;
+      if (f.dataset.folder === S.docFolder && f.dataset.folder) { folderMenu(f, f.dataset.folder); return; }
+      S.docFolder = f.dataset.folder; saveSettings(); renderDocsList();
+    });
+  }
+  if (S.docFolder && !allFolders().includes(S.docFolder)) S.docFolder = '';
+  const sort = SORTS[S.docSort] ? S.docSort : 'updated';
+  $('#docSort', el).value = sort;
+  if ($('#docSearch', el).value !== docQuery) $('#docSearch', el).value = docQuery;
+  const folders = allFolders();
+  $('#docFolders', el).hidden = !folders.length || !!docQuery.trim();
+  $('#docFolders', el).innerHTML = [['', 'All'], ...folders.map((f) => [f, f])].map(([k, l]) => {
+    const on = (S.docFolder || '') === k;
+    return `<button type="button" class="chip${on ? ' on' : ''}" data-folder="${esc(k)}" aria-pressed="${on}"${on && k ? ` title="Folder options" aria-haspopup="menu"` : ''}>${ic(k ? 'folder' : 'files')}<span>${esc(l)}</span>${on && k ? ic('chevron-down') : ''}</button>`;
+  }).join('');
+  const list = $('#docsList', el);
+  const q = docQuery.trim();
+  if (q) {
+    const hits = searchDocs(q);
+    list.innerHTML = `<div class="side-heading" id="docsHeading">${hits.length ? `${hits.length} ${hits.length === 1 ? 'document' : 'documents'}` : 'No matches'}</div><div role="list" aria-labelledby="docsHeading">`
+      + hits.map((h) => docRow(h.d, `<span class="m">${h.n ? `${h.n} ${h.n === 1 ? 'match' : 'matches'}` : 'Title matches'}${h.d.folder ? ' · ' + esc(h.d.folder) : ''}</span>${h.snip ? `<span class="snip">${h.snip}</span>` : ''}`).replace('class="doc-open"', `class="doc-open" data-hit="${h.d.id}"`)).join('')
+      + `</div>${hits.length ? '' : `<p class="empty-note">Nothing in your documents matches “${esc(q)}”.</p>`}`;
+  } else {
+    const shown = docs.filter((d) => !S.docFolder || folderOf(d) === S.docFolder).sort(SORTS[sort][1]);
+    const pinned = shown.filter((d) => d.pinned), rest = shown.filter((d) => !d.pinned);
+    const group = (title, id, arr) => arr.length ? `<div class="side-heading" id="${id}">${esc(title)}</div><div role="list" aria-labelledby="${id}">${arr.map((d) => docRow(d)).join('')}</div>` : '';
+    list.innerHTML = group('Pinned', 'docsPinned', pinned) + group(S.docFolder || (pinned.length ? 'Documents' : 'Recent documents'), 'docsHeading', rest)
+      + (shown.length ? '' : `<p class="empty-note">This folder is empty. Use ⋯ next to a document to move it here.</p>`)
+      + `<p class="empty-note">${docsWhereNote()}</p>`;
+  }
   refreshIcons();
 }
+const docsWhereNote = () => S.lib
+  ? `Documents are saved ${ON_DEVICE} and synced with the folder “${esc(S.lib.name)}”.${S.lib.error ? ` Not synced: ${esc(S.lib.error)}.` : ''} <button type="button" class="link-btn" data-cmd="syncFolder">Sync folder…</button>`
+  : `Documents are saved ${ON_DEVICE}.${LIB_KIND ? ' <button type="button" class="link-btn" data-cmd="syncFolder">Sync with a folder…</button>' : ' Export anything you want to keep elsewhere.'}`;
+function askFolderName(title, value, done) {
+  openDialog({
+    title,
+    body: `<div class="field"><label for="folderName">Folder name</label><input id="folderName" type="text" maxlength="60" value="${esc(value)}" autocomplete="off"></div>`,
+    actions: [{ label: 'Cancel' }, { label: value ? 'Rename' : 'Create', primary: true, run: (dlg) => {
+      const v = $('#folderName', dlg).value.trim().replace(/[\\/:*?"<>|]+/g, '-');
+      if (!v) { $('#folderName', dlg).focus(); return false; }
+      setTimeout(() => done(v), 0);
+    } }],
+    onOpen: (dlg) => { const i = $('#folderName', dlg); i.focus(); i.select(); i.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); dlg.querySelector('[data-a="1"]').click(); } }); },
+  });
+}
+function moveToFolder(id, folder) {
+  const d = docs.find((x) => x.id === id); if (!d || folderOf(d) === folder) return;
+  d.folder = folder || undefined; markDirty(d.id); persist(); renderDocsList();
+  if (typeof libraryMoved === 'function') libraryMoved(d);
+  toast(folder ? `Moved “${d.title}” to ${folder}` : `Moved “${d.title}” out of its folder`);
+}
+function folderMenu(anchor, name) {
+  const item = (a, icon, label) => `<button type="button" class="mi" data-fa="${a}">${ic(icon)}<span>${label}</span><span class="k"></span></button>`;
+  openPopover(anchor, item('rename', 'pencil-line', 'Rename folder…') + item('remove', 'folder-x', 'Remove folder (keeps its documents)'), (e) => {
+    const b = e.target.closest('[data-fa]'); if (!b) return; closePopover();
+    if (b.dataset.fa === 'rename') askFolderName('Rename folder', name, (v) => {
+      S.folders = (S.folders || []).map((f) => f === name ? v : f);
+      for (const d of docs) if (d.folder === name) { d.folder = v; markDirty(d.id); if (typeof libraryMoved === 'function') libraryMoved(d); }
+      S.docFolder = v; saveSettings(); persist(); renderDocsList();
+    });
+    if (b.dataset.fa === 'remove') {
+      S.folders = (S.folders || []).filter((f) => f !== name);
+      for (const d of docs) if (d.folder === name) { d.folder = undefined; markDirty(d.id); if (typeof libraryMoved === 'function') libraryMoved(d); }
+      S.docFolder = ''; saveSettings(); persist(); renderDocsList(); toast(`Removed the folder ${name}; its documents are under All`);
+    }
+  }, { label: `${name} folder` });
+}
+function docMenu(anchor, id) {
+  const d = docs.find((x) => x.id === id); if (!d) return;
+  const item = (a, icon, label) => `<button type="button" class="mi" data-da="${a}">${ic(icon)}<span>${label}</span><span class="k"></span></button>`;
+  const html = item('pin', d.pinned ? 'pin-off' : 'pin', d.pinned ? 'Unpin' : 'Pin to the top') + item('move', 'folder-input', 'Move to folder…')
+    + item('history', 'history', 'Version history…') + item('dup', 'files', 'Duplicate') + '<div class="msep"></div>' + item('delete', 'trash-2', 'Delete…');
+  openPopover(anchor, html, (e) => {
+    const b = e.target.closest('[data-da]'); if (!b) return; closePopover();
+    const a = b.dataset.da;
+    if (a === 'pin') { d.pinned = !d.pinned || undefined; markDirty(d.id); persist(); renderDocsList(); }
+    if (a === 'move') chooseFolder(d);
+    if (a === 'history') { openDoc(d.id); runCmd('history'); }
+    if (a === 'dup') duplicateDoc(d.id);
+    if (a === 'delete') { confirmDelete = d.id; renderDocsList(); $(`[data-yes="${d.id}"]`)?.focus(); }
+  }, { label: `${d.title} options` });
+}
+function chooseFolder(d) {
+  const folders = allFolders();
+  openDialog({
+    title: `Move “${d.title}”`,
+    body: `<div class="recent-list">${[['', 'No folder', 'files'], ...folders.map((f) => [f, f, 'folder'])].map(([k, l, icon]) => `<button type="button" class="recent${folderOf(d) === k ? ' on' : ''}" data-mv="${esc(k)}"${folderOf(d) === k ? ' aria-current="true"' : ''}>${ic(icon)}<span><b>${esc(l)}</b></span></button>`).join('')}</div>`,
+    actions: [{ label: 'New folder…', run: () => { setTimeout(() => askFolderName('New folder', '', (name) => { S.folders = [...new Set([...(S.folders || []), name])]; saveSettings(); moveToFolder(d.id, name); }), 0); } }, { label: 'Cancel', primary: true }],
+    onOpen: (dlg) => {
+      $('.recent-list', dlg).addEventListener('click', (e) => { const b = e.target.closest('[data-mv]'); if (!b) return; closeDialog(); moveToFolder(d.id, b.dataset.mv); });
+      ($('.recent.on', dlg) || $('.recent', dlg))?.focus();
+    },
+  });
+}
 $('#docsPanel').addEventListener('click', (e) => {
+  const c = e.target.closest('[data-cmd]'); if (c) { runCmd(c.dataset.cmd, c); return; }
+  const more = e.target.closest('[data-more]'); if (more) { e.stopPropagation(); docMenu(more, more.dataset.more); return; }
   const del = e.target.closest('[data-del]'); if (del) { e.stopPropagation(); confirmDelete = del.dataset.del; renderDocsList(); return; }
   const yes = e.target.closest('[data-yes]'); if (yes) { confirmDelete = null; deleteDoc(yes.dataset.yes); return; }
   if (e.target.closest('[data-no]')) { confirmDelete = null; renderDocsList(); return; }
-  const it = e.target.closest('.doc-item'); if (it) { openDoc(it.dataset.id); if (window.innerWidth <= 1180) toggleOutline(false); }
+  const it = e.target.closest('.doc-item'); if (!it) return;
+  const q = docQuery.trim(), hit = !!e.target.closest('[data-hit]') || (q && it.querySelector('[data-hit]'));
+  openDoc(it.dataset.id);
+  if (window.innerWidth <= 1180) toggleOutline(false);
+  // From search results, show the matches in the document.
+  if (hit && q && cur().content.toLowerCase().includes(q.toLowerCase())) { if (mobile && mmode !== 'edit') setMobileMode('edit', { focus: false }); $('#findInput').value = q; cm.setSelection(cm.getCursor()); openFind(false); }
 });
 
 function setSideTab(t) {
@@ -1447,6 +1699,236 @@ async function readContentUri(u) {
   if (!/\.(md|markdown|mdown|mkdn?|txt)$/i.test(name)) name += '.md';
   return new File([text], name, { type: 'text/markdown' });
 }
+/* ================================================================
+   Files kept where they are (iPhone, iPad, Android)
+   A file opened with Open… stays where it is (iCloud Drive, On My iPhone, Google Drive…). The document keeps a
+   link to it (d.link, from the system), and edits are saved back to the file automatically, as in other phone
+   and tablet editors. d.diskContent is the file's text as last read or written.
+   ================================================================ */
+function isLinked(d) { return !!(d && d.link); }
+function applyText(d, text, reason) {
+  if (d.content === text) return;
+  versions.save(d, reason, true);
+  d.content = text; d.updated = Date.now(); markDirty(d.id);
+  const cd = cmDocs.get(d.id);
+  if (cd && cd.getValue() !== text) { applyingRemote = true; const c = cd.getCursor(); cd.setValue(text); cd.setCursor(c); applyingRemote = false; }
+  if (d.id === currentId) render();
+}
+async function openLinked() {
+  let res;
+  try { res = await nativeCall('pickFiles', { multiple: true }); }
+  catch (e) { if (!/cancel/i.test(String(e))) toast(`Could not open: ${e}`); return; }
+  if (!res || !Array.isArray(res.files)) { if (ANDROID_APP) openAndroid(); else $('#fileInput').click(); return; } // older app without the picker
+  let last;
+  for (const f of res.files) {
+    // The same file opened again (unchanged since) goes back to its document.
+    let d = docs.find((x) => x.link && x.linkName === f.name && x.diskContent === f.content);
+    if (!d) { d = makeDoc(f.content, stripExt(f.name), false); docs.unshift(d); }
+    d.link = f.bookmark; d.linkName = f.name; d.diskContent = f.content; d.linkMod = f.modified;
+    d.readOnly = f.writable === false || undefined; d.linkError = undefined;
+    markDirty(d.id); last = d;
+    if (!S.openTabs.includes(d.id)) S.openTabs.push(d.id);
+  }
+  if (last) { persist(); openDoc(last.id); toast(res.files.length > 1 ? `Opened ${res.files.length} files` : `Opened ${last.linkName}`); }
+}
+// Save to Files…: the document becomes a file there, and its edits are saved to it from then on.
+async function saveLinkedAs() {
+  const d = cur(); if (!d) return;
+  persist();
+  try {
+    const r = await nativeCall('saveAsFile', { name: slugFile(d.title) + '.md', content: d.content });
+    if (!r || !r.bookmark) return;
+    d.link = r.bookmark; d.linkName = r.name; d.diskContent = d.content; d.linkMod = r.modified; d.readOnly = undefined; d.linkError = undefined;
+    if (S.lib && d.lib) { const old = d.lib; d.lib = undefined; libApi.remove(old).catch(() => {}); } // it lives in its own file now
+    markDirty(d.id); persist(); renderDocsList(); setSaveState('saved');
+    toast(`Saved to ${r.name}. Changes are saved there from now on.`);
+  } catch (e) { if (!/cancel/i.test(String(e))) toast(`Could not save: ${e}`); }
+}
+const linkBusy = new Set(), linkAgain = new Set();
+async function writeLinked(d) {
+  if (!isLinked(d) || d.readOnly || d.content === d.diskContent) return;
+  if (linkBusy.has(d.id)) { linkAgain.add(d.id); return; }
+  linkBusy.add(d.id);
+  try {
+    const now = await nativeCall('readFile', { bookmark: d.link });
+    if (now && now.bookmark) d.link = now.bookmark;
+    if (now && now.content !== d.diskContent && now.content !== d.content) {
+      // Changed in another app too: keep that version in Version history, then save this one.
+      await versions.save(d, 'remote', true, now.content);
+      toast(`“${d.linkName}” was also changed in another app. That version is in Version history.`);
+    }
+    const text = d.content;
+    const w = await nativeCall('writeFile', { bookmark: d.link, content: text });
+    if (w && w.bookmark) d.link = w.bookmark;
+    d.diskContent = text; d.linkMod = w && w.modified; d.linkError = undefined;
+    markDirty(d.id); scheduleSave();
+  } catch (e) {
+    if (!d.linkError) toast(`Couldn’t save to “${d.linkName}”. Your changes are kept on this device. (${e})`);
+    d.linkError = String(e); markDirty(d.id); scheduleSave();
+  } finally {
+    linkBusy.delete(d.id);
+    if (linkAgain.delete(d.id)) writeLinked(d);
+    if (d.id === currentId) setSaveState('saved');
+  }
+}
+const scheduleLinkSave = debounce(() => { for (const d of docs) if (isLinked(d) && d.content !== d.diskContent) writeLinked(d); }, 1200);
+// When a linked document is shown again, take the file's newer text if this copy has no unsaved edits.
+async function refreshLinked(d) {
+  if (!isLinked(d) || linkBusy.has(d.id)) return;
+  try {
+    const r = await nativeCall('readFile', { bookmark: d.link });
+    if (!r || typeof r.content !== 'string') return;
+    if (r.bookmark) d.link = r.bookmark;
+    if (r.content !== d.diskContent) {
+      if (d.content === d.diskContent) applyText(d, r.content, 'remote');
+      d.diskContent = r.content; d.linkMod = r.modified; markDirty(d.id); scheduleSave();
+      if (d.content !== d.diskContent) scheduleLinkSave();
+    }
+    if (d.linkError) { d.linkError = undefined; if (d.id === currentId) setSaveState('saved'); }
+  } catch (e) { d.linkError = String(e); if (d.id === currentId) setSaveState('saved'); }
+}
+
+/* ================================================================
+   Sync folder (Mac, iPhone, iPad, Android)
+   Every document is also a Markdown file in a folder the person chooses, for example in iCloud Drive. Each device
+   that uses the same folder sees the same documents; the cloud service moves the files between them.
+   For each document: d.lib is its path in the folder, d.libBase its text when last synced, d.libMod the file's
+   modification time then. Subfolders are the Documents list's folders.
+   ================================================================ */
+const LIB_KIND = TAURI ? 'mac' : MOBILE_APP ? 'mobile' : null;
+const libJoin = (p) => S.lib.ref.replace(/\/+$/, '') + '/' + p;
+const libDir = (p) => (p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '');
+const libApi = {
+  async list() { const r = LIB_KIND === 'mac' ? await TAURI.core.invoke('list_folder', { dir: S.lib.ref }) : await nativeCall('listFolder', { bookmark: S.lib.ref }); if (r && r.bookmark) S.lib.ref = r.bookmark; return r; },
+  async read(p) { return LIB_KIND === 'mac' ? (await TAURI.core.invoke('read_text_file', { path: libJoin(p) })).content : (await nativeCall('readInFolder', { bookmark: S.lib.ref, path: p })).content; },
+  async write(p, c) { return LIB_KIND === 'mac' ? TAURI.core.invoke('write_in_folder', { path: libJoin(p), contents: c }) : (await nativeCall('writeInFolder', { bookmark: S.lib.ref, path: p, content: c })).modified; },
+  async remove(p) { return LIB_KIND === 'mac' ? TAURI.core.invoke('remove_file', { path: libJoin(p) }) : nativeCall('deleteInFolder', { bookmark: S.lib.ref, path: p }); },
+};
+const syncable = (d) => !d.path && !d.link && d.content.trim() && d.content !== WELCOME;
+function uniqueLibPath(d, taken) {
+  const dir = d.folder ? d.folder.replace(/[\\:*?"<>|]+/g, '-') + '/' : '';
+  const base = slugFile(d.title).replace(/^\.+/, '') || 'Untitled';
+  let p = `${dir}${base}.md`, n = 2;
+  while (taken.has(p.toLowerCase())) p = `${dir}${base} ${n++}.md`;
+  taken.add(p.toLowerCase());
+  return p;
+}
+let libSyncing = false, libAgain = false;
+async function syncLibrary({ first = false } = {}) {
+  if (!S.lib || !LIB_KIND) return;
+  if (libSyncing) { libAgain = true; return; }
+  libSyncing = true;
+  const counts = { added: 0, updated: 0, sent: 0, removed: 0, conflicts: 0 };
+  try {
+    const listing = await libApi.list();
+    const files = (listing && listing.files) || [];
+    const byPath = new Map(files.map((f) => [f.path.toLowerCase(), f]));
+    const taken = new Set([...byPath.keys(), ...docs.filter((d) => d.lib).map((d) => d.lib.toLowerCase())]);
+    for (const f of (listing && listing.folders) || []) if (!f.includes('/')) S.folders = [...new Set([...(S.folders || []), f])];
+    const write = async (d) => { const text = d.content; d.libMod = await libApi.write(d.lib, text); d.libBase = text; markDirty(d.id); counts.sent++; };
+    // 1. documents already in the folder
+    for (const d of [...docs]) {
+      if (!d.lib) continue;
+      const f = byPath.get(d.lib.toLowerCase());
+      const localChanged = d.content !== d.libBase;
+      if (!f) {
+        if (!localChanged) { removeDoc(d.id, { quiet: true }); counts.removed++; } // deleted on another device
+        else await write(d); // deleted elsewhere but edited here: keep it
+        continue;
+      }
+      byPath.delete(d.lib.toLowerCase());
+      if (f.pending) continue; // still downloading from iCloud
+      if (f.modified !== d.libMod) {
+        const text = await libApi.read(d.lib);
+        if (text === d.content) { d.libBase = text; d.libMod = f.modified; markDirty(d.id); continue; }
+        if (text === d.libBase) { d.libMod = f.modified; markDirty(d.id); if (localChanged) await write(d); continue; }
+        if (!localChanged) { applyText(d, text, 'remote'); d.libBase = text; d.libMod = f.modified; counts.updated++; continue; }
+        // Changed here and on another device: keep both. This document takes the folder's version; a copy keeps this one.
+        const copy = makeDoc(d.content, `${d.title} (conflict)`, false); copy.folder = d.folder;
+        docs.unshift(copy); markDirty(copy.id);
+        applyText(d, text, 'remote'); d.libBase = text; d.libMod = f.modified; counts.conflicts++;
+      } else if (localChanged) await write(d);
+    }
+    // 2. files new to this device
+    for (const f of byPath.values()) {
+      if (f.pending) continue;
+      const text = await libApi.read(f.path);
+      const name = f.path.split('/').pop();
+      const d = makeDoc(text, stripExt(name), false);
+      d.lib = f.path; d.libBase = text; d.libMod = f.modified; d.folder = libDir(f.path) || undefined; d.updated = f.modified || Date.now();
+      docs.push(d); markDirty(d.id); counts.added++;
+    }
+    // 3. documents new to the folder
+    for (const d of docs) if (!d.lib && syncable(d)) { d.lib = uniqueLibPath(d, taken); await write(d); }
+    S.lib.last = Date.now(); S.lib.error = undefined;
+  } catch (e) {
+    S.lib.error = String(e && e.message || e);
+    if (first) toast(`Could not sync with ${S.lib.name}: ${S.lib.error}`);
+  } finally {
+    saveSettings(); persist(); renderDocsList(); renderTabs();
+    libSyncing = false;
+    if (first && !S.lib.error) toast(`Syncing with ${S.lib.name}: ${docs.filter((d) => d.lib).length} documents`);
+    else if (counts.conflicts) toast(`${counts.conflicts === 1 ? 'A document was' : `${counts.conflicts} documents were`} changed here and on another device. Both versions are kept (look for “conflict”).`);
+    if (libAgain) { libAgain = false; syncLibrary(); }
+  }
+}
+const scheduleLibSync = debounce(() => syncLibrary(), 2500);
+// A document renamed or moved to another folder: its file moves too.
+async function libraryMoved(d) {
+  if (!S.lib || !d.lib) return;
+  const taken = new Set(docs.filter((x) => x.lib && x !== d).map((x) => x.lib.toLowerCase()));
+  const old = d.lib, next = uniqueLibPath(d, taken);
+  if (next.toLowerCase() === old.toLowerCase()) return;
+  try {
+    const text = d.content;
+    d.libMod = await libApi.write(next, text); d.lib = next; d.libBase = text;
+    await libApi.remove(old);
+    markDirty(d.id); persist();
+  } catch (e) { toast(`Could not move the file in ${S.lib.name}: ${e}`); }
+}
+const scheduleRenameMove = debounce(() => { const d = cur(); if (d && !d.autoTitle) libraryMoved(d); }, 1500);
+async function chooseSyncFolder() {
+  try {
+    let ref, name;
+    if (LIB_KIND === 'mac') {
+      const p = await TAURI.dialog.open({ directory: true, title: 'Choose a folder to sync with' });
+      if (!p) return;
+      ref = typeof p === 'string' ? p : p.path; name = baseName(ref);
+    } else {
+      const r = await nativeCall('pickFolder');
+      if (!r || !r.bookmark) return;
+      ref = r.bookmark; name = r.name;
+    }
+    if (S.lib) for (const d of docs) { d.lib = d.libBase = d.libMod = undefined; markDirty(d.id); }
+    S.lib = { ref, name }; saveSettings();
+    await syncLibrary({ first: true });
+  } catch (e) { if (!/cancel/i.test(String(e))) toast(`Could not use that folder: ${e}`); }
+}
+function stopSync() {
+  const name = S.lib && S.lib.name;
+  S.lib = null; saveSettings();
+  for (const d of docs) if (d.lib) { d.lib = d.libBase = d.libMod = undefined; markDirty(d.id); }
+  persist(); renderDocsList();
+  toast(`Stopped syncing with ${name}. Your documents stay on this device, and the files stay in the folder.`);
+}
+function showSyncFolder() {
+  const where = ANDROID_APP ? 'a folder on your phone, or one that a sync app keeps up to date'
+    : MOBILE_APP ? 'a folder in iCloud Drive (or another place in Files)' : 'a folder in iCloud Drive, Dropbox, Google Drive or OneDrive';
+  if (!S.lib) {
+    openDialog({
+      title: 'Sync with a folder',
+      body: `<p>Keep every document as a Markdown file in a folder you choose, such as ${where}.</p><p>Use the same folder on your other devices and they all show the same documents. You can also open the files in any other app.</p><p class="hint">Your documents stay on this device too. The cloud service you choose moves the files between devices, under its own terms.</p>`,
+      actions: [{ label: 'Cancel' }, { label: 'Choose folder…', primary: true, run: () => { setTimeout(chooseSyncFolder, 0); } }],
+    });
+    return;
+  }
+  const n = docs.filter((d) => d.lib).length;
+  openDialog({
+    title: 'Sync folder',
+    body: `<p>Syncing with <b>${esc(S.lib.name)}</b>: ${n} ${n === 1 ? 'document' : 'documents'}.</p><p class="hint">${S.lib.error ? `Not synced: ${esc(S.lib.error)}` : S.lib.last ? `Last synced ${esc(rel(S.lib.last).toLowerCase())}.` : 'Not synced yet.'} Changes sync a few seconds after you stop typing, and whenever you come back to the app.</p>`,
+    actions: [{ label: 'Stop syncing', run: stopSync }, { label: 'Choose another folder…', run: () => { setTimeout(chooseSyncFolder, 0); } }, { label: 'Sync now', primary: true, run: () => { syncLibrary().then(() => toast(S.lib && S.lib.error ? `Not synced: ${S.lib.error}` : 'Synced')); } }],
+  });
+}
 $('#fileInput').addEventListener('change', (e) => { openFiles([...e.target.files]); e.target.value = ''; });
 $('#imageInput').addEventListener('change', (e) => { insertImages(e.target.files); e.target.value = ''; });
 
@@ -1492,13 +1974,17 @@ document.addEventListener('drop', (e) => {
    Export
    ================================================================ */
 const slugFile = (t) => (t || 'document').replace(/[\\/:*?"<>|]+/g, '').trim().slice(0, 80) || 'document';
+const toBase64 = (bytes) => { let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s); };
+const FILTER_NAMES = { md: 'Markdown', docx: 'Word document', html: 'Web page', pdf: 'PDF' };
 async function saveFile(name, data, mime) {
+  const binary = data instanceof Uint8Array;
   if (TAURI) {
     const ext = name.split('.').pop();
     try {
-      const path = await TAURI.dialog.save({ defaultPath: name, filters: [{ name: ext === 'md' ? 'Markdown' : ext.toUpperCase(), extensions: [ext] }] });
+      const path = await TAURI.dialog.save({ defaultPath: name, filters: [{ name: FILTER_NAMES[ext] || ext.toUpperCase(), extensions: [ext] }] });
       if (!path) return null;
-      await TAURI.core.invoke('write_text_file', { path, contents: data });
+      if (binary) await TAURI.core.invoke('write_binary_file', { path, base64: toBase64(data) });
+      else await TAURI.core.invoke('write_text_file', { path, contents: data });
       toast(`Saved ${baseName(path)}`);
       return path;
     } catch (e) { toast(`Could not save: ${e}`); return null; }
@@ -1507,9 +1993,9 @@ async function saveFile(name, data, mime) {
     // Android's web view can't download or share files: save through the system's "Save to" picker instead.
     try {
       const ext = name.split('.').pop();
-      const path = await NATIVE.dialog.save({ defaultPath: name, filters: [{ name: ext === 'md' ? 'Markdown' : ext.toUpperCase(), extensions: [ext] }] });
+      const path = await NATIVE.dialog.save({ defaultPath: name, filters: [{ name: FILTER_NAMES[ext] || ext.toUpperCase(), extensions: [ext] }] });
       if (!path) return null;
-      await NATIVE.fs.writeTextFile(path, data);
+      if (binary) await NATIVE.fs.writeFile(path, data); else await NATIVE.fs.writeTextFile(path, data);
       toast(`Saved ${name}`);
       return path;
     } catch (e) { toast(`Could not save: ${e}`); return null; }
@@ -1518,7 +2004,7 @@ async function saveFile(name, data, mime) {
     // iOS has no downloads folder: the share sheet offers Save to Files, AirDrop, Mail and the rest.
     // Presented natively, from the Share button, so it opens full size (the web view's own sheet came up clipped).
     try {
-      const path = await NATIVE.core.invoke('write_share_file', { name, contents: data });
+      const path = await NATIVE.core.invoke('write_share_file', binary ? { name, contents: '', base64: toBase64(data) } : { name, contents: data });
       await NATIVE.core.invoke('plugin:sharekit|share_file', { url: 'file://' + encodeURI(path), mimeType: mime, title: name, position: shareAnchor() });
       toast(`Shared ${name}`);
       return;
@@ -1534,7 +2020,7 @@ async function saveFile(name, data, mime) {
     let dl = null;
     try { dl = await window.claude.use('downloads'); } catch {}
     if (dl) {
-      try { await dl.save({ filename: name, data }); toast(`Saved ${name}`); }
+      try { await dl.save({ filename: name, data: binary ? new Blob([data], { type: mime }) : data }); toast(`Saved ${name}`); }
       catch (e) { if (!e || e.code !== 'declined') toast('That file could not be saved here. Use Copy Markdown instead.'); }
       return;
     }
@@ -1546,6 +2032,40 @@ async function saveFile(name, data, mime) {
   setTimeout(() => URL.revokeObjectURL(url), 4000);
   toast(`Saved ${name}`);
 }
+/* ---------------- printing and PDF ---------------- */
+// The page prints on its own, at the chosen paper size with the chosen margins; the app's controls don't print.
+const PAPER_PT = { letter: [612, 792], a4: [595.28, 841.89] };
+function printPageCss() {
+  const size = S.pageSize === 'a4' ? 'A4' : 'letter';
+  const m = (MARGINS[S.margins] || 96) / 96;
+  let el = $('#printPageCss');
+  if (!el) { el = document.createElement('style'); el.id = 'printPageCss'; document.head.appendChild(el); }
+  el.textContent = `@page { size: ${size}; margin: ${m}in; } @media print { .page { padding: 0 !important; } }`;
+}
+async function printDoc(pdf) {
+  const d = cur(); if (!d || inArtifact()) return;
+  printPageCss();
+  if (S.view === 'editor' && !mobile) setView('split');
+  render();
+  await new Promise((r) => setTimeout(r, 60)); // let pictures, equations and diagrams settle
+  if (TAURI) {
+    // The Mac print dialog has a PDF button (Save as PDF); Export PDF opens the same dialog.
+    try { await TAURI.core.invoke('print_page'); } catch (e) { toast(`Could not print: ${e}`); }
+    if (pdf) toast('Choose PDF, then Save as PDF, at the bottom of the print dialog');
+    return;
+  }
+  if (MOBILE_APP) {
+    const [w, h] = PAPER_PT[S.pageSize === 'a4' ? 'a4' : 'letter'];
+    const args = { title: d.title, width: w, height: h, margin: (MARGINS[S.margins] || 96) * 0.75, a4: S.pageSize === 'a4', position: shareAnchor() };
+    try { await nativeCall(pdf ? 'exportPdf' : 'printPage', args); }
+    catch (e) { if (!/cancel/i.test(String(e))) toast(`Could not ${pdf ? 'make the PDF' : 'print'}: ${e}`); }
+    return;
+  }
+  if (pdf) toast('Choose Save as PDF as the printer');
+  window.print();
+}
+// Native features of the iPhone, iPad and Android apps (see plugins/sharekit).
+const nativeCall = (method, args = {}) => NATIVE.core.invoke('plugin:sharekit|native', { method, args });
 function cleanPreview() {
   const c = preview.cloneNode(true);
   c.querySelectorAll('.copy-code').forEach((n) => n.remove());
@@ -1586,6 +2106,229 @@ ${cleanPreview().innerHTML}
 `;
   saveFile(slugFile(title) + '.html', html, 'text/html');
 }
+/* ---------------- Word document (.docx) ---------------- */
+// Built here from the rendered page: headings, paragraphs, lists, checklists, quotes and callouts, tables, code,
+// links, pictures, equations and diagrams (as pictures), in a zip written without compression.
+const CRC_TABLE = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_TABLE[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipStored(files) {
+  const enc = new TextEncoder(), parts = [], central = [];
+  const now = new Date(), time = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1), date = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+  let off = 0;
+  for (const f of files) {
+    const name = enc.encode(f.name), data = typeof f.data === 'string' ? enc.encode(f.data) : f.data, crc = crc32(data);
+    const h = new DataView(new ArrayBuffer(30));
+    [[0, 0x04034b50, 4], [4, 20], [6, 0x0800], [8, 0], [10, time], [12, date], [14, crc, 4], [18, data.length, 4], [22, data.length, 4], [26, name.length], [28, 0]].forEach(([o, v, n]) => n === 4 ? h.setUint32(o, v, true) : h.setUint16(o, v, true));
+    parts.push(new Uint8Array(h.buffer), name, data);
+    const c = new DataView(new ArrayBuffer(46));
+    [[0, 0x02014b50, 4], [4, 20], [6, 20], [8, 0x0800], [10, 0], [12, time], [14, date], [16, crc, 4], [20, data.length, 4], [24, data.length, 4], [28, name.length], [30, 0], [32, 0], [34, 0], [36, 0], [38, 0, 4], [42, off, 4]].forEach(([o, v, n]) => n === 4 ? c.setUint32(o, v, true) : c.setUint16(o, v, true));
+    central.push(new Uint8Array(c.buffer), name);
+    off += 30 + name.length + data.length;
+  }
+  const cdSize = central.reduce((n, a) => n + a.length, 0);
+  const e = new DataView(new ArrayBuffer(22));
+  [[0, 0x06054b50, 4], [4, 0], [6, 0], [8, files.length], [10, files.length], [12, cdSize, 4], [16, off, 4], [20, 0]].forEach(([o, v, n]) => n === 4 ? e.setUint32(o, v, true) : e.setUint16(o, v, true));
+  const all = [...parts, ...central, new Uint8Array(e.buffer)];
+  const out = new Uint8Array(all.reduce((n, a) => n + a.length, 0));
+  let p = 0; for (const a of all) { out.set(a, p); p += a.length; }
+  return out;
+}
+const xe = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F￾￿]/g, '');
+// A picture of an SVG (diagram or equation) as PNG bytes, or null when the browser won't allow it.
+async function svgToPng(svg, w, h) {
+  try {
+    const c = svg.cloneNode(true);
+    c.setAttribute('width', w); c.setAttribute('height', h);
+    if (!c.getAttribute('xmlns')) c.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    const color = getComputedStyle(svg).color;
+    c.style.color = color;
+    const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(c)], { type: 'image/svg+xml;charset=utf-8' }));
+    const img = new Image();
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
+    const k = 2, cv = document.createElement('canvas'); cv.width = Math.ceil(w * k); cv.height = Math.ceil(h * k);
+    const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(img, 0, 0, cv.width, cv.height);
+    URL.revokeObjectURL(url);
+    const blob = await new Promise((res) => cv.toBlob(res, 'image/png'));
+    return blob ? new Uint8Array(await blob.arrayBuffer()) : null;
+  } catch { return null; }
+}
+async function imageBytes(src) {
+  try {
+    if (src.startsWith('data:')) {
+      const m = /^data:(image\/(png|jpe?g|gif));base64,(.*)$/i.exec(src); if (!m) return null;
+      const bin = atob(m[3]); const b = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i);
+      return { bytes: b, ext: m[2].toLowerCase().replace('jpg', 'jpeg') };
+    }
+    const r = await fetch(src); if (!r.ok) return null;
+    const type = (r.headers.get('content-type') || '').toLowerCase();
+    const ext = /png/.test(type) ? 'png' : /jpe?g/.test(type) ? 'jpeg' : /gif/.test(type) ? 'gif' : null;
+    return ext ? { bytes: new Uint8Array(await r.arrayBuffer()), ext } : null;
+  } catch { return null; }
+}
+async function buildDocx(title) {
+  const root = cleanPreview();
+  const media = [], rels = [], nums = [];
+  let docPr = 0;
+  const contentW = Math.max(200, (PAGES[S.pageSize] || PAGES.letter).w - 2 * (MARGINS[S.margins] || 96));
+  const pic = (bytes, ext, wPx, hPx, alt) => {
+    const k = Math.min(1, contentW / wPx), cx = Math.round(wPx * k * 9525), cy = Math.round(hPx * k * 9525);
+    media.push({ name: `word/media/image${media.length + 1}.${ext}`, data: bytes });
+    const rid = 'rIdImg' + media.length; rels.push(`<Relationship Id="${rid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image${media.length}.${ext}"/>`);
+    const id = ++docPr;
+    return `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="${id}" name="Picture ${id}" descr="${xe(alt || '')}"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="${id}" name="image${id}"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="${rid}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
+  };
+  // Pictures, equations and diagrams are prepared first (they load asynchronously), matched to the live page by position.
+  const ready = new Map();
+  const live = (sel) => $$(sel, preview), copies = (sel) => $$(sel, root);
+  const liveImgs = live('img'), imgs = copies('img');
+  for (let i = 0; i < imgs.length; i++) {
+    const L = liveImgs[i], got = await imageBytes(imgs[i].getAttribute('src') || '');
+    if (got) ready.set(imgs[i], pic(got.bytes, got.ext, (L && L.naturalWidth) || 480, (L && L.naturalHeight) || 320, imgs[i].getAttribute('alt')));
+  }
+  for (const sel of ['.mermaid-block', '.math-block', '.math-display', '.math-inline']) {
+    const ls = live(sel), cs = copies(sel);
+    for (let i = 0; i < cs.length; i++) {
+      const svg = ls[i] && ls[i].querySelector('svg'); if (!svg) continue;
+      const r = svg.getBoundingClientRect(); if (!r.width || !r.height) continue;
+      const png = await svgToPng(svg, r.width / scale, r.height / scale);
+      if (png) ready.set(cs[i], pic(png, 'png', r.width / scale, r.height / scale, sel === '.mermaid-block' ? 'Diagram' : (cs[i].dataset.tex || 'Equation')));
+    }
+  }
+  const rPr = (f) => {
+    const p = [f.style ? `<w:rStyle w:val="${f.style}"/>` : '', f.mono ? '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>' : '', f.b ? '<w:b/>' : '', f.i ? '<w:i/>' : '', f.s ? '<w:strike/>' : '', f.u ? '<w:u w:val="single"/>' : '', f.hl ? '<w:highlight w:val="yellow"/>' : '', f.mono ? '<w:shd w:val="clear" w:color="auto" w:fill="F2F2F2"/>' : '', f.va ? `<w:vertAlign w:val="${f.va}"/>` : ''].join('');
+    return p ? `<w:rPr>${p}</w:rPr>` : '';
+  };
+  const run = (text, f) => text ? `<w:r>${rPr(f)}<w:t xml:space="preserve">${xe(text)}</w:t></w:r>` : '';
+  const runs = (n, f) => {
+    if (n.nodeType === 3) return run(n.textContent.replace(/\s+/g, ' '), f);
+    if (n.nodeType !== 1) return '';
+    if (ready.has(n)) return ready.get(n);
+    const t = n.tagName, k = n.classList;
+    if (k.contains('math-inline') || k.contains('math-display')) return run(n.dataset.tex || n.textContent, { ...f, i: true });
+    if (t === 'BR') return '<w:r><w:br/></w:r>';
+    if (t === 'IMG') return run(`[${n.getAttribute('alt') || 'Picture'}]`, f);
+    if (t === 'INPUT' && n.type === 'checkbox') return run((n.checked || n.hasAttribute('checked') ? '☒' : '☐') + (/^\s/.test((n.nextSibling && n.nextSibling.textContent) || '') ? '' : ' '), f);
+    if (t === 'SVG' || t === 'svg' || t === 'MJX-CONTAINER' || t === 'BUTTON' || t === 'STYLE' || t === 'SCRIPT') return '';
+    const g = { ...f };
+    if (t === 'STRONG' || t === 'B') g.b = true;
+    if (t === 'EM' || t === 'I' || t === 'CITE') g.i = true;
+    if (t === 'U' || t === 'INS') g.u = true;
+    if (t === 'S' || t === 'DEL' || t === 'STRIKE') g.s = true;
+    if (t === 'CODE' || t === 'KBD' || t === 'SAMP') g.mono = true;
+    if (t === 'MARK') g.hl = true;
+    if (t === 'SUP') g.va = 'superscript';
+    if (t === 'SUB') g.va = 'subscript';
+    const inner = [...n.childNodes].map((c) => runs(c, g)).join('');
+    if (t === 'A') {
+      const href = n.getAttribute('href') || '';
+      if (/^(https?:|mailto:)/i.test(href)) {
+        const rid = 'rIdLink' + (rels.length + 1);
+        rels.push(`<Relationship Id="${rid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="${xe(href)}" TargetMode="External"/>`);
+        return `<w:hyperlink r:id="${rid}">${[...n.childNodes].map((c) => runs(c, { ...g, style: 'Hyperlink' })).join('')}</w:hyperlink>`;
+      }
+    }
+    return inner;
+  };
+  const para = (inner, st) => {
+    const it = st.item, numbered = it && !it.used && it.num;
+    if (it) it.used = true;
+    const pPr = [st.style ? `<w:pStyle w:val="${st.style}"/>` : '', st.keep ? '<w:keepNext/>' : '',
+      numbered ? `<w:numPr><w:ilvl w:val="${st.ilvl}"/><w:numId w:val="${it.num}"/></w:numPr>` : '',
+      st.border ? '<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="BFBFBF"/></w:pBdr>' : '',
+      !numbered && st.ind ? `<w:ind w:left="${st.ind}"/>` : '', st.jc ? `<w:jc w:val="${st.jc}"/>` : ''].join('');
+    return `<w:p>${pPr ? `<w:pPr>${pPr}</w:pPr>` : ''}${inner}</w:p>`;
+  };
+  const BLOCKS = new Set(['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'LI', 'PRE', 'BLOCKQUOTE', 'TABLE', 'HR', 'DIV', 'SECTION', 'DETAILS', 'SUMMARY', 'DL', 'DT', 'DD', 'FIGURE', 'FIGCAPTION', 'NAV', 'HEADER', 'FOOTER', 'ASIDE', 'ARTICLE']);
+  const isBlock = (n) => n.nodeType === 1 && (BLOCKS.has(n.tagName) || n.classList.contains('math-display'));
+  const blocksOf = (parent, st) => {
+    const out = []; let inl = [];
+    const flush = () => { const r = inl.map((n) => runs(n, st.f || {})).join(''); if (r.replace(/<[^>]+>/g, '').trim() || /<w:drawing>|<w:br\/>/.test(r)) out.push(para(r, st)); inl = []; };
+    for (const n of parent.childNodes) {
+      if (isBlock(n)) { flush(); out.push(...blockOf(n, st)); } else if (n.nodeType === 1 || n.nodeType === 3) inl.push(n);
+    }
+    flush();
+    return out;
+  };
+  const blockOf = (n, st) => {
+    const t = n.tagName, k = n.classList, base = { ...st };
+    if (ready.has(n)) return [para(ready.get(n), { ...base, jc: 'center' })];
+    if (/^H[1-6]$/.test(t)) return [para([...n.childNodes].map((c) => runs(c, {})).join(''), { ...base, style: 'Heading' + t[1], keep: true, item: null })];
+    if (t === 'P' || t === 'FIGCAPTION' || t === 'SUMMARY' || t === 'DT') return blocksOf(n, { ...base, f: { ...(st.f || {}), b: t === 'SUMMARY' || t === 'DT' || (st.f && st.f.b) } });
+    if (t === 'DD') return blocksOf(n, { ...base, ind: (st.ind || 0) + 720, item: null });
+    if (t === 'HR') return [para('', { ...base, border: true, item: null })];
+    if (k.contains('math-block') || k.contains('math-display')) return [para(run(n.dataset.tex || n.textContent, { i: true }), { ...base, jc: 'center', item: null })];
+    if (k.contains('mermaid-block')) return [para(run('[Diagram]', { i: true }), { ...base, jc: 'center', item: null })];
+    if (t === 'PRE') return n.textContent.replace(/\n$/, '').split('\n').map((line) => para(run(line, {}), { ...base, style: 'Code', item: null }));
+    if (t === 'BLOCKQUOTE' || k.contains('callout')) return blocksOf(n, { ...base, style: 'Quote', item: null });
+    if (k.contains('callout-title')) return [para([...n.childNodes].map((c) => runs(c, { b: true })).join(''), { ...base, style: 'Quote' })];
+    if (t === 'UL' || t === 'OL') {
+      const depth = (st.depth == null ? -1 : st.depth) + 1, task = k.contains('task-list') || k.contains('contains-task-list');
+      let num = null;
+      if (!task) {
+        if (t === 'OL') { num = 2 + nums.length; nums.push({ num, ilvl: Math.min(depth, 8), start: +n.getAttribute('start') || 1 }); } else num = 1;
+      }
+      const out = [];
+      for (const li of n.children) {
+        if (li.tagName !== 'LI') continue;
+        out.push(...blocksOf(li, { ...base, depth, ilvl: Math.min(depth, 8), item: { num, used: false }, ind: 720 * (depth + 1), style: st.style === 'Quote' ? 'Quote' : undefined }));
+      }
+      return out;
+    }
+    if (t === 'TABLE') {
+      const rows = [...n.querySelectorAll('tr')]; if (!rows.length) return [];
+      const cols = Math.max(...rows.map((r) => r.children.length));
+      const tw = Math.round(contentW * 15), cw = Math.floor(tw / cols);
+      const body = rows.map((r) => {
+        const head = !!r.closest('thead') || [...r.children].every((c) => c.tagName === 'TH');
+        return `<w:tr>${head ? '<w:trPr><w:tblHeader/></w:trPr>' : ''}${[...r.children].map((c) => {
+          const al = (c.getAttribute('style') || '').match(/text-align:\s*(center|right)/) || [];
+          const ps = blocksOf(c, { f: { b: c.tagName === 'TH' }, jc: al[1] === 'right' ? 'right' : al[1] });
+          return `<w:tc><w:tcPr><w:tcW w:w="${cw}" w:type="dxa"/>${c.tagName === 'TH' ? '<w:shd w:val="clear" w:color="auto" w:fill="F2F2F2"/>' : ''}</w:tcPr>${ps.join('') || '<w:p/>'}</w:tc>`;
+        }).join('')}</w:tr>`;
+      }).join('');
+      const b = (x) => `<w:${x} w:val="single" w:sz="4" w:space="0" w:color="BFBFBF"/>`;
+      return [`<w:tbl><w:tblPr><w:tblW w:w="${tw}" w:type="dxa"/><w:tblBorders>${['top', 'left', 'bottom', 'right', 'insideH', 'insideV'].map(b).join('')}</w:tblBorders><w:tblCellMar><w:top w:w="40" w:type="dxa"/><w:left w:w="100" w:type="dxa"/><w:bottom w:w="40" w:type="dxa"/><w:right w:w="100" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${`<w:gridCol w:w="${cw}"/>`.repeat(cols)}</w:tblGrid>${body}</w:tbl>`, '<w:p/>'];
+    }
+    return blocksOf(n, base); // div, section, details, nav, figure and others: their contents
+  };
+  const bodyXml = blocksOf(root, {}).join('');
+  const pg = PAGES[S.pageSize] && PAGES[S.pageSize].unit ? PAGES[S.pageSize] : PAGES.letter;
+  const m = Math.round((MARGINS[S.margins] || 96) * 15);
+  const NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"';
+  const docXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document ${NS}><w:body>${bodyXml}<w:p/><w:sectPr><w:pgSz w:w="${pg.w * 15}" w:h="${pg.h * 15}"/><w:pgMar w:top="${m}" w:right="${m}" w:bottom="${m}" w:left="${m}" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr></w:body></w:document>`;
+  const H = [[40, 32], [32, 26], [28, 24], [24, 22], [22, 20], [22, 20]];
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Georgia" w:hAnsi="Georgia" w:eastAsia="Georgia" w:cs="Times New Roman"/><w:sz w:val="23"/><w:szCs w:val="23"/><w:lang w:val="en-US"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="160" w:line="300" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>`
+    + `<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>`
+    + H.map(([sz, before], i) => `<w:style w:type="paragraph" w:styleId="Heading${i + 1}"><w:name w:val="heading ${i + 1}"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:qFormat/><w:pPr><w:keepNext/><w:spacing w:before="${before * 12}" w:after="${i < 2 ? 120 : 80}"/><w:outlineLvl w:val="${i}"/></w:pPr><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:b/><w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/>${i >= 4 ? '<w:color w:val="595959"/>' : ''}</w:rPr></w:style>`).join('')
+    + `<w:style w:type="paragraph" w:styleId="Quote"><w:name w:val="Quote"/><w:basedOn w:val="Normal"/><w:qFormat/><w:pPr><w:pBdr><w:left w:val="single" w:sz="18" w:space="10" w:color="C9CED6"/></w:pBdr><w:ind w:left="360"/></w:pPr><w:rPr><w:color w:val="4A4F57"/></w:rPr></w:style>`
+    + `<w:style w:type="paragraph" w:styleId="Code"><w:name w:val="Code"/><w:basedOn w:val="Normal"/><w:pPr><w:shd w:val="clear" w:color="auto" w:fill="F4F5F7"/><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr><w:rPr><w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/><w:sz w:val="19"/><w:szCs w:val="19"/></w:rPr></w:style>`
+    + `<w:style w:type="character" w:styleId="Hyperlink"><w:name w:val="Hyperlink"/><w:rPr><w:color w:val="1F5FBF"/><w:u w:val="single"/></w:rPr></w:style></w:styles>`;
+  const lvl = (i, fmt, text, font) => `<w:lvl w:ilvl="${i}"><w:start w:val="1"/><w:numFmt w:val="${fmt}"/><w:lvlText w:val="${text}"/><w:lvlJc w:val="left"/><w:pPr><w:ind w:left="${720 * (i + 1)}" w:hanging="360"/></w:pPr>${font ? `<w:rPr><w:rFonts w:ascii="${font}" w:hAnsi="${font}" w:hint="default"/></w:rPr>` : ''}</w:lvl>`;
+  const numbering = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">`
+    + `<w:abstractNum w:abstractNumId="0"><w:multiLevelType w:val="hybridMultilevel"/>${[...Array(9)].map((_, i) => lvl(i, 'bullet', ['•', '◦', '▪'][i % 3], 'Arial')).join('')}</w:abstractNum>`
+    + `<w:abstractNum w:abstractNumId="1"><w:multiLevelType w:val="hybridMultilevel"/>${[...Array(9)].map((_, i) => lvl(i, ['decimal', 'lowerLetter', 'lowerRoman'][i % 3], `%${i + 1}.`)).join('')}</w:abstractNum>`
+    + `<w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>`
+    + nums.map((n) => `<w:num w:numId="${n.num}"><w:abstractNumId w:val="1"/><w:lvlOverride w:ilvl="${n.ilvl}"><w:startOverride w:val="${n.start}"/></w:lvlOverride></w:num>`).join('')
+    + `</w:numbering>`;
+  const iso = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
+  return zipStored([
+    { name: '[Content_Types].xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Default Extension="jpeg" ContentType="image/jpeg"/><Default Extension="gif" ContentType="image/gif"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>` },
+    { name: '_rels/.rels', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>` },
+    { name: 'docProps/core.xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${xe(title)}</dc:title><dc:creator>Cowdrey.MD</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">${iso}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${iso}</dcterms:modified></cp:coreProperties>` },
+    { name: 'word/document.xml', data: docXml },
+    { name: 'word/styles.xml', data: styles },
+    { name: 'word/numbering.xml', data: numbering },
+    { name: 'word/_rels/document.xml.rels', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rIdNumbering" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/>${rels.join('')}</Relationships>` },
+    ...media,
+  ]);
+}
+async function exportDocx() {
+  const title = cur().title;
+  toast('Making the Word document…');
+  let bytes;
+  try { bytes = await buildDocx(title); } catch (e) { toast(`Could not make the Word document: ${e && e.message || e}`); return; }
+  saveFile(slugFile(title) + '.docx', bytes, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+}
 async function copyText(text, okMsg) {
   try { await navigator.clipboard.writeText(text); toast(okMsg); }
   catch {
@@ -1618,6 +2361,7 @@ let dialogOpener = null;
 function openDialog({ title, body, actions = [{ label: 'Close', primary: true }], onOpen }) {
   if (!dialog.open) dialogOpener = popAnchor || document.activeElement;
   dialog.setAttribute('aria-labelledby', 'dlgTitle');
+  dialog.classList.remove('wide');
   dialog.innerHTML = `<div class="dlg-head"><h2 id="dlgTitle">${esc(title)}</h2><button class="icon-btn" type="button" data-close aria-label="Close">${ic('x')}</button></div>
     <div class="dlg-body">${body}</div>
     <div class="dlg-actions">${actions.map((a, i) => `<button type="button" class="btn${a.primary ? ' primary' : ''}${a.danger ? ' danger' : ''}" data-a="${i}">${esc(a.label)}</button>`).join('')}</div>`;
@@ -1694,7 +2438,7 @@ const fmtKey = (k) => !k ? '' : k.split(/-(?=.)/).map((p) => isMac
 const inArtifact = () => !!(window.claude && typeof window.claude.use === 'function');
 
 cmd('newDoc', { label: 'New document', icon: 'file-plus', key: TAURI ? 'Mod-n' : 'Mod-Alt-n', global: true, run: () => newDoc() });
-cmd('openFile', { label: 'Open…', icon: 'folder-open', key: 'Mod-o', global: true, run: () => TAURI ? openNative() : ANDROID_APP ? openAndroid() : $('#fileInput').click() });
+cmd('openFile', { label: 'Open…', icon: 'folder-open', key: 'Mod-o', global: true, run: () => TAURI ? openNative() : MOBILE_APP ? openLinked() : $('#fileInput').click() });
 cmd('pasteDoc', { label: 'Paste as new document', icon: 'clipboard-paste', run: pasteAsNew });
 cmd('openRecent', { label: 'Open recent…', icon: 'history', hidden: () => !TAURI, run: showRecent });
 cmd('closeTab', { label: 'Close tab', icon: 'x', key: TAURI ? 'Mod-w' : undefined, global: true, run: () => closeTab(currentId) });
@@ -1705,13 +2449,16 @@ cmd('nextTab', { label: 'Next tab', icon: 'chevron-right', key: TAURI ? 'Mod-Shi
 cmd('prevTab', { label: 'Previous tab', icon: 'chevron-left', key: TAURI ? 'Mod-Shift-[' : 'Mod-Alt-[', global: true, run: () => cycleTab(-1) });
 cmd('saveAll', { label: 'Save all', icon: 'save-all', key: 'Mod-Alt-Shift-s', global: true, hidden: () => !TAURI, run: saveAll });
 cmd('saveNow', { label: 'Save', icon: 'save', key: 'Mod-s', global: true, run: () => { markDirty(); if (TAURI) return saveToDisk(false); if (persist()) toast(MOBILE_APP ? 'Saved on this device' : 'Saved to this browser'); } });
-cmd('saveAs', { label: 'Save as…', icon: 'save', key: 'Mod-Shift-s', global: true, hidden: () => !TAURI, run: () => saveToDisk(true) });
+cmd('saveAs', { label: TAURI ? 'Save as…' : ANDROID_APP ? 'Save as a file…' : 'Save to Files…', icon: 'save', key: 'Mod-Shift-s', global: true, hidden: () => !TAURI && !MOBILE_APP, run: () => TAURI ? saveToDisk(true) : saveLinkedAs() });
+cmd('syncFolder', { label: 'Sync folder…', icon: 'folder-sync', hidden: () => !LIB_KIND, run: showSyncFolder });
 cmd('saveMd', { label: 'Download Markdown (.md)', icon: 'file-down', run: () => saveFile(slugFile(cur().title) + '.md', cm.getValue(), 'text/markdown') });
+cmd('exportDocx', { label: 'Download Word document (.docx)', icon: 'file-type-2', run: exportDocx });
 cmd('exportHtml', { label: 'Download web page (.html)', icon: 'file-code-2', run: exportHtml });
 cmd('copyRich', { label: 'Copy for Docs or Word', icon: 'clipboard-copy', key: 'Mod-Alt-Shift-c', global: true, run: copyRich });
 cmd('copyHtml', { label: 'Copy HTML source', icon: 'code', run: () => copyText(cleanPreview().innerHTML, 'HTML copied') });
 cmd('copyMd', { label: 'Copy Markdown', icon: 'copy', run: () => copyText(cm.getValue(), 'Markdown copied') });
-cmd('print', { label: 'Print or save as PDF', icon: 'printer', key: 'Mod-p', global: true, hidden: () => inArtifact() || !!TAURI || MOBILE_APP, run: () => { if (!inArtifact()) window.print(); } });
+cmd('print', { label: MOBILE_APP && !ANDROID_APP ? 'Print…' : 'Print or save as PDF…', icon: 'printer', key: 'Mod-p', global: true, hidden: () => inArtifact(), run: () => printDoc(false) });
+cmd('exportPdf', { label: MOBILE_APP ? 'Share PDF…' : 'Export PDF…', icon: 'file-text', key: 'Mod-Alt-p', global: true, hidden: () => inArtifact() || ANDROID_APP, run: () => printDoc(true) });
 cmd('renameDoc', { label: 'Rename', icon: 'pencil-line', run: () => { titleInput.focus(); titleInput.select(); } });
 cmd('deleteDoc', { label: 'Delete document…', icon: 'trash-2', run: () => openDialog({ title: `Delete “${cur().title}”?`, body: `<p>This removes the document from ${MOBILE_APP ? 'this device' : 'this browser'}. It cannot be undone.</p>`, actions: [{ label: 'Keep it' }, { label: 'Delete', danger: true, run: () => deleteDoc(currentId) }] }) });
 
@@ -1799,6 +2546,7 @@ cmd('guide', { label: 'Markdown guide', icon: 'book-open-text', run: () => newDo
 cmd('legal', { label: 'Terms & Privacy', icon: 'scale', run: openLegal });
 cmd('about', { label: 'About Cowdrey.MD', icon: 'info', run: showAbout });
 cmd('checkUpdates', { label: 'Check for updates…', icon: 'refresh-cw', hidden: () => !TAURI && !ANDROID_APP, run: () => checkForUpdates(true) });
+cmd('history', { label: 'Version history…', icon: 'history', key: 'Mod-Alt-y', global: true, run: showHistory });
 cmd('wordCount', { label: 'Word count', icon: 'file-digit', key: 'Mod-Alt-w', global: true, run: showStats });
 
 function rebuild() { saveSettings(); buildMd(); render(); refreshState(); }
@@ -1842,7 +2590,7 @@ document.addEventListener('keydown', (e) => {
    Menubar (Docs)
    ================================================================ */
 const MENUS = [
-  ['File', ['newDoc', 'openFile', 'openRecent', 'pasteDoc', '-', 'saveNow', 'saveAs', 'saveAll', 'renameDoc', '-', 'closeTab', 'closeOtherTabs', 'closeAllTabs', 'reopenTab', '-', 'saveMd', 'exportHtml', 'copyRich', 'copyMd', 'copyHtml', 'print', '-', 'deleteDoc']],
+  ['File', ['newDoc', 'openFile', 'openRecent', 'pasteDoc', '-', 'saveNow', 'saveAs', 'saveAll', 'renameDoc', 'history', 'syncFolder', '-', 'closeTab', 'closeOtherTabs', 'closeAllTabs', 'reopenTab', '-', 'saveMd', 'exportDocx', 'exportHtml', 'exportPdf', 'print', '-', 'copyRich', 'copyMd', 'copyHtml', '-', 'deleteDoc']],
   ['Edit', ['undo', 'redo', '-', 'selectAll', 'find', 'replace', '-', 'formatTable', 'clearFormat']],
   ['View', ['view_editor', 'view_split', 'view_preview', '-', 'toggleOutline', 'toggleRail', 'toggleRuler', 'toggleGuides', 'toggleLineNumbers', 'toggleWrap', '-', 'toggleFocus', 'toggleTypewriter', 'toggleSync', '-', 'zoomIn', 'zoomOut', 'zoomFit', 'zoom100', 'fullscreen', '-', 'nextTab', 'prevTab']],
   ['Insert', ['image', 'imageUrl', 'table', 'link', '-', 'codeBlock', 'math', 'diagram', 'callout', 'details', '-', 'footnote', 'deflist', 'hr', 'toc', 'date', 'frontMatter']],
@@ -1891,7 +2639,7 @@ $('#shareAppBtn').addEventListener('click', (e) => {
   }, { alignRight: true, label: 'Share Cowdrey.MD', describedBy: 'shareBlurb' });
 });
 $('#exportBtn').addEventListener('click', (e) => {
-  const ids = ['copyRich', 'copyMd', 'copyHtml', '-', 'saveMd', 'exportHtml', 'print'];
+  const ids = ['copyRich', 'copyMd', 'copyHtml', '-', 'saveMd', 'exportDocx', 'exportHtml', 'exportPdf', 'print'];
   openPopover(e.currentTarget, '<div class="mhead">Copy or download</div>' + menuHtml(ids), (ev) => { const b = ev.target.closest('[data-cmd]'); if (b) runCmd(b.dataset.cmd); }, { alignRight: true });
 });
 
@@ -2374,6 +3122,8 @@ cm.on('change', () => {
   if (applyingRemote) { d.content = cm.getValue(); scheduleRender(); return; }
   d.content = cm.getValue(); d.updated = Date.now();
   markDirty(d.id); setSaveState('saving'); scheduleSave(); scheduleRender();
+  if (isLinked(d)) scheduleLinkSave();
+  if (S.lib) scheduleLibSync();
   // show or clear the tab's unsaved-changes dot as soon as it changes
   const tab = document.querySelector(`.doc-tab[data-id="${d.id}"]`);
   if (tab && tab.classList.contains('unsaved') !== isUnsaved(d)) renderTabs();
@@ -2751,14 +3501,14 @@ const SHEETS = {
   },
   share: {
     title: 'Share and export',
-    body: () => mGroup('Send a copy', [mRow('saveMd', { label: ANDROID_APP ? 'Save Markdown (.md)…' : MOBILE_APP ? 'Share Markdown (.md)…' : 'Download Markdown (.md)' }), mRow('exportHtml', { label: ANDROID_APP ? 'Save web page (.html)…' : MOBILE_APP ? 'Share web page (.html)…' : 'Download web page (.html)' }), mRow('print')])
+    body: () => mGroup('Send a copy', [mRow('saveMd', { label: ANDROID_APP ? 'Save Markdown (.md)…' : MOBILE_APP ? 'Share Markdown (.md)…' : 'Download Markdown (.md)' }), mRow('exportDocx', { label: ANDROID_APP ? 'Save Word document (.docx)…' : MOBILE_APP ? 'Share Word document (.docx)…' : 'Download Word document (.docx)' }), mRow('exportHtml', { label: ANDROID_APP ? 'Save web page (.html)…' : MOBILE_APP ? 'Share web page (.html)…' : 'Download web page (.html)' }), mRow('print'), mRow('exportPdf')])
       + mGroup('Copy', [mRow('copyRich'), mRow('copyMd'), mRow('copyHtml')])
       + mGroup('', [mAct('shareApp', 'heart', 'Share Cowdrey.MD with a friend')]),
   },
   more: {
     title: 'More',
     body: () => mSec('Appearance') + mSegPick('appTheme', [['system', 'Automatic'], ['light', 'Light'], ['dark', 'Dark']], S.appTheme)
-      + mGroup('Document', [mRow('newDoc'), mRow('openFile'), mRow('pasteDoc'), mRow('renameDoc'), mAct('duplicate', 'copy-plus', 'Duplicate'), mAct('share', 'share', 'Share and export…'), mRow('deleteDoc', { danger: true })])
+      + mGroup('Document', [mRow('newDoc'), mRow('openFile'), mRow('pasteDoc'), mRow('saveAs'), mRow('renameDoc'), mRow('history'), mRow('syncFolder'), mAct('duplicate', 'copy-plus', 'Duplicate'), mAct('share', 'share', 'Share and export…'), mRow('deleteDoc', { danger: true })])
       + mGroup('Tools', [mRow('find', { label: 'Find' }), mRow('replace', { label: 'Find and replace' }), mRow('wordCount'), mAct('outline', 'list-tree', 'Outline'), mAct('docs', 'files', 'All documents')])
       + mGroup('Writing', [mRow('toggleFocus'), mRow('toggleTypewriter'), mRow('toggleLineNumbers')])
       + mGroup('Help', [mRow('guide'), mRow('checkUpdates'), mRow('legal'), mRow('about'), mAct('shareApp', 'heart', 'Share Cowdrey.MD')]),

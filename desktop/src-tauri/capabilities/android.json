@@ -12,6 +12,8 @@
     "core:default",
     "dialog:default",
     "opener:default",
+    "sharekit:default",
+    "fs:allow-write-file",
     "fs:allow-read-text-file",
     "fs:allow-write-text-file"
   ]

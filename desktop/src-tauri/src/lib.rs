@@ -56,13 +56,114 @@ fn write_text_file(path: String, contents: String) -> Result<(), String> {
     std::fs::write(&path, contents).map_err(|e| e.to_string())
 }
 
+/// Writes bytes sent as base64 (Word documents and other binary exports).
+#[tauri::command]
+fn write_binary_file(path: String, base64: String) -> Result<(), String> {
+    use base64::Engine;
+    let bytes = base64::engine::general_purpose::STANDARD.decode(base64).map_err(|e| e.to_string())?;
+    std::fs::write(&path, bytes).map_err(|e| e.to_string())
+}
+
+fn modified_ms(path: &Path) -> u64 {
+    std::fs::metadata(path)
+        .and_then(|m| m.modified())
+        .ok()
+        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0)
+}
+
+#[derive(serde::Serialize)]
+struct FolderFile {
+    path: String,
+    modified: u64,
+}
+
+#[derive(serde::Serialize)]
+struct FolderListing {
+    name: String,
+    files: Vec<FolderFile>,
+    folders: Vec<String>,
+}
+
+/// The Markdown files in a sync folder and its subfolders, with paths relative to it.
+#[cfg(desktop)]
+#[tauri::command]
+fn list_folder(dir: String) -> Result<FolderListing, String> {
+    let root = Path::new(&dir);
+    if !root.is_dir() {
+        return Err(format!("{dir} is not a folder that can be opened"));
+    }
+    let mut files = Vec::new();
+    let mut folders = Vec::new();
+    fn walk(root: &Path, dir: &Path, depth: u32, files: &mut Vec<FolderFile>, folders: &mut Vec<String>) {
+        let Ok(entries) = std::fs::read_dir(dir) else { return };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            let name = entry.file_name().to_string_lossy().into_owned();
+            if name.starts_with('.') {
+                continue;
+            }
+            let rel = path.strip_prefix(root).unwrap_or(&path).to_string_lossy().replace('\\', "/");
+            if path.is_dir() {
+                folders.push(rel);
+                if depth < 8 {
+                    walk(root, &path, depth + 1, files, folders);
+                }
+            } else {
+                let ext = path.extension().map(|e| e.to_string_lossy().to_lowercase()).unwrap_or_default();
+                if ["md", "markdown", "mdown", "mkd", "mkdn", "txt"].contains(&ext.as_str()) {
+                    files.push(FolderFile { modified: modified_ms(&path), path: rel });
+                }
+            }
+        }
+    }
+    walk(root, root, 0, &mut files, &mut folders);
+    let name = root.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| dir.clone());
+    Ok(FolderListing { name, files, folders })
+}
+
+/// Writes a file in a sync folder, creating its folders, and returns its new modification time.
+#[cfg(desktop)]
+#[tauri::command]
+fn write_in_folder(path: String, contents: String) -> Result<u64, String> {
+    let p = Path::new(&path);
+    if let Some(parent) = p.parent() {
+        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    std::fs::write(p, contents).map_err(|e| e.to_string())?;
+    Ok(modified_ms(p))
+}
+
+/// Deletes a file from a sync folder (it is already gone if it isn't there).
+#[cfg(desktop)]
+#[tauri::command]
+fn remove_file(path: String) -> Result<(), String> {
+    match std::fs::remove_file(&path) {
+        Err(e) if e.kind() != std::io::ErrorKind::NotFound => Err(e.to_string()),
+        _ => Ok(()),
+    }
+}
+
+/// Opens the system print dialog for the page (its PDF button saves a PDF).
+#[cfg(desktop)]
+#[tauri::command]
+fn print_page(window: tauri::WebviewWindow) -> Result<(), String> {
+    window.print().map_err(|e| e.to_string())
+}
+
 /// Writes a copy to share into the app's temporary folder and returns its path, for the share sheet.
 #[cfg(mobile)]
 #[tauri::command]
-fn write_share_file(name: String, contents: String) -> Result<String, String> {
+fn write_share_file(name: String, contents: String, base64: Option<String>) -> Result<String, String> {
+    use base64::Engine;
     let name: String = name.chars().map(|c| if matches!(c, '/' | '\\' | ':') { '-' } else { c }).collect();
     let path = std::env::temp_dir().join(if name.trim().is_empty() { "Untitled.md".into() } else { name });
-    std::fs::write(&path, contents).map_err(|e| e.to_string())?;
+    match base64 {
+        Some(b) => std::fs::write(&path, base64::engine::general_purpose::STANDARD.decode(b).map_err(|e| e.to_string())?),
+        None => std::fs::write(&path, contents),
+    }
+    .map_err(|e| e.to_string())?;
     Ok(path.to_string_lossy().into_owned())
 }
 
@@ -214,7 +315,7 @@ pub fn run() {
     let builder = builder
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
-        .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, quit_app, allow_exit, set_menu, hold_quit])
+        .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, write_binary_file, list_folder, write_in_folder, remove_file, print_page, quit_app, allow_exit, set_menu, hold_quit])
         .on_menu_event(|app, event| {
             if event.id().0 == "app:quit" || event.id().0 == "app:closeWindow" {
                 flush_then_quit(app);
@@ -226,11 +327,10 @@ pub fn run() {
         });
     #[cfg(target_os = "android")]
     let builder = builder.plugin(tauri_plugin_fs::init());
-    #[cfg(target_os = "ios")]
-    let builder = builder.plugin(tauri_plugin_sharekit::init());
     #[cfg(mobile)]
     let builder = builder
-        .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, write_share_file, quit_app, allow_exit, hold_quit]);
+        .plugin(tauri_plugin_sharekit::init())
+        .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, write_binary_file, write_share_file, quit_app, allow_exit, hold_quit]);
     builder
         .manage(PendingFiles(Mutex::new(Vec::new())))
         .manage(Quitting(AtomicBool::new(false)))

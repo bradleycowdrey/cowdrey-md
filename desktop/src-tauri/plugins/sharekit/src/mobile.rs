@@ -28,6 +28,10 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct ShareKit<R: Runtime>(PluginHandle<R>);
 
 impl<R: Runtime> ShareKit<R> {
+    pub fn native(&self, method: &str, args: serde_json::Value) -> crate::Result<serde_json::Value> {
+        self.0.run_mobile_plugin(method, args).map_err(Into::into)
+    }
+
     pub fn share_text(
         &self,
         _window: WebviewWindow<R>,

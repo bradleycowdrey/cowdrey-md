@@ -83,7 +83,7 @@ You accept every risk of using the Services. That includes losing data or work, 
 
 ## 6. Notices for each app and for AI content
 
-**Cowdrey.MD** is a text editor. In a web browser, your documents are stored only in that browser's storage. Clearing the browser's data, using a private window, switching browsers or devices, or an update can erase them. In the iPhone, iPad and Android apps, your documents are stored in the app's own storage on that device. Deleting the app, clearing its data or losing the device erases them. A file you open in those apps from another app (such as Files, Google Drive or Gmail) is copied into Cowdrey.MD. Your changes are not written back to the original file; export or share a copy to keep them. What you see in the preview, PDF, HTML or copied text may not match what you expect. Check anything important before you rely on it, send it or print it.
+**Cowdrey.MD** is a text editor. In a web browser, your documents are stored only in that browser's storage. Clearing the browser's data, using a private window, switching browsers or devices, or an update can erase them. In the iPhone, iPad and Android apps, your documents are stored in the app's own storage on that device. Deleting the app, clearing its data or losing the device erases them. A file you open with Open…, or save with Save to Files, stays where it is, and Cowdrey.MD saves your changes to it. A file sent to Cowdrey.MD from another app (such as Mail, Google Drive or Gmail) is copied in instead, and changes are not written back to it. If you choose a sync folder, Cowdrey.MD also keeps every document as a file in that folder, and deleting a document deletes its file. Sync depends on your device and the cloud service you choose; when a document is changed in two places at once, Cowdrey.MD keeps both versions, but sync can still miss or duplicate changes. Version history is kept on your device for 90 days and is erased with the app's data. What you see in the preview, PDF, Word document, HTML or copied text may not match what you expect. Check anything important before you rely on it, send it or print it.
 
 **Meridian** shows times using your device's clock and time-zone data, which can be wrong or out of date, especially around daylight-saving changes. Always confirm meeting and travel times with the people involved and with official sources.
 
@@ -130,8 +130,9 @@ The Services rely on services and code I don't control. These include:
 - **GeoNames**, whose list of world cities is built into Two Degrees for searching without the internet;
 - **jsDelivr**, for web code libraries;
 - **Google Fonts**, for fonts on the product pages and web versions;
-- **Apple**, for macOS, iOS and iPadOS, the App Store and TestFlight, notarization, widgets, and the location services that find and name where you are;
-- **Google**, for Android, its file picker, and the location services that find and name where you are on Android;
+- **Apple**, for macOS, iOS and iPadOS, the App Store and TestFlight, notarization, widgets, the Files app and iCloud Drive, printing, and the location services that find and name where you are;
+- **Google**, for Android, its file picker and printing, and the location services that find and name where you are on Android;
+- **cloud storage services you choose** (such as iCloud Drive, Google Drive, Dropbox or OneDrive), for files and a sync folder you keep there;
 - **Amazon, Gumroad** and other stores that sell my books and products;
 - **AI tools** (such as Claude, ChatGPT and Gemini) that you use with my AI skills;
 - websites I link to, such as those of companies I work with.
@@ -199,7 +200,9 @@ What each Service does:
   - Every update email lets you unsubscribe, or you can email legal@bradcowdrey.com. I then stop emailing you and, if you ask, delete your address.
   - The site remembers on your device that you've signed up, so it doesn't ask again.
 - **Cowdrey.MD:**
-  - Your documents stay on your device: in files you choose and the app's own storage (Mac), in the app's own storage (iPhone, iPad and Android), or, on the web, in your browser's storage.
+  - Your documents stay on your device: in the app's own storage (or, on the web, your browser's storage), and in any files and sync folder you choose.
+  - Files and a sync folder you choose may be in a cloud service, such as iCloud Drive, Google Drive, Dropbox or OneDrive. Cowdrey.MD reads and writes them through your device; that service stores them and moves them between your devices under its own terms. They never reach me.
+  - Version history, Word documents and PDFs are made on your device.
   - The web version, at bradcowdrey.com/cowdrey-md, loads the app from GitHub Pages and code libraries from jsDelivr.
 - **Meridian:**
   - Your cities stay on your device. The app itself sends them nowhere.
@@ -359,14 +362,14 @@ This table summarizes Sections 6, 9, 15 and 20 for each app. Where it and those 
 | **Price** | Free | Free | Free |
 | **Account** | None | None | None |
 | **Ads, analytics, tracking** | None | None | None |
-| **Stays on your device** | Your documents and settings | Your cities and settings | Your cities, settings and the last forecasts |
-| **Leaves your device** | Nothing you write. The web version loads its code from GitHub Pages and jsDelivr | Nothing about you, except as the Location row says. The web version sends nothing | Your cities' coordinates and place searches, to Open-Meteo; US cities' coordinates, rounded, to the National Weather Service for alerts. The rain map loads from GitHub Pages, RainViewer and CARTO. The web version loads from GitHub Pages |
+| **Stays on your device** | Your documents, their earlier versions and settings | Your cities and settings | Your cities, settings and the last forecasts |
+| **Leaves your device** | Nothing you write, except to files and a sync folder you choose (and the cloud service that holds them). The web version loads its code from GitHub Pages and jsDelivr | Nothing about you, except as the Location row says. The web version sends nothing | Your cities' coordinates and place searches, to Open-Meteo; US cities' coordinates, rounded, to the National Weather Service for alerts. The rain map loads from GitHub Pages, RainViewer and CARTO. The web version loads from GitHub Pages |
 | **Location** | Not used | In the apps, only if you choose "Use My Location", to name the city you're in. Your device's location service names it; Meridian keeps only the name. The web version uses only your browser's time zone | Only if you choose "Use My Location". Rounded to about a kilometre; sent to Open-Meteo for its weather and to your device's location service to name it |
-| **Permissions it asks for** | Access to files you choose | Location, only if you choose it | Location and notifications, each only if you choose it |
+| **Permissions it asks for** | Access to files and folders you choose | Location, only if you choose it | Location and notifications, each only if you choose it |
 | **Asks you to agree again** | When these terms change (checked online at most daily); at most once a month | The apps: when these terms change (checked online at most daily); at most once a month. The web version doesn't ask | The apps: in the next version after these terms change; at most once a month. The web version doesn't ask |
 | **Contacts GitHub** | To check whether these terms changed (at most daily); the Mac app and the Android download, for updates | To check whether these terms changed (at most daily); the Mac app, for updates | The Mac app, for updates. The Android download doesn't update itself |
 | **Data it relies on** | None | Your device's clock and time-zone data | Open-Meteo forecasts, air quality and past weather; National Weather Service alerts (US only); RainViewer radar; the GeoNames city list |
-| **Key warning** | Browser and phone storage can be erased; keep copies (Section 6) | Times can be wrong; confirm meetings and travel (Section 6) | Not a safety tool: alerts can be late or missing; follow official warnings (Section 6) |
+| **Key warning** | Storage can be erased and sync can miss changes; keep copies (Section 6) | Times can be wrong; confirm meetings and travel (Section 6) | Not a safety tool: alerts can be late or missing; follow official warnings (Section 6) |
 | **Source code** | MIT License, on GitHub | MIT License, on GitHub | MIT License, on GitHub |
 
 **Apps I publish later** get a column here, and entries in Sections 6 and 15 (and 9, 22 and 26 where needed), before they're released, as Section 1 says.

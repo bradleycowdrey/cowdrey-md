@@ -18,6 +18,14 @@ It combines MacDown's side-by-side writing, a Docs-style title bar, menus and pa
 
 ## What's new
 
+- **1.0.30: the essentials of a full writing app.**
+  - **PDF on every platform:** Print or save as PDF in the Mac, iPhone, iPad and Android apps, and Share PDF on iPhone and iPad.
+  - **Word documents:** export a `.docx` with headings, lists, tables, links, code, pictures, equations and diagrams.
+  - **Files stay where they are** on iPhone, iPad and Android: Open… and Save to Files keep a link to the file, and edits are saved back to it.
+  - **Sync folder:** keep every document as a Markdown file in a folder you choose, such as iCloud Drive, and use the same folder on each device.
+  - **Search every document**, with the matches shown in context.
+  - **Folders, pins and sorting** in the Documents list.
+  - **Version history:** earlier versions of each document, kept on your device for 90 days, ready to restore.
 - **1.0.25 and 1.0.26: make Cowdrey.MD your default Markdown app** on iPhone, iPad and Android, as on the Mac. Tap a `.md` file in Files, Drive or Gmail and choose Cowdrey.MD.
 - **1.0.21 to 1.0.24: polish from testing on real devices.**
   - One tap opens a document on touch screens.
@@ -65,9 +73,12 @@ See the [changelog](CHANGELOG.md) for every release.
 - Tabs work like other apps: drag to reorder; right-click for Close, Close others, Close tabs to the right, Close all, Rename, Duplicate, Show in Finder and Copy file path; Next/Previous tab, ⌃Tab, ⌘1–9 and Reopen closed tab
 - Closing every tab shows a "No documents open" screen with New, Open and your recent documents
 - The Mac app marks files with unsaved changes with a dot on their tab, asks before closing or quitting with unsaved work, and has Save all and Open recent
-- A Recent documents list and an outline of headings
-- Autosaves to the browser's local storage
-- Open `.md` files, paste as a new document, download `.md` or a standalone `.html`, copy Markdown or HTML, or **Copy for Docs or Word** (rich text)
+- A Documents list with **search across every document**, **folders**, **pins** and sorting (last edited, title, date created), and an outline of headings
+- **Version history** for each document: a version when it opens and every 10 minutes while it changes, kept on the device for 90 days; restoring can be undone
+- **Sync folder** (Mac, iPhone, iPad, Android): every document is also a Markdown file in a folder you choose, such as iCloud Drive; changes go both ways, subfolders are folders, and a document changed in two places keeps both versions
+- On iPhone, iPad and Android, **Open…** and **Save to Files** keep the file where it is and save edits back to it
+- Autosaves to the browser's local storage, or the app's storage on a phone or tablet
+- Open `.md` files, paste as a new document, export **Markdown**, a **Word document (.docx)**, a standalone **web page (.html)** or a **PDF** (Print or save as PDF on every platform, Share PDF on iPhone and iPad), copy Markdown or HTML, or **Copy for Docs or Word** (rich text)
 - Word count dialog with reading and speaking time and a Flesch reading-ease score
 
 ## Project layout
@@ -88,7 +99,7 @@ python3 build.py
 
 ## Tests
 
-`tests/e2e.mjs` drives the real app in Chromium through 78 scenarios: editing commands, lists, find and replace, tables, pictures, attempted script injection, math and diagrams, tabs and documents, persistence, export, clipboard, sync scroll, zoom, themes, accessibility and large-document speed. It also covers the phone layout (Edit and Done, panels, Back, pinch, edge swipe), the iPhone and Android apps (share sheet, file picker, Open with, update checks), status bars, and touch screens. Two audits run as well: every arrow and chevron control must respond or be greyed out, and no control may appear only on hover. `tests/matrix.mjs` runs every command at five window sizes in light and dark. GitHub Actions runs it on every push (`.github/workflows/tests.yml`).
+`tests/e2e.mjs` drives the real app in Chromium through 85 scenarios: editing commands, lists, find and replace, tables, pictures, attempted script injection, math and diagrams, tabs and documents, search, folders and pins, version history, sync folders, files kept in place on iPhone, persistence, export (including a Word document checked part by part), printing, clipboard, sync scroll, zoom, themes, accessibility and large-document speed. It also covers the phone layout (Edit and Done, panels, Back, pinch, edge swipe), the iPhone and Android apps (share sheet, file picker, Open with, update checks), status bars, and touch screens. Two audits run as well: every arrow and chevron control must respond or be greyed out, and no control may appear only on hover. `tests/matrix.mjs` runs every command at five window sizes in light and dark. GitHub Actions runs it on every push (`.github/workflows/tests.yml`).
 
 ```sh
 (cd desktop && npm ci) && npm install --no-save playwright && npx playwright install chromium

@@ -47,3 +47,26 @@ pub async fn share_file<R: Runtime>(
         )
         .map_err(|e| e.to_string())
 }
+
+/// Cowdrey.MD's own native features on iPhone, iPad and Android (printing, PDF, files and folders),
+/// each a method of the platform plugin. Only the methods listed here can be called.
+const NATIVE_METHODS: &[&str] = &[
+    "printPage", "exportPdf",
+    "pickFiles", "saveAsFile", "readFile", "writeFile",
+    "pickFolder", "listFolder", "readInFolder", "writeInFolder", "deleteInFolder",
+];
+
+#[command]
+pub async fn native<R: Runtime>(
+    app_handle: AppHandle<R>,
+    method: String,
+    args: Option<serde_json::Value>,
+) -> Result<serde_json::Value, String> {
+    if !NATIVE_METHODS.contains(&method.as_str()) {
+        return Err(format!("Unknown method {method}"));
+    }
+    app_handle
+        .share()
+        .native(&method, args.unwrap_or(serde_json::Value::Object(Default::default())))
+        .map_err(|e| e.to_string())
+}

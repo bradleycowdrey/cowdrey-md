@@ -13,4 +13,5 @@ It allows acccess to all share commands.
 permissions = [
   "allow-share-text",
   "allow-share-file",
+  "allow-native",
 ]

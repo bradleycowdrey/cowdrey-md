@@ -2,6 +2,11 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.36
+
+- **Keep your place between writing and reading.** Tap Done and the page opens at the paragraph you were editing, at the same height on the screen; tap Edit and the editor opens at the paragraph you were reading, with the cursor there. The same goes for switching between Editor only and Preview only on a computer.
+- Sharing Cowdrey.MD shows its icon without the empty card 1.0.34 and 1.0.35 showed.
+
 ## 1.0.35
 
 - **Code line numbers**, a new option beside **Editor line numbers** (View menu, the View ribbon, and More › Writing on phones). It numbers each line of the code blocks on the page, in print and PDF, in the web page export and in Word documents. Copying a code block leaves the numbers out. Prose is never numbered: its lines move with the page width and text size.

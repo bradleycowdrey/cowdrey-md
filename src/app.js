@@ -2857,9 +2857,60 @@ const updateNativeMenu = debounce(() => {
 /* ================================================================
    Preferences → UI
    ================================================================ */
+// Switching between writing and reading keeps your place: the page opens at the paragraph you were editing,
+// and the editor at the paragraph you were reading, each at the same height on the screen.
+function editorPlace() {
+  const info = cm.getScrollInfo(), cur = cm.getCursor();
+  const cy = cm.heightAtLine(cur.line, 'local');
+  if (cy >= info.top - 2 && cy <= info.top + info.clientHeight - 24) return { line: cur.line, frac: (cy - info.top) / info.clientHeight, cursor: true };
+  const line = cm.lineAtHeight(info.top + 4, 'local');
+  return { line, frac: Math.max(0, (cm.heightAtLine(line, 'local') - info.top) / info.clientHeight) };
+}
+function previewPlace() {
+  buildLineMap();
+  if (lineMap.length < 2) return null;
+  const ls = lineMap.map(([l]) => l), ys = lineMap.map(([, y]) => y);
+  // the first block whose top is on screen, or the block the top of the screen is in
+  let i = ys.findIndex((y) => y >= canvas.scrollTop - 2);
+  if (i < 0) i = ys.length - 1;
+  if (i > 0 && ys[i] > canvas.scrollTop + canvas.clientHeight * 0.5) i--;
+  return { line: ls[i], frac: Math.max(0, (ys[i] - canvas.scrollTop) / canvas.clientHeight) };
+}
+function showPreviewAt(place) {
+  buildLineMap();
+  if (lineMap.length < 2) return;
+  const ls = lineMap.map(([l]) => l), ys = lineMap.map(([, y]) => y);
+  let i = 0; while (i < ls.length - 1 && ls[i + 1] <= place.line) i++; // the block that holds the line
+  const maxP = canvas.scrollHeight - canvas.clientHeight;
+  canvas.scrollTop = clamp(ys[i] - place.frac * canvas.clientHeight, 0, maxP);
+}
+function showEditorAt(place) {
+  const info = cm.getScrollInfo();
+  if (!place.cursor) cm.setCursor({ line: place.line, ch: 0 }, null, { scroll: false });
+  cm.scrollTo(null, Math.max(0, cm.heightAtLine(place.line, 'local') - place.frac * info.clientHeight));
+}
 function setView(v) {
+  const from = app.dataset.view;
+  let place = null;
+  if (cur() && !isEmpty() && from !== v) {
+    if (v === 'preview' && from === 'editor') { place = editorPlace(); render(); }
+    else if (v === 'editor' && from === 'preview') place = previewPlace();
+  }
   S.view = v; app.dataset.view = v; saveSettings(); refreshState();
-  requestAnimationFrame(() => { cm.refresh(); sizePage(); buildLineMap(); if (v === 'split' && S.sync) syncFromEditor(); });
+  let placedAt = null;
+  if (place && v === 'editor') { cm.refresh(); showEditorAt(place); placedAt = cm.getCursor(); }
+  requestAnimationFrame(() => {
+    cm.refresh(); sizePage(); buildLineMap();
+    if (v === 'split' && S.sync) syncFromEditor();
+    if (place && v === 'preview') {
+      showPreviewAt(place);
+      // Pictures, equations and diagrams can change the page's height as they finish; follow them unless you've scrolled.
+      let set = canvas.scrollTop;
+      for (const ms of [250, 800]) setTimeout(() => { if (Math.abs(canvas.scrollTop - set) < 2 && app.dataset.view === 'preview') { showPreviewAt(place); set = canvas.scrollTop; } }, ms);
+    }
+    // again once laid out, unless something has moved the cursor since (double-tapping a paragraph to edit it)
+    if (place && v === 'editor' && placedAt && cm.getCursor().line === placedAt.line && cm.getCursor().ch === placedAt.ch) showEditorAt(place);
+  });
   if (v !== 'preview') cm.focus();
 }
 /* Sidebar layout by window size:

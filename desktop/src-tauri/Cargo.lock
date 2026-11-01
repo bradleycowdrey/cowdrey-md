@@ -562,7 +562,7 @@ dependencies = [
 
 [[package]]
 name = "cowdrey-md"
-version = "1.0.35"
+version = "1.0.36"
 dependencies = [
  "base64 0.22.1",
  "serde",

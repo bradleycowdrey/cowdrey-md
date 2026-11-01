@@ -83,8 +83,7 @@ class LinkItem: NSObject, UIActivityItemSource {
     m.url = url
     m.title = title
     if let icon = self.icon ?? LinkItem.appIcon() {
-      m.iconProvider = NSItemProvider(object: icon)
-      m.imageProvider = NSItemProvider(object: icon)
+      m.iconProvider = NSItemProvider(object: icon)  // the small icon only: a large image made iOS 26 show an empty card
     }
     return m
   }

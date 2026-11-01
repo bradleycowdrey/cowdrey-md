@@ -1522,6 +1522,43 @@ await test('Code line numbers: a separate option, beside the code, aligned, and 
   eq(await Q.$$eval('#preview .code-lines', (e) => e.length), 0, 'and off again');
   eq(Q.errors, []); await Q.ctx.close();
 });
+await test('phone: Done shows the page at the paragraph you were editing; Edit opens the editor where you were reading', async () => {
+  const Q = await newPage({ width: 390, height: 844 });
+  const doc = Array.from({ length: 60 }, (_, i) => `## Section ${i + 1}\n\nParagraph ${i + 1} has some text that runs over a couple of lines on a phone screen, to give the page height.`).join('\n\n');
+  await Q.click('#mEdit'); await settle(Q, 300);
+  await setDoc(Q, doc); await settle(Q, 600);
+  // edit near Section 40 (line 156), with the cursor there and on screen
+  await Q.evaluate(() => { const cm = document.querySelector('.CodeMirror').CodeMirror; cm.setCursor({ line: 158, ch: 5 }); cm.scrollIntoView({ line: 158, ch: 0 }, 200); });
+  await settle(Q, 200);
+  await Q.click('#mBar [data-m="done"]'); await settle(Q, 1100);
+  const seen = await Q.evaluate(() => {
+    const c = document.querySelector('#canvas').getBoundingClientRect();
+    return [...document.querySelectorAll('#preview h2')].filter((h) => { const r = h.getBoundingClientRect(); return r.bottom > c.top && r.top < c.bottom; }).map((h) => h.textContent);
+  });
+  ok(seen.includes('Section 40'), 'the page shows the section being edited: ' + JSON.stringify(seen));
+  // read further down, then Edit: the editor opens there, with the cursor on screen
+  await Q.evaluate(() => { const h = [...document.querySelectorAll('#preview h2')].find((x) => x.textContent === 'Section 52'); const c = document.querySelector('#canvas'); c.scrollTop += h.getBoundingClientRect().top - c.getBoundingClientRect().top - 40; });
+  await settle(Q, 300);
+  await Q.click('#mEdit'); await settle(Q, 600);
+  const ed = await Q.evaluate(() => {
+    const cm = document.querySelector('.CodeMirror').CodeMirror, info = cm.getScrollInfo();
+    const top = cm.lineAtHeight(info.top, 'local'), bottom = cm.lineAtHeight(info.top + info.clientHeight, 'local');
+    return { top, bottom, cursor: cm.getCursor().line, text: cm.getLine(cm.getCursor().line) };
+  });
+  ok(ed.text === '## Section 52' || (ed.cursor >= 202 && ed.cursor <= 206), 'the cursor is at the paragraph being read: ' + JSON.stringify(ed));
+  ok(ed.cursor >= ed.top && ed.cursor <= ed.bottom, 'and on screen: ' + JSON.stringify(ed));
+  eq(Q.errors, []); await Q.ctx.close();
+});
+await test('desktop: switching Editor only and Preview only keeps your place', async () => {
+  const Q = await newPage();
+  await setDoc(Q, Array.from({ length: 80 }, (_, i) => `## Part ${i + 1}\n\nSome text for part ${i + 1}.`).join('\n\n')); await settle(Q, 500);
+  await Q.evaluate(() => window.__cowdreyTest.run('view_editor')); await settle(Q, 300);
+  await Q.evaluate(() => { const cm = document.querySelector('.CodeMirror').CodeMirror; cm.setCursor({ line: 240, ch: 0 }); cm.scrollIntoView({ line: 240, ch: 0 }, 150); }); await settle(Q, 200);
+  await Q.evaluate(() => window.__cowdreyTest.run('view_preview')); await settle(Q, 1100);
+  const seen = await Q.evaluate(() => { const c = document.querySelector('#canvas').getBoundingClientRect(); return [...document.querySelectorAll('#preview h2')].filter((h) => { const r = h.getBoundingClientRect(); return r.bottom > c.top && r.top < c.bottom; }).map((h) => h.textContent); });
+  ok(seen.includes('Part 61'), 'Preview only opens at the part being edited: ' + JSON.stringify(seen));
+  eq(Q.errors, []); await Q.ctx.close();
+});
 await test('no library URL points at a file that does not exist', async () => { eq([...missing], []); });
 await test('no uncaught page errors during the whole run', async () => { eq(P.errors, []); });
 

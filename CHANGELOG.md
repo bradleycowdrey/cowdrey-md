@@ -2,6 +2,21 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+Versions follow [Semantic Versioning](https://semver.org) from 2.0.0: **major** (3.0.0) for a big change in how the app works or stores documents, **minor** (2.1.0) for new features, **patch** (2.0.1) for fixes and polish. Every platform shares one version number.
+
+## 2.0.0
+
+Cowdrey.MD 2.0 brings together everything since 1.0: a full writing app on Mac, iPhone, iPad, Android and the web.
+
+- **Write anywhere.** Native apps for Mac, iPhone, iPad and Android, and the web app, with a Pages- and Word-style layout on phones and tablets.
+- **Your files, where they live.** Open and save files in place on every platform, make Cowdrey.MD your default Markdown app, and keep a **sync folder** (such as iCloud Drive) so every device shows the same documents.
+- **Find and organize.** Search every document, folders, pins, sorting, and **version history** with undoable restore.
+- **Share and publish.** PDF on every platform, Word documents, web pages, Markdown, and the system share sheet with print.
+- **Write comfortably.** Keep your place between writing and reading, editor and code line numbers, focus and typewriter modes, and a blurred background behind every panel.
+- **Clear terms.** Terms of Use and Privacy written for every app, asked again when they change, at most once a month.
+
+The 1.0.x notes below list each step along the way.
+
 ## 1.0.36
 
 - **Keep your place between writing and reading.** Tap Done and the page opens at the paragraph you were editing, at the same height on the screen; tap Edit and the editor opens at the paragraph you were reading, with the cursor there. The same goes for switching between Editor only and Preview only on a computer.

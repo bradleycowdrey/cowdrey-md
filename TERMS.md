@@ -1,7 +1,7 @@
 # Terms of Use and Privacy
 
 **bradcowdrey.com and everything Bradley Cowdrey publishes: apps, AI skills, books, lessons and more**
-Last updated: November 1, 2026 · Applies to: bradcowdrey.com, Cowdrey.MD, Meridian, Two Degrees, True North, AI skills, books, lessons, articles, and anything I publish in the future
+Last updated: November 1, 2026 · Applies to: bradcowdrey.com, Cowdrey.MD, Meridian, Two Degrees, Bearings, AI skills, books, lessons, articles, and anything I publish in the future
 
 ---
 
@@ -17,10 +17,10 @@ This summary is for convenience only. The full terms below are what count.
 - **I collect very little about you:** basic website statistics; your email address if you give it to download an app or join my list; and your name and email if a store like Gumroad shares them when you buy. No accounts, no ads, no tracking. I never sell your personal information. You can unsubscribe at any time.
 - **I can freely use feedback you send me.** Your personal information is different: I use it only as Sections 15 and 16 say.
 - **Two Degrees is not a safety tool.** Follow official weather warnings.
-- **True North is not a navigation or safety instrument.** Carry a map and a real compass where it matters.
+- **Bearings is not a navigation or safety instrument.** Carry a map and a real compass where it matters.
 - **Meridian's times can be wrong.** Confirm meetings and travel.
 - **Cowdrey.MD documents saved in a browser or in a phone or tablet app can be erased.** Keep your own copies.
-- **Location is optional.** Meridian and Two Degrees use where you are only if you choose "Use My Location"; True North uses it only if you allow it. It never reaches me.
+- **Location is optional.** Meridian and Two Degrees use where you are only if you choose "Use My Location"; Bearings uses it only if you allow it. It never reaches me.
 - **When these terms change,** the apps ask you to agree again, no more than once a month (Section 18).
 - **Your local law may give you rights these terms can't remove.** Where it does, these terms apply as far as that law allows.
 - **Each app's disclosures are in one place:** what stays on your device, what leaves it and where it goes, and what each app asks permission for (Section 25).
@@ -33,14 +33,14 @@ This summary is for convenience only. The full terms below are what count.
 
 These terms cover the "Services":
 - the website **bradcowdrey.com** and every page on it;
-- the apps **Cowdrey.MD**, **Meridian**, **Two Degrees** and **True North**, in every form: Mac, iPhone and Android apps, widgets, menu-bar items, and web versions;
+- the apps **Cowdrey.MD**, **Meridian**, **Two Degrees** and **Bearings**, in every form: Mac, iPhone and Android apps, widgets, menu-bar items, and web versions;
 - **all content and products on or linked from bradcowdrey.com**, including:
   - AI skills, prompts, templates, workflows and checklists;
   - lessons, articles, guides and videos;
   - books such as the *AI Skills Bible*, and any courses, downloads, newsletters or other materials;
 - **every app, website, skill, book or other product I publish in the future**, unless it comes with its own terms.
 
-"The apps" means Cowdrey.MD, Meridian, Two Degrees, True North and every app I publish later.
+"The apps" means Cowdrey.MD, Meridian, Two Degrees, Bearings and every app I publish later.
 
 Notices for each app and for AI content are in Section 6, what each app does with your information is in Section 15, and a summary of every app's disclosures is in Section 25. Before I release a new app, I add it to those three sections, and to Sections 9, 22 and 26 if it uses new services, open-source software or data. Until an app has its own entries, everything else in these terms applies to it in full. Where an app's own notice and a general section differ, the app's notice governs for that app. Sections 19 to 26 cover your licence to use the apps, app stores (including terms Apple requires), pre-release versions, open-source software, export controls, security, each app's disclosures, and data credits.
 
@@ -90,7 +90,7 @@ You accept every risk of using the Services. That includes losing data or work, 
 
 **Two Degrees** shows weather from Open-Meteo, an independent service, and converts between °F and °C. Forecasts are often wrong. **Two Degrees is not a safety tool.** Never use it to make decisions that affect anyone's health, safety or property. For severe weather, follow official warnings from your national weather service (in the US, the National Weather Service at weather.gov) and local authorities. Two Degrees does not show weather alerts or warnings. Widgets refresh on a schedule your device controls, and the app and widgets keep showing the last forecast they received when they can't reach Open-Meteo, so what you see can be hours old; the app marks it "Offline". With "Use My Location" on, the place shown is approximate and can be the wrong town, especially near borders or when your device's location is poor.
 
-**True North** shows a compass heading, your coordinates, your elevation and a map, using your device's sensors and location services, Open-Meteo's terrain data and map services run by others. Phone and tablet compasses are thrown off by metal, magnets, cases, cars and electronics, and need calibrating; GPS positions and elevations can be off by many metres, or much more indoors and near buildings, cliffs and trees; the terrain data is an average over about 90 metres; and maps can be wrong or out of date. True north depends on a model of the Earth's magnetic field that can be off in places. **True North is not a navigation or safety instrument.** Never rely on it alone where getting lost, or a wrong position or elevation, could put anyone's health, safety or property at risk: in the backcountry, at sea, in the air, in an emergency, or for surveying, legal boundaries or construction. Carry a paper map and a real compass, check your readings, and follow official guidance. On a Mac, which has no compass, the dial does not show a heading.
+**Bearings** shows a compass heading, your coordinates, your elevation and a map, using your device's sensors and location services, Open-Meteo's terrain data and map services run by others. Phone and tablet compasses are thrown off by metal, magnets, cases, cars and electronics, and need calibrating; GPS positions and elevations can be off by many metres, or much more indoors and near buildings, cliffs and trees; the terrain data is an average over about 90 metres; and maps can be wrong or out of date. True north, and the positions of the sun and moon, depend on models that can be off in places, and the place names Bearings shows can be wrong or out of date. **Bearings is not a navigation or safety instrument.** Never rely on it alone where getting lost, or a wrong position or elevation, could put anyone's health, safety or property at risk: in the backcountry, at sea, in the air, in an emergency, or for surveying, legal boundaries or construction. Carry a paper map and a real compass, check your readings, and follow official guidance. On a Mac, which has no compass, the dial does not show a heading.
 
 **AI skills, lessons, books and other content** are for general information and education only. AI tools can produce output that is wrong, biased, outdated, unsafe or infringing, and the same skill can give different results each time. In particular:
 - **Check the output.** You are responsible for reviewing and fact-checking anything an AI tool produces before you use, publish or rely on it.
@@ -128,9 +128,9 @@ The Services rely on services and code I don't control. These include:
 - **Supabase**, which stores the email addresses people give on bradcowdrey.com;
 - **GitHub**, for downloads, updates, the terms check, and GitHub Pages, which serves the web versions of the apps;
 - **Open-Meteo**, for weather, place search and ground elevation;
-- **GeoNames**, whose list of world cities is built into Two Degrees for searching without the internet;
+- **GeoNames**, whose list of world cities is built into Two Degrees and Bearings for searching and naming places without the internet;
 - **jsDelivr** and **unpkg**, for web code libraries;
-- **OpenFreeMap**, which serves the OpenStreetMap maps in True North for Android and on the web;
+- **OpenFreeMap**, which serves the OpenStreetMap maps in Bearings for Android and on the web;
 - **Google Fonts**, for fonts on the product pages and web versions;
 - **Apple**, for macOS, iOS and iPadOS, the App Store and TestFlight, notarization, widgets, the location services that find and name where you are, and Apple Maps;
 - **Google**, for Android, its file picker, and the location services that find and name where you are on Android;
@@ -212,21 +212,24 @@ What each Service does:
   - To get the weather, the app and its widgets send the coordinates of your cities to Open-Meteo, along with any place names you search for.
   - If you choose "Use My Location" (Two Degrees asks once, after you agree to these terms), it shows the weather where you are, first in your cities. Your device asks your permission first; on the web, your browser does. Your location is rounded to about a kilometre and sent only to Open-Meteo, to get its weather, and to name the city you're in, to your device's own location service (Apple's on Mac, iPhone and iPad, your phone's on Android; on the web, Open-Meteo). When those can't name it, the app uses its built-in GeoNames city list, on your device. The place it finds is kept on your device with your cities and removed when you turn Use My Location off. It is never sent to me. Turn it off any time in Two Degrees' settings.
   - The web version, at bradcowdrey.com/two-degrees, loads from GitHub Pages, along with the GeoNames city list it uses to name places.
-- **True North:**
-  - True North shows where you are, so it asks your permission to use your location (your device or browser asks first). Your position, heading and settings stay on your device and are never sent to me.
+- **Bearings:**
+  - Bearings shows where you are, so it asks your permission to use your location (your device or browser asks first). Your position, heading and settings stay on your device and are never sent to me.
   - To find the ground elevation, it sends your position, rounded to about 100 metres, to Open-Meteo. It asks again only after you've moved.
   - The map is loaded for where you are: from Apple Maps on Mac, iPhone and iPad, which Apple runs under its own privacy policy; and from OpenFreeMap on Android and on the web, which receives the map tiles' locations, as any map service does.
-  - The compass, level and true north are worked out on your device, from its sensors. On the web, your browser may ask your permission to use motion and orientation.
+  - To name the place you're in, Bearings asks your device's own location service (Apple's on Mac, iPhone and iPad; your phone's on Android, where it has one), which handles your position under its own privacy policy. When it can't, and always on the web, Bearings uses the GeoNames list of towns built into the app, on your device.
+  - The compass, level, true north, the sun and moon, and air pressure (where your device has a barometer) are worked out on your device, from its sensors. On the web, your browser may ask your permission to use motion and orientation.
+  - A spot you mark is kept on your device until you clear it.
+  - Bearings' widgets show your last position, its place name and elevation. They keep them on your device, in storage shared only with the app, and may ask for your location again to stay current; they send nothing anywhere the app doesn't.
   - "Share My Location" and "Copy Coordinates" share your position only where you choose to send it.
-  - The web version, at bradcowdrey.com/true-north, loads from GitHub Pages, with its map library from unpkg.
+  - The web version, at bradcowdrey.com/bearings, loads from GitHub Pages, with its map library from unpkg.
 - **Updates:**
   - The Mac apps contact GitHub to check for and download updates.
   - Cowdrey.MD for Android, when downloaded from bradcowdrey.com, asks GitHub once a day whether a newer version exists. If you choose to update, it downloads the new version from GitHub.
   - App Store apps are updated by Apple. They contact GitHub only for the terms check below.
 - **Terms checks:**
   - Cowdrey.MD (every version, including the web) and the Meridian apps read these terms from GitHub at most once a day, to know when they change. The request sends nothing about you, your documents or your cities.
-  - Two Degrees and True North don't check online; each new version of their apps carries the current terms.
-  - The web versions of Meridian, Two Degrees and True North don't ask you to agree in the app; using them means you agree (Section 2).
+  - Two Degrees and Bearings don't check online; each new version of their apps carries the current terms.
+  - The web versions of Meridian, Two Degrees and Bearings don't ask you to agree in the app; using them means you agree (Section 2).
 - **Book and product purchases:**
   - The store you buy from handles your payment and personal details under its own privacy policy.
   - Some stores, such as Gumroad, share your name and email address with me as the seller. That information is covered by Sections 15 and 16.
@@ -340,7 +343,7 @@ I may offer test or early versions of the apps, for example through Apple's Test
 The apps include open-source software from other people, each used under its own licence, which each app's repository on GitHub lists. Examples:
 - in Cowdrey.MD: CodeMirror, markdown-it, MathJax, Mermaid, highlight.js, DOMPurify and Lucide;
 - on Android: Kotlin and Google's AndroidX and Jetpack Compose libraries, under the Apache License 2.0;
-- in True North for Android and on the web: MapLibre, under the BSD 2-Clause and 3-Clause licences;
+- in Bearings for Android and on the web: MapLibre, under the BSD 2-Clause and 3-Clause licences;
 - fonts such as Inter, under the SIL Open Font License.
 
 Nothing in these terms limits your rights under those licences.
@@ -357,21 +360,21 @@ If you find a security problem in any of the Services, please email legal@bradco
 
 This table summarizes Sections 6, 9, 15 and 20 for each app. Where it and those sections differ, those sections govern.
 
-| | Cowdrey.MD | Meridian | Two Degrees | True North |
+| | Cowdrey.MD | Meridian | Two Degrees | Bearings |
 |---|---|---|---|---|
-| **What it is** | Markdown text editor | World clock and time-zone planner | Weather in °F and °C at once | Compass with your coordinates, elevation and a map |
-| **Platforms** | Mac, iPhone and iPad, Android, web | Mac, iPhone, Android, web (time zones only) | Mac, iPhone and iPad, Android, web, with widgets | iPhone and iPad, Android, Mac (no compass), web |
+| **What it is** | Markdown text editor | World clock and time-zone planner | Weather in °F and °C at once | Compass with where you are, coordinates, elevation, the sun and moon, and a map |
+| **Platforms** | Mac, iPhone and iPad, Android, web | Mac, iPhone, Android, web (time zones only) | Mac, iPhone and iPad, Android, web, with widgets | iPhone and iPad, Android, Mac (no compass), web, with widgets |
 | **Where you get it** | bradcowdrey.com and GitHub; app stores where listed | bradcowdrey.com and GitHub; app stores where listed | bradcowdrey.com and GitHub; app stores where listed, and TestFlight | bradcowdrey.com and GitHub; app stores where listed, and TestFlight |
 | **Price** | Free | Free | Free | Free |
 | **Account** | None | None | None | None |
 | **Ads, analytics, tracking** | None | None | None | None |
-| **Stays on your device** | Your documents and settings | Your cities and settings | Your cities, settings and the last forecasts | Your position, heading and settings |
-| **Leaves your device** | Nothing you write. The web version loads its code from GitHub Pages and jsDelivr | Nothing about you, except as the Location row says. The web version sends nothing | Your cities' coordinates and place searches, to Open-Meteo. The web version loads from GitHub Pages | Your position rounded to about 100 m, to Open-Meteo for the ground elevation; map requests for where you are, to Apple Maps or OpenFreeMap. The web version loads from GitHub Pages and unpkg |
-| **Location** | Not used | In the apps, only if you choose "Use My Location", to name the city you're in. Your device's location service names it; Meridian keeps only the name. The web version uses only your browser's time zone | Only if you choose "Use My Location". Rounded to about a kilometre; sent to Open-Meteo for its weather and to your device's location service to name it | Used while the app is open, if you allow it, to show your coordinates, elevation, map and true north |
+| **Stays on your device** | Your documents and settings | Your cities and settings | Your cities, settings and the last forecasts | Your position, heading, marked spot and settings |
+| **Leaves your device** | Nothing you write. The web version loads its code from GitHub Pages and jsDelivr | Nothing about you, except as the Location row says. The web version sends nothing | Your cities' coordinates and place searches, to Open-Meteo. The web version loads from GitHub Pages | Your position rounded to about 100 m, to Open-Meteo for the ground elevation; map requests for where you are, to Apple Maps or OpenFreeMap; your position to your device's location service, to name the place. The web version loads from GitHub Pages and unpkg |
+| **Location** | Not used | In the apps, only if you choose "Use My Location", to name the city you're in. Your device's location service names it; Meridian keeps only the name. The web version uses only your browser's time zone | Only if you choose "Use My Location". Rounded to about a kilometre; sent to Open-Meteo for its weather and to your device's location service to name it | If you allow it: while the app is open, to show where you are, your elevation, map, the sun and moon, and true north; by the widgets, to stay current |
 | **Permissions it asks for** | Access to files you choose | Location, only if you choose it | Location, only if you choose it | Location; motion (iPhone and iPad, for the level; on the web, your browser may ask) |
 | **Asks you to agree again** | When these terms change (checked online at most daily); at most once a month | The apps: when these terms change (checked online at most daily); at most once a month. The web version doesn't ask | The apps: in the next version after these terms change; at most once a month. The web version doesn't ask | The apps: in the next version after these terms change; at most once a month. The web version doesn't ask |
 | **Contacts GitHub** | To check whether these terms changed (at most daily); the Mac app and the Android download, for updates | To check whether these terms changed (at most daily); the Mac app, for updates | The Mac app, for updates. The Android download doesn't update itself | The Mac app, to check for updates. The Android download doesn't update itself |
-| **Data it relies on** | None | Your device's clock and time-zone data | Open-Meteo forecasts; the GeoNames city list | Your device's sensors and location; Open-Meteo terrain data (Copernicus DEM); Apple Maps or OpenStreetMap |
+| **Data it relies on** | None | Your device's clock and time-zone data | Open-Meteo forecasts; the GeoNames city list | Your device's sensors and location; Open-Meteo terrain data (Copernicus DEM); Apple Maps or OpenStreetMap; the GeoNames town list; the World Magnetic Model (web) |
 | **Key warning** | Browser and phone storage can be erased; keep copies (Section 6) | Times can be wrong; confirm meetings and travel (Section 6) | Not a safety tool; follow official warnings (Section 6) | Not a navigation or safety instrument; carry a map and a real compass (Section 6) |
 | **Source code** | MIT License, on GitHub | MIT License, on GitHub | MIT License, on GitHub | MIT License, on GitHub |
 
@@ -380,8 +383,9 @@ This table summarizes Sections 6, 9, 15 and 20 for each app. Where it and those 
 ## 26. Data and credits
 
 - **Weather data** in Two Degrees is from [Open-Meteo](https://open-meteo.com), under the Creative Commons Attribution 4.0 licence (CC BY 4.0).
-- **The city list** built into Two Degrees is from [GeoNames](https://www.geonames.org), under CC BY 4.0. I've reduced it to places with at least 15,000 people.
-- **Ground elevation** in True North is from [Open-Meteo](https://open-meteo.com) (CC BY 4.0), using the Copernicus DEM GLO-90: © DLR e.V. 2010–2014 and © Airbus Defence and Space GmbH 2014–2018, provided under COPERNICUS by the European Union and ESA.
-- **Maps** in True North for Android and on the web are © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors (Open Database License), served by [OpenFreeMap](https://openfreemap.org) in the OpenMapTiles schema. On Apple devices, maps are from Apple Maps.
+- **The city list** built into Two Degrees and Bearings is from [GeoNames](https://www.geonames.org), under CC BY 4.0. I've reduced it to places with at least 15,000 people.
+- **Ground elevation** in Bearings is from [Open-Meteo](https://open-meteo.com) (CC BY 4.0), using the Copernicus DEM GLO-90: © DLR e.V. 2010–2014 and © Airbus Defence and Space GmbH 2014–2018, provided under COPERNICUS by the European Union and ESA.
+- **Sun and moon** positions in Bearings follow the SunCalc method by Vladimir Agafonkin (BSD-2-Clause). **Magnetic declination** on the web comes from the World Magnetic Model 2025 by NOAA and the British Geological Survey (public domain).
+- **Maps** in Bearings for Android and on the web are © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors (Open Database License), served by [OpenFreeMap](https://openfreemap.org) in the OpenMapTiles schema. On Apple devices, maps are from Apple Maps.
 - **Place names** where you are come from your device's own location service (Apple's or your phone's) or, on the web, from Open-Meteo; when those can't name a place, from the GeoNames list.
 - **Apple, iPhone, iPad, Mac, App Store and TestFlight** are trademarks of Apple Inc. **Android and Google Play** are trademarks of Google LLC. Other names belong to their owners. Their mention doesn't mean they endorse me or the Services.

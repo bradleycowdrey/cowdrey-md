@@ -1,0 +1,293 @@
+11-01 17:33:10.231  2177  2177 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-01 17:33:10.262  2177  2177 I AndroidRuntime: Using default boot image
+11-01 17:33:10.262  2177  2177 I AndroidRuntime: Leaving lock profiling enabled
+11-01 17:33:10.429  2177  2177 D nativeloader: InitDefaultPublicLibraries for_preload=1: libandroid.so:libaaudio.so:libamidi.so:libbinder_ndk.so:libc.so:libcamera2ndk.so:libdl.so:libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libicu.so:libicui18n.so:libicuuc.so:libjnigraphics.so:liblog.so:libmediandk.so:libm.so:libnativehelper.so:libnativewindow.so:libOpenMAXAL.so:libOpenSLES.so:libRS.so:libstdc++.so:libsync.so:libvulkan.so:libwebviewchromium_plat_support.so:libz.so
+11-01 17:33:10.461   558   892 I SdkSandboxManager: No SDKs used. Skipping SDK data reconcilation for CallingInfo{mUid=10209, mPackageName='com.bradcowdrey.cowdreymd, mAppProcessToken='null'}
+11-01 17:33:10.503  2177  2177 D AndroidRuntime: Calling main entry com.android.commands.monkey.Monkey
+11-01 17:33:10.503  2177  2177 W Monkey  : args: [-p, com.bradcowdrey.cowdreymd, -c, android.intent.category.LAUNCHER, 1]
+11-01 17:33:10.504  2177  2177 W Monkey  :  arg: "com.bradcowdrey.cowdreymd"
+11-01 17:33:10.504  2177  2177 W Monkey  : data="com.bradcowdrey.cowdreymd"
+11-01 17:33:10.745  1074  1074 D CarrierSvcBindHelper: onPackageAdded: com.bradcowdrey.cowdreymd
+11-01 17:33:10.922  1074  1281 D ImsResolver: maybeAddedImsService, packageName: com.bradcowdrey.cowdreymd
+11-01 17:33:11.015   558  1928 I ActivityTaskManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.bradcowdrey.cowdreymd/.MainActivity} with LAUNCH_SINGLE_TASK from uid 2000 (BAL_ALLOW_PERMISSION) result code=0
+11-01 17:33:11.032   558   602 I ActivityManager: Start proc 2378:com.bradcowdrey.cowdreymd/u0a209 for next-top-activity {com.bradcowdrey.cowdreymd/com.bradcowdrey.cowdreymd.MainActivity}
+11-01 17:33:11.037  2177  2177 I AndroidRuntime: VM exiting with result code 0.
+11-01 17:33:11.053   558  1930 D CoreBackPreview: Window{9658769 u0 Splash Screen com.bradcowdrey.cowdreymd}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@ec63125, mPriority=0, mIsAnimationCallback=false}
+11-01 17:33:11.220  2378  2378 I wdrey.cowdreymd: Using CollectorTypeCMC GC.
+11-01 17:33:11.221  2378  2378 W wdrey.cowdreymd: Unexpected CPU variant for x86: x86_64.
+11-01 17:33:11.221  2378  2378 W wdrey.cowdreymd: Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, goldmont-without-sha-xsaves, tremont, kabylake, default
+11-01 17:33:11.223  2378  2378 E wdrey.cowdreymd: Not starting debugger since process cannot load the jdwp agent.
+11-01 17:33:11.320  2378  2378 W ziparchive: Unable to open '/data/app/~~aeOG688cTiXg-Mfx0t_p8A==/com.bradcowdrey.cowdreymd-bk3FUgWQ9GraN-WmFl0wgg==/base.dm': No such file or directory
+11-01 17:33:11.320  2378  2378 W ziparchive: Unable to open '/data/app/~~aeOG688cTiXg-Mfx0t_p8A==/com.bradcowdrey.cowdreymd-bk3FUgWQ9GraN-WmFl0wgg==/base.dm': No such file or directory
+11-01 17:33:11.360   558   656 I AppsFilter: interaction: PackageSetting{58c6db3 com.android.microdroid.empty_payload/10199} -> PackageSetting{1a96f70 com.bradcowdrey.cowdreymd/10209} BLOCKED
+11-01 17:33:11.382  1234  1234 I TopTaskTracker: onTaskMovedToFront: (moved taskInfo to front) taskId=8, baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.bradcowdrey.cowdreymd/.MainActivity }
+11-01 17:33:11.397  2378  2378 D nativeloader: Configuring clns-7 for other apk /data/app/~~aeOG688cTiXg-Mfx0t_p8A==/com.bradcowdrey.cowdreymd-bk3FUgWQ9GraN-WmFl0wgg==/base.apk. target_sdk_version=37, uses_libraries=, library_path=/data/app/~~aeOG688cTiXg-Mfx0t_p8A==/com.bradcowdrey.cowdreymd-bk3FUgWQ9GraN-WmFl0wgg==/lib/x86_64:/data/app/~~aeOG688cTiXg-Mfx0t_p8A==/com.bradcowdrey.cowdreymd-bk3FUgWQ9GraN-WmFl0wgg==/base.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.bradcowdrey.cowdreymd
+11-01 17:33:11.439   558   589 V WindowManager:         {WCT{RemoteToken{c63764 Task{7b874c4 #8 type=standard A=10209:com.bradcowdrey.cowdreymd}}} m=OPEN f=NONE leash=Surface(name=Task=8)/@0x300c35d sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},
+11-01 17:33:12.177  2378  2378 D nativeloader: Load /data/app/~~aeOG688cTiXg-Mfx0t_p8A==/com.bradcowdrey.cowdreymd-bk3FUgWQ9GraN-WmFl0wgg==/base.apk!/lib/x86_64/libcowdrey_md_lib.so using ns clns-7 from class loader (caller=/data/app/~~aeOG688cTiXg-Mfx0t_p8A==/com.bradcowdrey.cowdreymd-bk3FUgWQ9GraN-WmFl0wgg==/base.apk): ok
+11-01 17:33:12.303   558   586 D CoreBackPreview: Window{ec5922c u0 com.bradcowdrey.cowdreymd/com.bradcowdrey.cowdreymd.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@5ebadad, mPriority=0, mIsAnimationCallback=false}
+11-01 17:33:12.604   558   589 W ziparchive: Unable to open '/data/app/~~aeOG688cTiXg-Mfx0t_p8A==/com.bradcowdrey.cowdreymd-bk3FUgWQ9GraN-WmFl0wgg==/base.dm': No such file or directory
+11-01 17:33:12.636  2378  2378 W wdrey.cowdreymd: Entry not found
+11-01 17:33:12.677   558  1485 D CoreBackPreview: Window{9658769 u0 Splash Screen com.bradcowdrey.cowdreymd EXITING}: Setting back callback null
+11-01 17:33:12.691   558   589 I ActivityTaskManager: Displayed com.bradcowdrey.cowdreymd/.MainActivity for user 0: +1s942ms
+11-01 17:33:12.692   558  1925 W InputManager-JNI: Input channel object '9658769 Splash Screen com.bradcowdrey.cowdreymd (client)' was disposed without first being removed with the input manager!
+11-01 17:33:12.703   558   868 I AppWidgetServiceImpl: Updating package stopped masked state for uid 10209 package com.bradcowdrey.cowdreymd isStopped false
+11-01 17:33:12.860  2378  2378 D nativeloader: Load /system/lib64/libwebviewchromium_plat_support.so using ns clns-9 from class loader (caller=/data/app/~~BOWDyBkz7WIHIKjvPn2Phw==/com.google.android.webview-bS1i9XvNGfzjTDF9bqv-eA==/WebViewGoogle.apk): ok
+11-01 17:33:12.909  2378  2480 I chromium: [1101/173312.896987:INFO:variations_seed_loader.cc(66)] Failed to open file for reading.: No such file or directory (2)
+11-01 17:33:12.910  2378  2450 I RustStdoutStderr: [1101/173312.896987:INFO:variations_seed_loader.cc(66)] Failed to open file for reading.: No such file or directory (2)
+11-01 17:33:12.911  2378  2480 I cr_VariationsUtils: Failed reading seed file "/data/user/0/com.bradcowdrey.cowdreymd/app_webview/variations_seed_new"
+11-01 17:33:12.914  2378  2480 I chromium: [INFO:variations_seed_loader.cc(66)] Failed to open file for reading.: No such file or directory (2)
+11-01 17:33:12.914  2378  2450 I RustStdoutStderr: [INFO:variations_seed_loader.cc(66)] Failed to open file for reading.: No such file or directory (2)
+11-01 17:33:12.914  2378  2480 I cr_VariationsUtils: Failed reading seed file "/data/user/0/com.bradcowdrey.cowdreymd/app_webview/variations_seed"
+11-01 17:33:13.046   558   883 D ShortcutService: adding package: com.bradcowdrey.cowdreymd userId0
+11-01 17:33:13.046   558   883 D ShortcutService: handlePackageAdded: com.bradcowdrey.cowdreymd user=0
+11-01 17:33:13.046   558   883 D ShortcutService: rescanPackageIfNeeded 0@com.bradcowdrey.cowdreymd, forceRescan=true , isNewApp=true
+11-01 17:33:13.046   558   883 D ShortcutService: Package com.bradcowdrey.cowdreymd has 0 manifest shortcut(s), and 0 share target(s)
+11-01 17:33:13.065   558   602 I ActivityManager: Start proc 2500:com.google.android.webview:webview_service/u0a151 for service {com.google.android.webview/org.chromium.android_webview.services.VariationsSeedServer}
+11-01 17:33:13.221  2378  2506 W chromium: [WARNING:dns_config_service_android.cc(81)] Failed to read DnsConfig.
+11-01 17:33:13.221  2378  2450 I RustStdoutStderr: [WARNING:dns_config_service_android.cc(81)] Failed to read DnsConfig.
+11-01 17:33:13.497   558   693 I ImeTracker: com.bradcowdrey.cowdreymd:2bb995f9: onRequestHide at ORIGIN_SERVER reason HIDE_UNSPECIFIED_WINDOW fromUser false
+11-01 17:33:13.531   558   693 I ImeTracker: com.bradcowdrey.cowdreymd:2bb995f9: onCancelled at PHASE_SERVER_SHOULD_HIDE
+11-01 17:33:13.608  1341  1341 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1986 onStartInput(EditorInfo{EditorInfo{packageName=com.bradcowdrey.cowdreymd, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
+11-01 17:33:13.622   558  1449 W PackageConfigPersister: App-specific configuration not found for packageName: com.bradcowdrey.cowdreymd and userId: 0
+11-01 17:33:14.119  1491  1513 W ogle.android.as: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~aeOG688cTiXg-Mfx0t_p8A==/com.bradcowdrey.cowdreymd-bk3FUgWQ9GraN-WmFl0wgg==/base.apk' with 1 weak references
+11-01 17:33:14.132   558   602 I ActivityManager: Start proc 2579:com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0/u0ai9000 for  {com.bradcowdrey.cowdreymd/org.chromium.content.app.SandboxedProcessService0:0}
+11-01 17:33:14.321  1566  2578 W chromium: [1101/173314.321021:WARNING:url_request_context_config.cc(716)] Unrecognized Cronet experimental option "enable_telemetry" with params "false
+11-01 17:33:14.321  1566  2578 W chromium: 
+11-01 17:33:14.428  2579  2579 I cr_WebViewApkApp: Launched version=124.0.6367.219 minSdkVersion=29 isBundle=false processName=com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0
+11-01 17:33:14.951  2579  2659 W chromium: [WARNING:runtime_features.cc(694)] SharedStorage for M118+ cannot be enabled in this configuration. Use --enable-features=SharedStorageAPI,SharedStorageAPIM118 in addition.
+11-01 17:33:14.952  2579  2659 W chromium: [WARNING:runtime_features.cc(730)] AttributionReportingCrossAppWeb cannot be enabled in this configuration. Use --enable-features=ConversionMeasurement,AttributionReportingCrossAppWeb in addition.
+11-01 17:33:15.112  1491  1491 I AiAiEcho: AppFetcherImplV2 updateApps package:[com.bradcowdrey.cowdreymd], userId:[0], reason:[package is added.].
+11-01 17:33:15.430  2579  2659 I chromium: [INFO:viewport_data.cc(133)] E2E_Used ViewportFitCover
+11-01 17:33:15.586  1234  1277 I Launcher.IconCache: Database bulk icon loading failed, using fallback bulk icon loading for: ComponentInfo{com.bradcowdrey.cowdreymd/com.bradcowdrey.cowdreymd.MainActivity}
+11-01 17:33:15.882   558   602 I ActivityManager: Start proc 2724:com.google.android.webview:webview_apk/u0a151 for service {com.google.android.webview/org.chromium.android_webview.nonembedded.AwComponentUpdateService}
+11-01 17:33:15.919  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:15.923  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:15.925  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:15.926  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:15.926  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:16.147  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name inPosition
+11-01 17:33:16.147  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name inColor
+11-01 17:33:16.147  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 2 name inCircleEdge
+11-01 17:33:16.232  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name a_vertex
+11-01 17:33:16.315  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:16.316  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name localCoord
+11-01 17:33:16.428  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:16.428  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name localCoord
+11-01 17:33:16.578  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:16.579  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:16.579  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:16.581  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:16.582  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:16.609  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:16.609  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name localCoord
+11-01 17:33:16.830  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:16.830  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name localCoord
+11-01 17:33:16.870   932   932 I SafetyLabelChangedBroadcastReceiver: received broadcast packageName: com.bradcowdrey.cowdreymd, current user: UserHandle{0}, packageChangeEvent: NEW_INSTALL, intent user: UserHandle{0}
+11-01 17:33:16.896  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:16.896  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:16.896  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:16.908  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:16.908  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name color
+11-01 17:33:16.910  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:16.910  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:17.001  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:17.001  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name localCoord
+11-01 17:33:17.172  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:17.172  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name localCoord
+11-01 17:33:17.368  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name inPosition
+11-01 17:33:17.368  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name inColor
+11-01 17:33:17.368  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 2 name inCircleEdge
+11-01 17:33:17.477  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name resolveLevel_and_idx
+11-01 17:33:17.477  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name p01
+11-01 17:33:17.477  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 2 name p23
+11-01 17:33:17.477  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 3 name fanPointAttrib
+11-01 17:33:17.658  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:17.658  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name color
+11-01 17:33:17.662  2724  2801 W cr_AWNetworkFetcherTask: 	at org.chromium.android_webview.nonembedded.NetworkFetcherTask.download(chromium-TrichromeWebViewGoogle6432.apk-stable-636771938:56)
+11-01 17:33:17.784  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:17.784  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name color
+11-01 17:33:17.983  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name inPosition
+11-01 17:33:17.983  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name inColor
+11-01 17:33:17.983  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 2 name inCircleEdge
+11-01 17:33:18.120  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name fillBounds
+11-01 17:33:18.120  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name color
+11-01 17:33:18.120  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 2 name locations
+11-01 17:33:18.152  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:18.154  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:18.227  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name inPosition
+11-01 17:33:18.227  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name inColor
+11-01 17:33:18.227  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 2 name inTextureCoords
+11-01 17:33:18.345  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name inPosition
+11-01 17:33:18.345  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name inColor
+11-01 17:33:18.345  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 2 name inCircleEdge
+11-01 17:33:18.431  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:18.431  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name localCoord
+11-01 17:33:18.518  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:18.518  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name color
+11-01 17:33:18.676  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:18.787  2378  2848 D ProfileInstaller: Installing profile for com.bradcowdrey.cowdreymd
+11-01 17:33:18.808  1566  2849 W chromium: [1101/173318.808175:WARNING:url_request_context_config.cc(716)] Unrecognized Cronet experimental option "enable_telemetry" with params "false
+11-01 17:33:18.808  1566  2849 W chromium: 
+11-01 17:33:18.946  2824  2856 D nativeloader: Load /data/app/~~v_IVpUbaKGovcKgh4938Yg==/com.android.chrome-rJzosK1rspOZfYUnAK5iBQ==/Chrome.apk!/lib/x86_64/libchromium_android_linker.so using ns clns-8 from class loader (caller=/data/app/~~v_IVpUbaKGovcKgh4938Yg==/com.android.chrome-rJzosK1rspOZfYUnAK5iBQ==/Chrome.apk): ok
+11-01 17:33:19.027  1341  1859 I SuperDelight: SuperDelightManager.getDelightMetadataUriAndVersion():1009 getDelightMetadataUriAndVersion(): Phenotype : 2024043000 : https://www.gstatic.com/android/keyboard/dictionarypack/GalileoGalilei-normal/metadata.json
+11-01 17:33:21.338  1234  1240 W s.nexuslauncher: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~aeOG688cTiXg-Mfx0t_p8A==/com.bradcowdrey.cowdreymd-bk3FUgWQ9GraN-WmFl0wgg==/base.apk' with 1 weak references
+11-01 17:33:21.392  2378  2391 W wdrey.cowdreymd: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~BOWDyBkz7WIHIKjvPn2Phw==/com.google.android.webview-bS1i9XvNGfzjTDF9bqv-eA==/WebViewGoogle.apk' with 2 weak references
+11-01 17:33:21.431  1454  1828 I Blockstore: [DataStoreImpl] Clearing Blockstore Data for package com.bradcowdrey.cowdreymd [CONTEXT service_id=258 ]
+11-01 17:33:21.446  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:21.451  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:21.451  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:21.451  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:21.452  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:21.454  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:21.459  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:21.461  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:21.461  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:21.468  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:21.593  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name inPosition
+11-01 17:33:21.593  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name inColor
+11-01 17:33:21.593  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 2 name inCircleEdge
+11-01 17:33:21.733  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:21.733  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name color
+11-01 17:33:21.733  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 2 name localCoord
+11-01 17:33:21.949  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:21.949  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name localCoord
+11-01 17:33:21.997  1201  2121 I FontLog : Package com.bradcowdrey.cowdreymd has no metadata [CONTEXT service_id=132 ]
+11-01 17:33:22.020  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:22.020  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name color
+11-01 17:33:22.154  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:22.156  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:22.176  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:22.181  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name inPosition
+11-01 17:33:22.181  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name inColor
+11-01 17:33:22.181  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 2 name inQuadEdge
+11-01 17:33:22.183  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:22.183  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:22.185  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:22.187  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:22.473  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:22.473  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name color
+11-01 17:33:22.664  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name inPosition
+11-01 17:33:22.664  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name inColor
+11-01 17:33:22.664  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 2 name inCircleEdge
+11-01 17:33:22.670   921   928 W ndroid.systemui: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~aeOG688cTiXg-Mfx0t_p8A==/com.bradcowdrey.cowdreymd-bk3FUgWQ9GraN-WmFl0wgg==/base.apk' with 2 weak references
+11-01 17:33:22.750  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:22.773  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name localCoord
+11-01 17:33:22.842  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:22.842  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name color
+11-01 17:33:22.842  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 2 name localCoord
+11-01 17:33:22.961  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:22.989  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name color
+11-01 17:33:23.101  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:23.101  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name color
+11-01 17:33:23.101  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 2 name localCoord
+11-01 17:33:23.146  1234  1277 D SessionCommitReceiver: Removing PromiseIcon for package: com.bradcowdrey.cowdreymd, install reason: 0, alreadyAddedPromiseIcon: false
+11-01 17:33:23.219  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:23.532  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name localCoord
+11-01 17:33:23.532  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name a_vertex
+11-01 17:33:23.532  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:23.532  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name localCoord
+11-01 17:33:23.675  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:23.675  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name localCoord
+11-01 17:33:23.742  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name inPosition
+11-01 17:33:23.742  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name inColor
+11-01 17:33:23.742  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 2 name inCircleEdge
+11-01 17:33:23.872  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:23.895  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name localCoord
+11-01 17:33:24.207  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name position
+11-01 17:33:24.213  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name color
+11-01 17:33:24.214  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 2 name localCoord
+11-01 17:33:24.295  1454  1460 W gle.android.gms: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~aeOG688cTiXg-Mfx0t_p8A==/com.bradcowdrey.cowdreymd-bk3FUgWQ9GraN-WmFl0wgg==/base.apk' with 1 weak references
+11-01 17:33:25.007  1234  1277 D PackageUpdatedTask: Package updated: mOp=ADD packages=[com.bradcowdrey.cowdreymd]
+11-01 17:33:26.717  1566  1713 D nativeloader: Load /system/lib64/libwebviewchromium_plat_support.so using ns clns-9 from class loader (caller=/data/app/~~BOWDyBkz7WIHIKjvPn2Phw==/com.google.android.webview-bS1i9XvNGfzjTDF9bqv-eA==/WebViewGoogle.apk): ok
+11-01 17:33:26.800  1566  3311 I chromium: [INFO:variations_seed_loader.cc(66)] Failed to open file for reading.: No such file or directory (2)
+11-01 17:33:26.800  1566  3311 I chromium: [INFO:variations_seed_loader.cc(66)] Failed to open file for reading.: No such file or directory (2)
+11-01 17:33:27.022   558   602 I ActivityManager: Start proc 3329:com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0/u0i1 for  {com.google.android.googlequicksearchbox/org.chromium.content.app.SandboxedProcessService0:0}
+11-01 17:33:27.231  3329  3329 I cr_WebViewApkApp: Launched version=124.0.6367.219 minSdkVersion=29 isBundle=false processName=com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0
+11-01 17:33:30.298  1454  1460 W gle.android.gms: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~aeOG688cTiXg-Mfx0t_p8A==/com.bradcowdrey.cowdreymd-bk3FUgWQ9GraN-WmFl0wgg==/base.apk' with 1 weak references
+11-01 17:33:30.542  1234  1240 W s.nexuslauncher: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~aeOG688cTiXg-Mfx0t_p8A==/com.bradcowdrey.cowdreymd-bk3FUgWQ9GraN-WmFl0wgg==/base.apk' with 1 weak references
+11-01 17:33:30.725  1087  1094 W ndroid.settings: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~aeOG688cTiXg-Mfx0t_p8A==/com.bradcowdrey.cowdreymd-bk3FUgWQ9GraN-WmFl0wgg==/base.apk' with 1 weak references
+11-01 17:33:36.611  3841  3841 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-01 17:33:36.626  3841  3841 I AndroidRuntime: Using default boot image
+11-01 17:33:36.626  3841  3841 I AndroidRuntime: Leaving lock profiling enabled
+11-01 17:33:36.844  3841  3841 D nativeloader: InitDefaultPublicLibraries for_preload=1: libandroid.so:libaaudio.so:libamidi.so:libbinder_ndk.so:libc.so:libcamera2ndk.so:libdl.so:libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libicu.so:libicui18n.so:libicuuc.so:libjnigraphics.so:liblog.so:libmediandk.so:libm.so:libnativehelper.so:libnativewindow.so:libOpenMAXAL.so:libOpenSLES.so:libRS.so:libstdc++.so:libsync.so:libvulkan.so:libwebviewchromium_plat_support.so:libz.so
+11-01 17:33:36.957  3841  3841 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+11-01 17:33:38.215  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:38.218  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:38.229  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:38.229  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:38.229  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:38.229  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:38.230  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:38.318  3841  3841 D AndroidRuntime: Shutting down VM
+11-01 17:33:39.869  3982  3982 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-01 17:33:39.876  3982  3982 I AndroidRuntime: Using default boot image
+11-01 17:33:39.877  3982  3982 I AndroidRuntime: Leaving lock profiling enabled
+11-01 17:33:40.046  3982  3982 D nativeloader: InitDefaultPublicLibraries for_preload=1: libandroid.so:libaaudio.so:libamidi.so:libbinder_ndk.so:libc.so:libcamera2ndk.so:libdl.so:libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libicu.so:libicui18n.so:libicuuc.so:libjnigraphics.so:liblog.so:libmediandk.so:libm.so:libnativehelper.so:libnativewindow.so:libOpenMAXAL.so:libOpenSLES.so:libRS.so:libstdc++.so:libsync.so:libvulkan.so:libwebviewchromium_plat_support.so:libz.so
+11-01 17:33:40.110  3982  3982 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+11-01 17:33:41.139  3982  3982 D AndroidRuntime: Shutting down VM
+11-01 17:33:42.080  1341  1341 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1986 onStartInput(EditorInfo{EditorInfo{packageName=com.bradcowdrey.cowdreymd, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=12000000, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
+11-01 17:33:42.085   558  1929 W PackageConfigPersister: App-specific configuration not found for packageName: com.bradcowdrey.cowdreymd and userId: 0
+11-01 17:33:43.577  1087  1094 W ndroid.settings: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~aeOG688cTiXg-Mfx0t_p8A==/com.bradcowdrey.cowdreymd-bk3FUgWQ9GraN-WmFl0wgg==/base.apk' with 1 weak references
+11-01 17:33:45.369  4102  4102 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-01 17:33:45.380  4102  4102 I AndroidRuntime: Using default boot image
+11-01 17:33:45.380  4102  4102 I AndroidRuntime: Leaving lock profiling enabled
+11-01 17:33:45.620  4102  4102 D nativeloader: InitDefaultPublicLibraries for_preload=1: libandroid.so:libaaudio.so:libamidi.so:libbinder_ndk.so:libc.so:libcamera2ndk.so:libdl.so:libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libicu.so:libicui18n.so:libicuuc.so:libjnigraphics.so:liblog.so:libmediandk.so:libm.so:libnativehelper.so:libnativewindow.so:libOpenMAXAL.so:libOpenSLES.so:libRS.so:libstdc++.so:libsync.so:libvulkan.so:libwebviewchromium_plat_support.so:libz.so
+11-01 17:33:45.750  4102  4102 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+11-01 17:33:47.120  4102  4102 D AndroidRuntime: Shutting down VM
+11-01 17:33:49.151  3610  3752 D StrictMode: 	at org.chromium.net.CronetEngine$Builder.getEnabledCronetProviders(PG:25)
+11-01 17:33:49.151  3610  3752 D StrictMode: 	at org.chromium.net.CronetEngine$Builder.createBuilderDelegate(PG:16)
+11-01 17:33:49.151  3610  3752 D StrictMode: 	at org.chromium.net.CronetEngine$Builder.<init>(PG:1)
+11-01 17:33:49.151  3610  3752 D StrictMode: 	at org.chromium.net.ExperimentalCronetEngine$Builder.<init>(PG:1)
+11-01 17:33:49.159  3610  3752 D StrictMode: 	at org.chromium.net.CronetEngine$Builder.getEnabledCronetProviders(PG:25)
+11-01 17:33:49.159  3610  3752 D StrictMode: 	at org.chromium.net.CronetEngine$Builder.createBuilderDelegate(PG:16)
+11-01 17:33:49.159  3610  3752 D StrictMode: 	at org.chromium.net.CronetEngine$Builder.<init>(PG:1)
+11-01 17:33:49.159  3610  3752 D StrictMode: 	at org.chromium.net.ExperimentalCronetEngine$Builder.<init>(PG:1)
+11-01 17:33:49.159  3610  3752 D StrictMode: 	at org.chromium.net.CronetEngine$Builder.getEnabledCronetProviders(PG:25)
+11-01 17:33:49.159  3610  3752 D StrictMode: 	at org.chromium.net.CronetEngine$Builder.createBuilderDelegate(PG:16)
+11-01 17:33:49.159  3610  3752 D StrictMode: 	at org.chromium.net.CronetEngine$Builder.<init>(PG:1)
+11-01 17:33:49.159  3610  3752 D StrictMode: 	at org.chromium.net.ExperimentalCronetEngine$Builder.<init>(PG:1)
+11-01 17:33:49.174  3610  3752 D StrictMode: 	at org.chromium.net.CronetEngine$Builder.getEnabledCronetProviders(PG:25)
+11-01 17:33:49.174  3610  3752 D StrictMode: 	at org.chromium.net.CronetEngine$Builder.createBuilderDelegate(PG:16)
+11-01 17:33:49.174  3610  3752 D StrictMode: 	at org.chromium.net.CronetEngine$Builder.<init>(PG:1)
+11-01 17:33:49.174  3610  3752 D StrictMode: 	at org.chromium.net.ExperimentalCronetEngine$Builder.<init>(PG:1)
+11-01 17:33:49.175  3610  3752 D StrictMode: 	at org.chromium.net.CronetEngine$Builder.getEnabledCronetProviders(PG:25)
+11-01 17:33:49.175  3610  3752 D StrictMode: 	at org.chromium.net.CronetEngine$Builder.createBuilderDelegate(PG:16)
+11-01 17:33:49.175  3610  3752 D StrictMode: 	at org.chromium.net.CronetEngine$Builder.<init>(PG:1)
+11-01 17:33:49.175  3610  3752 D StrictMode: 	at org.chromium.net.ExperimentalCronetEngine$Builder.<init>(PG:1)
+11-01 17:33:49.175  3610  3752 D StrictMode: 	at org.chromium.net.CronetEngine$Builder.getEnabledCronetProviders(PG:25)
+11-01 17:33:49.175  3610  3752 D StrictMode: 	at org.chromium.net.CronetEngine$Builder.createBuilderDelegate(PG:16)
+11-01 17:33:49.175  3610  3752 D StrictMode: 	at org.chromium.net.CronetEngine$Builder.<init>(PG:1)
+11-01 17:33:49.175  3610  3752 D StrictMode: 	at org.chromium.net.ExperimentalCronetEngine$Builder.<init>(PG:1)
+11-01 17:33:49.332  4182  4182 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-01 17:33:49.339  4182  4182 I AndroidRuntime: Using default boot image
+11-01 17:33:49.339  4182  4182 I AndroidRuntime: Leaving lock profiling enabled
+11-01 17:33:49.574  4182  4182 D nativeloader: InitDefaultPublicLibraries for_preload=1: libandroid.so:libaaudio.so:libamidi.so:libbinder_ndk.so:libc.so:libcamera2ndk.so:libdl.so:libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libicu.so:libicui18n.so:libicuuc.so:libjnigraphics.so:liblog.so:libmediandk.so:libm.so:libnativehelper.so:libnativewindow.so:libOpenMAXAL.so:libOpenSLES.so:libRS.so:libstdc++.so:libsync.so:libvulkan.so:libwebviewchromium_plat_support.so:libz.so
+11-01 17:33:49.609  4182  4182 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+11-01 17:33:49.927  3610  4187 I cr_CronetUrlRequestContext: destroyNativeStreamLocked org.chromium.net.impl.CronetBidirectionalStream@7ae3bbe
+11-01 17:33:50.790  4182  4182 D AndroidRuntime: Shutting down VM
+11-01 17:33:51.316  1454  3954 I cr_CronetUrlRequestContext: destroyNativeStreamLocked org.chromium.net.impl.CronetBidirectionalStream@aa8583d
+11-01 17:33:51.904  3610  4187 I cr_CronetUrlRequestContext: destroyNativeStreamLocked org.chromium.net.impl.CronetBidirectionalStream@51b4923
+11-01 17:33:52.221  1370  1383 W .apps.wellbeing: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~aeOG688cTiXg-Mfx0t_p8A==/com.bradcowdrey.cowdreymd-bk3FUgWQ9GraN-WmFl0wgg==/base.apk' with 1 weak references
+11-01 17:33:54.705  2579  2659 I chromium: [INFO:document_style_environment_variables.cc(104)] E2E_Used SafeAreaInsetBottom
+11-01 17:33:56.704   921   964 V WindowManagerShell: Transition requested (#22): android.os.BinderProxy@b8fa280 TransitionRequestInfo { type = CLOSE, triggerTask = TaskInfo{userId=0 taskId=8 displayId=0 isRunning=false baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.bradcowdrey.cowdreymd/.MainActivity } baseActivity=null topActivity=null origActivity=null realActivity=ComponentInfo{com.bradcowdrey.cowdreymd/com.bradcowdrey.cowdreymd.MainActivity} numActivities=0 lastActiveTime=40946 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{android.window.IWindowContainerToken$Stub$Proxy@eab60b9} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=null topActivityInfo=null launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=true isVisible=true isVisibleRequested=true isSleeping=false locusId=null displayAreaFeatureId=1 isTopActivityTransparent=false appCompatTaskInfo=AppCompatTaskInfo { topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= falseisLetterboxEducationEnabled= false isLetterboxDoubleTapEnabled= false topActivityEligibleForUserAspectRatioButton= false topActivityBoundsLetterboxed= false isFromLetterboxDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 isUserFullscreenOverrideEnabled=false isSystemFullscreenOverrideEnabled=false cameraCompatTaskInfo=CameraCompatTaskInfo { cameraCompatControlState=hidden freeformCameraCompatMode=inactive}}}, pipTask = null, remoteTransition = null, displayChange = null, flags = 0, debugId = 22 }
+11-01 17:33:56.876  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 0 name radii_selector
+11-01 17:33:56.876  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 1 name corner_and_radius_outsets
+11-01 17:33:56.876  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 2 name aa_bloat_and_coverage
+11-01 17:33:56.876  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 3 name radii_x
+11-01 17:33:56.876  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 4 name radii_y
+11-01 17:33:56.876  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 5 name skew
+11-01 17:33:56.876  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 6 name translate_and_localrotate
+11-01 17:33:56.876  2378  2450 I RustStdoutStderr: s_glBindAttribLocation: bind attrib 7 name color
+11-01 17:33:58.727   558   589 V WindowManager: Sent Transition (#22) createdAt=11-01 17:33:56.700 via request=TransitionRequestInfo { type = CLOSE, triggerTask = TaskInfo{userId=0 taskId=8 displayId=0 isRunning=false baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.bradcowdrey.cowdreymd/.MainActivity } baseActivity=null topActivity=null origActivity=null realActivity=ComponentInfo{com.bradcowdrey.cowdreymd/com.bradcowdrey.cowdreymd.MainActivity} numActivities=0 lastActiveTime=40946 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{c63764 Task{7b874c4 #8 type=standard A=10209:com.bradcowdrey.cowdreymd}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=null topActivityInfo=null launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=true isVisible=true isVisibleRequested=true isSleeping=false locusId=null displayAreaFeatureId=1 isTopActivityTransparent=false appCompatTaskInfo=AppCompatTaskInfo { topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= falseisLetterboxEducationEnabled= false isLetterboxDoubleTapEnabled= false topActivityEligibleForUserAspectRatioButton= false topActivityBoundsLetterboxed= false isFromLetterboxDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 isUserFullscreenOverrideEnabled=false isSystemFullscreenOverrideEnabled=false cameraCompatTaskInfo=CameraCompatTaskInfo { cameraCompatControlState=hidden freeformCameraCompatMode=inactive}}}, pipTask = null, remoteTransition = null, displayChange = null, flags = 0, debugId = 22 }
+11-01 17:33:58.727   558   589 V WindowManager:         {WCT{RemoteToken{c63764 Task{7b874c4 #8 type=standard A=10209:com.bradcowdrey.cowdreymd}}} m=CLOSE f=NONE leash=Surface(name=Task=8)/@0x300c35d sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},
+11-01 17:34:00.321   558  1031 D CoreBackPreview: Window{ec5922c u0 com.bradcowdrey.cowdreymd/com.bradcowdrey.cowdreymd.MainActivity}: Setting back callback null
+11-01 17:34:00.336   558  1482 W InputManager-JNI: Input channel object 'ec5922c com.bradcowdrey.cowdreymd/com.bradcowdrey.cowdreymd.MainActivity (client)' was disposed without first being removed with the input manager!
+11-01 17:34:01.945  2378  2450 I RustStdoutStderr: FORTIFY: pthread_mutex_lock called on a destroyed mutex (0x7c97ca202ab8)
+11-01 17:34:02.192  4384  4384 W linker64: type=1400 audit(0.0:58): avc:  denied  { search } for  name="tests" dev="dm-46" ino=65540 scontext=u:r:untrusted_app:s0:c209,c256,c512,c768 tcontext=u:object_r:shell_test_data_file:s0 tclass=dir permissive=0 app=com.bradcowdrey.cowdreymd
+11-01 17:34:02.192  4384  4384 W linker64: type=1400 audit(0.0:59): avc:  denied  { search } for  name="tests" dev="dm-46" ino=65540 scontext=u:r:untrusted_app:s0:c209,c256,c512,c768 tcontext=u:object_r:shell_test_data_file:s0 tclass=dir permissive=0 app=com.bradcowdrey.cowdreymd
+11-01 17:34:02.192  4384  4384 W linker64: type=1400 audit(0.0:60): avc:  denied  { search } for  name="tests" dev="dm-46" ino=65540 scontext=u:r:untrusted_app:s0:c209,c256,c512,c768 tcontext=u:object_r:shell_test_data_file:s0 tclass=dir permissive=0 app=com.bradcowdrey.cowdreymd
+11-01 17:34:02.192  4384  4384 W linker64: type=1400 audit(0.0:61): avc:  denied  { search } for  name="tests" dev="dm-46" ino=65540 scontext=u:r:untrusted_app:s0:c209,c256,c512,c768 tcontext=u:object_r:shell_test_data_file:s0 tclass=dir permissive=0 app=com.bradcowdrey.cowdreymd
+11-01 17:34:02.603   558  1116 I ActivityManager: Process com.bradcowdrey.cowdreymd (pid 2378) has died: cch CRE 
+11-01 17:34:02.634  2579  2579 I AndroidRuntime: VM exiting with result code 0, cleanup skipped.
+11-01 17:34:02.697   558  1031 I ActivityManager: Process com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0 (pid 2579) has died: fg  SVC 
+11-01 17:34:08.489   558   583 W system_server: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~aeOG688cTiXg-Mfx0t_p8A==/com.bradcowdrey.cowdreymd-bk3FUgWQ9GraN-WmFl0wgg==/base.apk' with 1 weak references

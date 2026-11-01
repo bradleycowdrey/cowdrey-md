@@ -2,6 +2,10 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.34
+
+- **Sharing Cowdrey.MD shows the Cowdrey.MD icon** at the top of the share sheet (1.0.32 showed a generic link icon).
+
 ## 1.0.33
 
 - **The page blurs behind dialogs and panels** (About, Version history, the Format, Insert, Share and More panels, and the sidebar on narrow screens), so what's in front is easy to read. With Reduce Transparency on, the page dims instead.

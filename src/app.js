@@ -3466,7 +3466,7 @@ function shareApp() {
   }
   if (MOBILE_APP) {
     // A link with the app's name and icon at the top of the share sheet, and the message for apps that take text.
-    nativeCall('shareLink', { url: APP_URL, title: 'Cowdrey.MD', text: SHARE_TEXT, position: shareAnchor() })
+    nativeCall('shareLink', { url: APP_URL, title: 'Cowdrey.MD', text: SHARE_TEXT, icon: '__APP_ICON__', position: shareAnchor() })
       .catch((e) => { if (!/cancel/i.test(String(e))) copyText(APP_URL, 'Link to Cowdrey.MD copied'); });
     return;
   }

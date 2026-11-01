@@ -63,6 +63,7 @@ struct FolderOptions: Decodable {
 struct LinkOptions: Decodable {
   let url: String
   let title: String?
+  let icon: String?  // the icon as a data: URL or base64 PNG
   let text: String?
   let position: SharePosition?
 }
@@ -71,7 +72,8 @@ struct LinkOptions: Decodable {
 class LinkItem: NSObject, UIActivityItemSource {
   let url: URL
   let title: String
-  init(url: URL, title: String) { self.url = url; self.title = title }
+  let icon: UIImage?
+  init(url: URL, title: String, icon: UIImage?) { self.url = url; self.title = title; self.icon = icon }
   func activityViewControllerPlaceholderItem(_ controller: UIActivityViewController) -> Any { url }
   func activityViewController(_ controller: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? { url }
   func activityViewController(_ controller: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String { title }
@@ -80,7 +82,7 @@ class LinkItem: NSObject, UIActivityItemSource {
     m.originalURL = url
     m.url = url
     m.title = title
-    if let icon = LinkItem.appIcon() {
+    if let icon = self.icon ?? LinkItem.appIcon() {
       m.iconProvider = NSItemProvider(object: icon)
       m.imageProvider = NSItemProvider(object: icon)
     }
@@ -244,7 +246,12 @@ class SharePlugin: Plugin {
         invoke.reject("Invalid link")
         return
       }
-      var items: [Any] = [LinkItem(url: url, title: args.title ?? url.host ?? "Link")]
+      var icon: UIImage?
+      if let raw = args.icon {
+        let b64 = raw.range(of: "base64,").map { String(raw[$0.upperBound...]) } ?? raw
+        if let data = Data(base64Encoded: b64) { icon = UIImage(data: data) }
+      }
+      var items: [Any] = [LinkItem(url: url, title: args.title ?? url.host ?? "Link", icon: icon)]
       if let text = args.text, !text.isEmpty { items.insert(TextItem(text), at: 0) }
       self.present(items, position: args.position, invoke: invoke)
     }

@@ -3446,6 +3446,12 @@ function mobileRename() {
     },
   });
 }
+// Automated checks in the iPhone Simulator open one panel (see .github/workflows/ios-qa.yml).
+window.__cowdreyQA = (kind) => {
+  try { if (!store.get(KEY + ':terms', null)) { store.set(KEY + ':terms', TERMS_BUILT.hash); termsAsking = false; closeDialog(); } } catch {}
+  const run = { shareApp, shareMd: () => runCmd('saveMd'), shareDocx: () => runCmd('exportDocx'), pdf: () => runCmd('exportPdf'), print: () => runCmd('print'), open: () => runCmd('openFile'), saveAs: () => runCmd('saveAs'), folder: chooseSyncFolder, sheet: () => mobileAction('share') }[kind];
+  if (run) setTimeout(run, 300);
+};
 // Where the share sheet points from on iPad (the Share button, or the top-right corner).
 function shareAnchor() {
   const b = document.querySelector('[data-m="share"]');

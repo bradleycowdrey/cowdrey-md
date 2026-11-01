@@ -331,6 +331,22 @@ pub fn run() {
     let builder = builder
         .plugin(tauri_plugin_sharekit::init())
         .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, write_binary_file, write_share_file, quit_app, allow_exit, hold_quit]);
+    // Automated checks in the iPhone Simulator (see .github/workflows/ios-qa.yml): with COWDREY_QA set, the page
+    // opens that panel a few seconds after launch, so the check can photograph it. Nothing happens otherwise.
+    #[cfg(mobile)]
+    let builder = builder.setup(|app| {
+        if let Ok(kind) = std::env::var("COWDREY_QA") {
+            let handle = app.handle().clone();
+            std::thread::spawn(move || {
+                std::thread::sleep(Duration::from_secs(8));
+                let kind: String = kind.chars().filter(|c| c.is_ascii_alphanumeric()).collect();
+                if let Some(w) = handle.get_webview_window("main") {
+                    let _ = w.eval(&format!("window.__cowdreyQA && window.__cowdreyQA('{kind}')"));
+                }
+            });
+        }
+        Ok(())
+    });
     builder
         .manage(PendingFiles(Mutex::new(Vec::new())))
         .manage(Quitting(AtomicBool::new(false)))

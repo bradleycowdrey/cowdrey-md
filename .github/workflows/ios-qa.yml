@@ -1,0 +1,103 @@
+name: iPhone checks in the Simulator
+
+# Installs the iPhone app in the iPhone Simulator and photographs each panel that iOS draws itself (share sheet,
+# PDF, print, file picker), so they can be checked before a build goes to TestFlight. The photos and the log go on
+# the ios-qa branch, readable without signing in. The app opens each panel when launched with COWDREY_QA set.
+on:
+  push:
+    branches: [main]
+    paths:
+      - src/**
+      - desktop/src-tauri/**
+      - .github/workflows/ios-qa.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  qa:
+    name: Photograph the iPhone app's panels in the Simulator
+    runs-on: macos-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios-sim
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri -> target
+          key: ios-sim
+
+      - name: Use the newest Xcode
+        run: |
+          XC=$(ls -d /Applications/Xcode_*.app | grep -vi beta | sort -V | tail -1)
+          echo "Using $XC" | tee -a "$RUNNER_TEMP/qa.log"
+          sudo xcode-select -s "$XC"
+          xcodebuild -version | tee -a "$RUNNER_TEMP/qa.log"
+
+      - name: Install build tools and libraries
+        working-directory: desktop
+        run: npm ci
+
+      - name: Bundle the web app for offline use
+        working-directory: desktop
+        run: node build.mjs
+
+      - name: Create the Xcode project
+        working-directory: desktop
+        run: npx tauri ios init --ci 2>&1 | tail -5 | tee -a "$RUNNER_TEMP/qa.log"
+
+      - name: Build for the Simulator
+        working-directory: desktop
+        run: |
+          npx tauri ios build --target aarch64-sim --debug --ci 2>&1 | tail -60 | tee -a "$RUNNER_TEMP/qa.log" || true
+          APP=$(find src-tauri/gen/apple -type d -name '*.app' | grep -i simulator | head -1)
+          [ -n "$APP" ] || APP=$(find src-tauri/gen/apple src-tauri/target -type d -name 'Cowdrey.MD.app' 2>/dev/null | head -1)
+          echo "App: $APP" | tee -a "$RUNNER_TEMP/qa.log"
+          test -n "$APP"
+          echo "APP=$PWD/$APP" >> "$GITHUB_ENV"
+
+      - name: Photograph each panel
+        run: |
+          DEV=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys, re
+          d = json.load(sys.stdin)["devices"]
+          ver = lambda k: [int(x) for x in re.findall(r"\d+", k.split("iOS")[-1])]
+          for k in sorted([k for k in d if "iOS" in k], key=ver, reverse=True):
+              phones = [x for x in d[k] if x["name"].startswith("iPhone") and "Pro" in x["name"] and "Max" not in x["name"]] or [x for x in d[k] if x["name"].startswith("iPhone")]
+              if phones:
+                  print(phones[-1]["udid"]); print(k + " " + phones[-1]["name"], file=sys.stderr); break
+          ' 2>>"$RUNNER_TEMP/qa.log")
+          xcrun simctl boot "$DEV"
+          xcrun simctl bootstatus "$DEV" -b > /dev/null
+          xcrun simctl install "$DEV" "$APP"
+          mkdir -p "$RUNNER_TEMP/qa"
+          for k in none shareApp sheet shareMd pdf print open; do
+            SIMCTL_CHILD_COWDREY_QA=$k xcrun simctl launch "$DEV" com.bradcowdrey.cowdreymd > /dev/null
+            sleep 18
+            xcrun simctl io "$DEV" screenshot "$RUNNER_TEMP/qa/$k.png" > /dev/null 2>&1
+            echo "photographed $k" | tee -a "$RUNNER_TEMP/qa.log"
+            xcrun simctl terminate "$DEV" com.bradcowdrey.cowdreymd || true
+            sleep 2
+          done
+
+      - name: Publish the photos and log
+        if: always()
+        run: |
+          D=$(mktemp -d); cd "$D" && git init -q -b ios-qa
+          [[ -d "$RUNNER_TEMP/qa" ]] && cp "$RUNNER_TEMP"/qa/*.png . 2>/dev/null
+          [[ -f "$RUNNER_TEMP/qa.log" ]] && tail -c 200000 "$RUNNER_TEMP/qa.log" > qa.log
+          echo "${{ job.status }} · run ${{ github.run_number }} · ${{ github.sha }}" > status.txt
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com add .
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -qm "iPhone Simulator check, run ${{ github.run_number }}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ios-qa

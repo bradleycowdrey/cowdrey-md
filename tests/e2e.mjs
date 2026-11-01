@@ -1495,6 +1495,33 @@ await test('About shows the app icon, in light and dark', async () => {
     eq(Q.errors, []); await Q.ctx.close();
   }
 });
+await test('Code line numbers: a separate option, beside the code, aligned, and left out of copies', async () => {
+  const Q = await newPage();
+  await setDoc(Q, 'Intro\n\n```js\nconst a = 1;\n/* a comment\n   over two lines */\nreturn a;\n```\n\nEnd'); await settle(Q, 400);
+  eq(await Q.$$eval('#preview .code-lines', (e) => e.length), 0, 'off by default');
+  eq(await Q.evaluate(() => [window.__cowdreyTest.label('toggleLineNumbers'), window.__cowdreyTest.label('toggleCodeLines')]), ['Editor line numbers', 'Code line numbers'], 'two separate options');
+  await Q.evaluate(() => window.__cowdreyTest.run('toggleCodeLines')); await settle(Q, 400);
+  eq(await Q.$eval('#preview .code-lines', (e) => e.textContent), '1\n2\n3\n4', 'one number per line');
+  eq(await Q.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getOption('lineNumbers')), false, 'the editor option is unchanged');
+  // each number sits level with its line of code
+  const gap = await Q.evaluate(() => {
+    // where the first and last characters of each column are drawn
+    const first = (el) => { const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode()) && !n.textContent.trim()); const r = document.createRange(); r.setStart(n, n.textContent.search(/\S/)); r.setEnd(n, n.textContent.search(/\S/) + 1); return r.getBoundingClientRect(); };
+    const g = first(document.querySelector('#preview .code-lines')), c = first(document.querySelector('#preview .code-body code'));
+    const gb = document.querySelector('#preview .code-lines').getBoundingClientRect(), cb = document.querySelector('#preview .code-body pre').getBoundingClientRect();
+    return [Math.abs(g.top - c.top), Math.abs(gb.height - cb.height)];
+  });
+  ok(gap[0] < 1 && gap[1] < 1, 'numbers line up with the code: ' + JSON.stringify(gap));
+  ok(await Q.$eval('#preview .code-lines', (e) => getComputedStyle(e).userSelect === 'none'), 'numbers are not selectable');
+  if (process.env.SHOTS) await (await Q.$('#preview .code-block')).screenshot({ path: path.join(process.env.SHOTS, 'code-lines.png') });
+  // Copy copies only the code
+  await Q.click('#preview .copy-code'); await settle(Q, 200);
+  eq(await Q.evaluate(() => navigator.clipboard.readText()), 'const a = 1;\n/* a comment\n   over two lines */\nreturn a;\n', 'Copy leaves the numbers out');
+  ok(await Q.evaluate(() => window.__cowdreyTest.settings().codeLines), 'remembered');
+  await Q.evaluate(() => window.__cowdreyTest.run('toggleCodeLines')); await settle(Q, 300);
+  eq(await Q.$$eval('#preview .code-lines', (e) => e.length), 0, 'and off again');
+  eq(Q.errors, []); await Q.ctx.close();
+});
 await test('no library URL points at a file that does not exist', async () => { eq([...missing], []); });
 await test('no uncaught page errors during the whole run', async () => { eq(P.errors, []); });
 

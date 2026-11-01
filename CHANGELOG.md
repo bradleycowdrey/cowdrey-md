@@ -2,6 +2,10 @@
 
 iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
+## 1.0.35
+
+- **Code line numbers**, a new option beside **Editor line numbers** (View menu, the View ribbon, and More › Writing on phones). It numbers each line of the code blocks on the page, in print and PDF, in the web page export and in Word documents. Copying a code block leaves the numbers out. Prose is never numbered: its lines move with the page width and text size.
+
 ## 1.0.34
 
 - **Sharing Cowdrey.MD shows the Cowdrey.MD icon** at the top of the share sheet (1.0.32 showed a generic link icon).

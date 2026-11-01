@@ -45,7 +45,7 @@ const KEY = 'cowdrey.md';
 
 const DEFAULTS = {
   view: 'split', outline: true, sideTab: 'outline', sync: true, focus: false, typewriter: false,
-  lineNumbers: false, wrap: true, ruler: true, guides: true, edTheme: 'auto', edSize: 14,
+  lineNumbers: false, codeLines: false, wrap: true, ruler: true, guides: true, edTheme: 'auto', edSize: 14,
   pageStyle: 'cowdrey', pageSize: 'letter', margins: 'normal', zoom: 'fit',
   typographer: true, breaks: false, math: true, diagrams: true,
   ribbonTab: 'home', ribbonCollapsed: false, sideRail: false, sideWidth: 248, split: 0.45, appTheme: 'system', openTabs: [],
@@ -226,7 +226,11 @@ function structurePlugin(md) {
         if (lang && hljs.getLanguage(lang)) code = hljs.highlight(t.content, { language: lang, ignoreIllegals: true }).value;
       } catch {}
     }
-    return `<div class="code-block"${line}><div class="code-head"><span>${esc(lang || 'text')}</span><button class="copy-code" type="button">Copy</button></div><pre><code class="hljs${lang ? ' language-' + esc(lang) : ''}">${code}</code></pre></div>\n`;
+    const pre = `<pre><code class="hljs${lang ? ' language-' + esc(lang) : ''}">${code}</code></pre>`;
+    // Line numbers in code blocks (an option): a column beside the code, left out when copying or selecting.
+    const n = S.codeLines ? t.content.replace(/\n$/, '').split('\n').length : 0;
+    const body = n ? `<div class="code-body"><div class="code-lines" aria-hidden="true">${Array.from({ length: n }, (_, i) => i + 1).join('\n')}</div>${pre}</div>` : pre;
+    return `<div class="code-block"${line}><div class="code-head"><span>${esc(lang || 'text')}</span><button class="copy-code" type="button">Copy</button></div>${body}</div>\n`;
   };
   md.renderer.rules.fence = fence;
 }
@@ -1021,7 +1025,7 @@ function syllables(w) {
 }
 function updateStats() {
   const clone = preview.cloneNode(true);
-  clone.querySelectorAll('.code-head, .front-matter, .footnotes, mjx-container, .mermaid-block, .toc').forEach((n) => n.remove());
+  clone.querySelectorAll('.code-head, .code-lines, .front-matter, .footnotes, mjx-container, .mermaid-block, .toc').forEach((n) => n.remove());
   const text = clone.textContent;
   const { count, words } = countWords(text);
   const sentences = Math.max(1, (text.match(/[^.!?\n]+[.!?]+(\s|$)/g) || []).length);
@@ -2258,7 +2262,12 @@ async function buildDocx(title) {
     if (t === 'HR') return [para('', { ...base, border: true, item: null })];
     if (k.contains('math-block') || k.contains('math-display')) return [para(run(n.dataset.tex || n.textContent, { i: true }), { ...base, jc: 'center', item: null })];
     if (k.contains('mermaid-block')) return [para(run('[Diagram]', { i: true }), { ...base, jc: 'center', item: null })];
-    if (t === 'PRE') return n.textContent.replace(/\n$/, '').split('\n').map((line) => para(run(line, {}), { ...base, style: 'Code', item: null }));
+    if (k.contains('code-lines')) return [];
+    if (t === 'PRE') {
+      const lines = n.textContent.replace(/\n$/, '').split('\n');
+      const numbered = !!(n.parentElement && n.parentElement.querySelector('.code-lines')), w = String(lines.length).length;
+      return lines.map((line, i) => para(run((numbered ? String(i + 1).padStart(w) + '  ' : '') + line, {}), { ...base, style: 'Code', item: null }));
+    }
     if (t === 'BLOCKQUOTE' || k.contains('callout')) return blocksOf(n, { ...base, style: 'Quote', item: null });
     if (k.contains('callout-title')) return [para([...n.childNodes].map((c) => runs(c, { b: true })).join(''), { ...base, style: 'Quote' })];
     if (t === 'UL' || t === 'OL') {
@@ -2523,7 +2532,8 @@ cmd('toggleOutline', { label: 'Sidebar', icon: 'panel-left', key: 'Mod-Alt-o', g
 cmd('toggleSync', { label: 'Sync scrolling', icon: 'arrow-down-up', checked: () => S.sync, run: () => { S.sync = !S.sync; saveSettings(); refreshState(); if (S.sync) syncFromEditor(); } });
 cmd('toggleFocus', { label: 'Focus mode', icon: 'focus', key: 'Mod-Shift-f', global: true, checked: () => S.focus, run: () => { S.focus = !S.focus; applyEditorPrefs(); toast(S.focus ? 'Focus mode on: other paragraphs are dimmed' : 'Focus mode off'); } });
 cmd('toggleTypewriter', { label: 'Typewriter mode', icon: 'keyboard', checked: () => S.typewriter, run: () => { S.typewriter = !S.typewriter; applyEditorPrefs(); toast(S.typewriter ? 'Typewriter mode on: your line stays centered' : 'Typewriter mode off'); } });
-cmd('toggleLineNumbers', { label: 'Line numbers', icon: 'list-ordered', checked: () => S.lineNumbers, run: () => { S.lineNumbers = !S.lineNumbers; applyEditorPrefs(); } });
+cmd('toggleLineNumbers', { label: 'Editor line numbers', icon: 'list-ordered', checked: () => S.lineNumbers, run: () => { S.lineNumbers = !S.lineNumbers; applyEditorPrefs(); } });
+cmd('toggleCodeLines', { label: 'Code line numbers', icon: 'list-ordered', checked: () => S.codeLines, run: () => { S.codeLines = !S.codeLines; rebuild(); } });
 cmd('toggleWrap', { label: 'Word wrap', icon: 'wrap-text', checked: () => S.wrap, run: () => { S.wrap = !S.wrap; applyEditorPrefs(); } });
 cmd('toggleRuler', { label: 'Ruler', icon: 'ruler', checked: () => S.ruler, run: () => { S.ruler = !S.ruler; applyPagePrefs(); } });
 cmd('toggleGuides', { label: 'Page breaks', icon: 'scissors-line-dashed', checked: () => S.guides, run: () => { S.guides = !S.guides; applyPagePrefs(); } });
@@ -2592,7 +2602,7 @@ document.addEventListener('keydown', (e) => {
 const MENUS = [
   ['File', ['newDoc', 'openFile', 'openRecent', 'pasteDoc', '-', 'saveNow', 'saveAs', 'saveAll', 'renameDoc', 'history', 'syncFolder', '-', 'closeTab', 'closeOtherTabs', 'closeAllTabs', 'reopenTab', '-', 'saveMd', 'exportDocx', 'exportHtml', 'exportPdf', 'print', '-', 'copyRich', 'copyMd', 'copyHtml', '-', 'deleteDoc']],
   ['Edit', ['undo', 'redo', '-', 'selectAll', 'find', 'replace', '-', 'formatTable', 'clearFormat']],
-  ['View', ['view_editor', 'view_split', 'view_preview', '-', 'toggleOutline', 'toggleRail', 'toggleRuler', 'toggleGuides', 'toggleLineNumbers', 'toggleWrap', '-', 'toggleFocus', 'toggleTypewriter', 'toggleSync', '-', 'zoomIn', 'zoomOut', 'zoomFit', 'zoom100', 'fullscreen', '-', 'nextTab', 'prevTab']],
+  ['View', ['view_editor', 'view_split', 'view_preview', '-', 'toggleOutline', 'toggleRail', 'toggleRuler', 'toggleGuides', 'toggleLineNumbers', 'toggleCodeLines', 'toggleWrap', '-', 'toggleFocus', 'toggleTypewriter', 'toggleSync', '-', 'zoomIn', 'zoomOut', 'zoomFit', 'zoom100', 'fullscreen', '-', 'nextTab', 'prevTab']],
   ['Insert', ['image', 'imageUrl', 'table', 'link', '-', 'codeBlock', 'math', 'diagram', 'callout', 'details', '-', 'footnote', 'deflist', 'hr', 'toc', 'date', 'frontMatter']],
   ['Format', ['bold', 'italic', 'underline', 'strike', 'highlight', 'code', 'sup', 'sub', '-', 'normal', 'h1', 'h2', 'h3', 'h4', '-', 'ul', 'ol', 'task', 'quote', 'indent', 'outdent', '-', 'clearFormat']],
   ['Tools', ['wordCount', 'formatTable', '-', 'typographer', 'breaks', 'toggleMath', 'toggleDiagrams']],
@@ -2726,7 +2736,7 @@ const RIBBON = {
     group('Markdown', rows(rb('typographer', 'lbl') + rb('breaks', 'lbl'), rb('toggleMath', 'lbl') + rb('toggleDiagrams', 'lbl'))),
   view: () =>
     group('Views', rb('view_editor', 'big') + rb('view_split', 'big') + rb('view_preview', 'big')) +
-    group('Show', rows(rb('toggleOutline', 'lbl') + rb('toggleRuler', 'lbl') + rb('toggleGuides', 'lbl'), rb('toggleLineNumbers', 'lbl') + rb('toggleWrap', 'lbl'))) +
+    group('Show', rows(rb('toggleOutline', 'lbl') + rb('toggleRuler', 'lbl') + rb('toggleGuides', 'lbl'), rb('toggleLineNumbers', 'lbl') + rb('toggleCodeLines', 'lbl') + rb('toggleWrap', 'lbl'))) +
     group('Writing', rows(rb('toggleFocus', 'lbl') + rb('toggleTypewriter', 'lbl'), rb('toggleSync', 'lbl') + rb('fullscreen', 'lbl'))) +
     group('Editor', rows(
       `<label class="seg-label" for="edTheme">Theme</label><select class="sel" id="edTheme">${[['auto', 'Match app'], ['night', 'MacDown Night'], ['day', 'Day'], ['sol-dark', 'Solarized Dark'], ['sol-light', 'Solarized Light']].map(([v, l]) => `<option value="${v}"${S.edTheme === v ? ' selected' : ''}>${l}</option>`).join('')}</select>`,
@@ -3522,7 +3532,7 @@ const SHEETS = {
     body: () => mSec('Appearance') + mSegPick('appTheme', [['system', 'Automatic'], ['light', 'Light'], ['dark', 'Dark']], S.appTheme)
       + mGroup('Document', [mRow('newDoc'), mRow('openFile'), mRow('pasteDoc'), mRow('saveAs'), mRow('renameDoc'), mRow('history'), mRow('syncFolder'), mAct('duplicate', 'copy-plus', 'Duplicate'), mAct('share', 'share', 'Share and export…'), mRow('deleteDoc', { danger: true })])
       + mGroup('Tools', [mRow('find', { label: 'Find' }), mRow('replace', { label: 'Find and replace' }), mRow('wordCount'), mAct('outline', 'list-tree', 'Outline'), mAct('docs', 'files', 'All documents')])
-      + mGroup('Writing', [mRow('toggleFocus'), mRow('toggleTypewriter'), mRow('toggleLineNumbers')])
+      + mGroup('Writing', [mRow('toggleFocus'), mRow('toggleTypewriter'), mRow('toggleLineNumbers'), mRow('toggleCodeLines')])
       + mGroup('Help', [mRow('guide'), mRow('checkUpdates'), mRow('legal'), mRow('about'), mAct('shareApp', 'heart', 'Share Cowdrey.MD')]),
   },
 };

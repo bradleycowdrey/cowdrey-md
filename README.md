@@ -58,7 +58,7 @@ See the [changelog](CHANGELOG.md) for every release.
 - Find and replace with match case and regular expressions
 - Table picker grid, plus **Tidy table** to realign pipes
 - Paste or drop pictures (large ones are downscaled automatically); paste a URL over selected text to make a link
-- Focus mode, typewriter mode, line numbers, word wrap, four editor themes (including a MacDown-style Night theme)
+- Focus mode, typewriter mode, line numbers in the editor and (a separate option) in code blocks on the page, word wrap, four editor themes (including a MacDown-style Night theme)
 
 **Preview**
 - Paper page on a canvas with Letter / A4 / Wide / Fluid sizes, margins, page-break guides, a ruler in inches or cm, and zoom

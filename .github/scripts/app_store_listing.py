@@ -45,7 +45,15 @@ def call(method, path, body=None):
     except urllib.error.HTTPError as e:
         text = e.read().decode(errors='replace')
         try:
-            text = '; '.join(f"{x.get('title')}: {x.get('detail')}" for x in json.loads(text)['errors'])
+            errs = json.loads(text)['errors']
+            parts = []
+            for x in errs:
+                parts.append(f"{x.get('title')}: {x.get('detail')}")
+                # Apple puts the real reasons a resource can't be submitted under meta.associatedErrors.
+                for path, subs in ((x.get('meta') or {}).get('associatedErrors') or {}).items():
+                    for y in subs:
+                        parts.append(f"  · {y.get('code')}: {y.get('detail') or y.get('title')}")
+            text = '\n'.join(parts)
         except Exception:
             pass
         raise ApiError(f'{method} {path.split("?")[0]} → HTTP {e.code}: {text}')
@@ -277,7 +285,12 @@ def upload_set(loc, display, files):
     if not s:
         s = call('POST', '/v1/appScreenshotSets', {'data': {'type': 'appScreenshotSets', 'attributes': {'screenshotDisplayType': display},
                                                           'relationships': {'appStoreVersionLocalization': rel('appStoreVersionLocalizations', loc['id'])}}})['data']
-    for old in call('GET', f"/v1/appScreenshotSets/{s['id']}/appScreenshots")['data']:  # replace, don't pile up
+    existing = call('GET', f"/v1/appScreenshotSets/{s['id']}/appScreenshots")['data']
+    want = [(n, hashlib.md5(open(os.path.join(SHOTS, n), 'rb').read()).hexdigest()) for n in files]
+    have = [(x['attributes'].get('fileName'), x['attributes'].get('sourceFileChecksum')) for x in existing]
+    if have == want and all((x['attributes'].get('assetDeliveryState') or {}).get('state') == 'COMPLETE' for x in existing):
+        return f'{len(files)} already up to date'
+    for old in existing:  # replace, don't pile up
         call('DELETE', f"/v1/appScreenshots/{old['id']}")
     for name in files:
         data = open(os.path.join(SHOTS, name), 'rb').read()
@@ -318,10 +331,29 @@ def submit_for_review(v):
     if not draft:
         draft = call('POST', '/v1/reviewSubmissions', {'data': {'type': 'reviewSubmissions', 'attributes': {'platform': 'IOS'},
                                                                'relationships': {'app': rel('apps', APP)}}})['data']
+    # Screenshots uploaded moments ago must finish processing before Apple accepts the version.
+    loc = version_localization(v)
+    for _ in range(30):
+        pending = []
+        for sset in call('GET', f"/v1/appStoreVersionLocalizations/{loc['id']}/appScreenshotSets")['data']:
+            for shot in call('GET', f"/v1/appScreenshotSets/{sset['id']}/appScreenshots")['data']:
+                st = ((shot['attributes'].get('assetDeliveryState') or {}).get('state'))
+                if st != 'COMPLETE':
+                    pending.append(f"{shot['attributes'].get('fileName')} {st}")
+        if not pending:
+            break
+        print(f'Submit: waiting for Apple to process {len(pending)} screenshots ({pending[0]})…', flush=True); time.sleep(20)
     items = call('GET', f"/v1/reviewSubmissions/{draft['id']}/items?include=appStoreVersion&limit=50")['data']
     if not any((i.get('relationships', {}).get('appStoreVersion', {}).get('data') or {}).get('id') == v['id'] for i in items):
-        call('POST', '/v1/reviewSubmissionItems', {'data': {'type': 'reviewSubmissionItems', 'relationships': {
-            'reviewSubmission': rel('reviewSubmissions', draft['id']), 'appStoreVersion': rel('appStoreVersions', v['id'])}}})
+        for attempt in range(5):
+            try:
+                call('POST', '/v1/reviewSubmissionItems', {'data': {'type': 'reviewSubmissionItems', 'relationships': {
+                    'reviewSubmission': rel('reviewSubmissions', draft['id']), 'appStoreVersion': rel('appStoreVersions', v['id'])}}})
+                break
+            except ApiError as e:
+                if attempt == 4:
+                    raise
+                print(f'Submit: Apple not ready yet, trying again in a minute:\n{e}', flush=True); time.sleep(60)
     call('PATCH', f"/v1/reviewSubmissions/{draft['id']}", {'data': {'type': 'reviewSubmissions', 'id': draft['id'], 'attributes': {'submitted': True}}})
     for _ in range(15):
         st = call('GET', f"/v1/reviewSubmissions/{draft['id']}")['data']['attributes'].get('state')

@@ -288,8 +288,9 @@ def upload_set(loc, display, files):
     existing = call('GET', f"/v1/appScreenshotSets/{s['id']}/appScreenshots")['data']
     want = [(n, hashlib.md5(open(os.path.join(SHOTS, n), 'rb').read()).hexdigest()) for n in files]
     have = [(x['attributes'].get('fileName'), x['attributes'].get('sourceFileChecksum')) for x in existing]
-    if have == want and all((x['attributes'].get('assetDeliveryState') or {}).get('state') == 'COMPLETE' for x in existing):
-        return f'{len(files)} already up to date'
+    # Keep an identical set unless Apple failed to process one; one still processing just needs time.
+    if have == want and not any((x['attributes'].get('assetDeliveryState') or {}).get('state') == 'FAILED' for x in existing):
+        return f'{len(files)} already uploaded'
     for old in existing:  # replace, don't pile up
         call('DELETE', f"/v1/appScreenshots/{old['id']}")
     for name in files:
@@ -333,11 +334,14 @@ def submit_for_review(v):
                                                                'relationships': {'app': rel('apps', APP)}}})['data']
     # Screenshots uploaded moments ago must finish processing before Apple accepts the version.
     loc = version_localization(v)
-    for _ in range(30):
+    for _ in range(90):
         pending = []
         for sset in call('GET', f"/v1/appStoreVersionLocalizations/{loc['id']}/appScreenshotSets")['data']:
             for shot in call('GET', f"/v1/appScreenshotSets/{sset['id']}/appScreenshots")['data']:
                 st = ((shot['attributes'].get('assetDeliveryState') or {}).get('state'))
+                if st == 'FAILED':
+                    errs = (shot['attributes'].get('assetDeliveryState') or {}).get('errors')
+                    raise ApiError(f"Apple could not process screenshot {shot['attributes'].get('fileName')}: {errs}")
                 if st != 'COMPLETE':
                     pending.append(f"{shot['attributes'].get('fileName')} {st}")
         if not pending:

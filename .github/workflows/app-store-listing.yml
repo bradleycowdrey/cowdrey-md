@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   listing:
-    name: Fill in the App Store listing (does not submit)
+    name: Fill in the App Store listing (submits only the version listing.json names)
     runs-on: ubuntu-latest
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     timeout-minutes: 60

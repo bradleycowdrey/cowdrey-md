@@ -2,8 +2,8 @@
 
 Reads docs/app-store/listing.json and the screenshots beside it. Sets the category, content rights,
 age rating, price (free), availability, the version's text and screenshots, App Review details, and
-attaches the newest processed build for the version in tauri.conf.json. It never submits for review:
-that stays a person's decision in App Store Connect.
+attaches the newest processed build for the version in tauri.conf.json. It submits for review only when listing.json's
+submitForReview names the exact version, and only after every other step succeeded.
 
 With --build-only (after each iPhone build) it only sets the version number and attaches the build.
 If listing.json names a version in withdrawFromReview, that exact version is first taken out of App Review.
@@ -293,6 +293,46 @@ def upload_set(loc, display, files):
     return f'{len(files)} uploaded'
 
 
+def submit_for_review(v):
+    """Submit the version for App Review, only when listing.json's submitForReview names this exact version
+    and every earlier step succeeded. Then report the state App Store Connect shows."""
+    if L.get('submitForReview') != VERSION:
+        return
+    problems = [n for st, n, _ in results if st != 'OK']
+    if problems:
+        print('Submit: not submitted, because these steps need attention first: ' + '; '.join(problems))
+        return
+    subs = call('GET', f'/v1/reviewSubmissions?filter[app]={APP}&filter[platform]=IOS&limit=20')['data']
+    live = [x for x in subs if x['attributes'].get('state') in ('WAITING_FOR_REVIEW', 'IN_REVIEW', 'UNRESOLVED_ISSUES')]
+    for x in live:
+        items = call('GET', f"/v1/reviewSubmissions/{x['id']}/items?include=appStoreVersion&limit=50")['data']
+        if any((i.get('relationships', {}).get('appStoreVersion', {}).get('data') or {}).get('id') == v['id'] for i in items):
+            print(f"Submit: {VERSION} is already submitted ({x['attributes'].get('state')}).")
+            return
+    for _ in range(30):  # a cancelled submission must finish cancelling before a new one opens
+        subs = call('GET', f'/v1/reviewSubmissions?filter[app]={APP}&filter[platform]=IOS&limit=20')['data']
+        if not any(x['attributes'].get('state') in ('CANCELING', 'COMPLETING') for x in subs):
+            break
+        print('Submit: waiting for the earlier submission to finish cancelling…', flush=True); time.sleep(20)
+    draft = next((x for x in subs if x['attributes'].get('state') == 'READY_FOR_REVIEW'), None)
+    if not draft:
+        draft = call('POST', '/v1/reviewSubmissions', {'data': {'type': 'reviewSubmissions', 'attributes': {'platform': 'IOS'},
+                                                               'relationships': {'app': rel('apps', APP)}}})['data']
+    items = call('GET', f"/v1/reviewSubmissions/{draft['id']}/items?include=appStoreVersion&limit=50")['data']
+    if not any((i.get('relationships', {}).get('appStoreVersion', {}).get('data') or {}).get('id') == v['id'] for i in items):
+        call('POST', '/v1/reviewSubmissionItems', {'data': {'type': 'reviewSubmissionItems', 'relationships': {
+            'reviewSubmission': rel('reviewSubmissions', draft['id']), 'appStoreVersion': rel('appStoreVersions', v['id'])}}})
+    call('PATCH', f"/v1/reviewSubmissions/{draft['id']}", {'data': {'type': 'reviewSubmissions', 'id': draft['id'], 'attributes': {'submitted': True}}})
+    for _ in range(15):
+        st = call('GET', f"/v1/reviewSubmissions/{draft['id']}")['data']['attributes'].get('state')
+        vst = call('GET', f"/v1/appStoreVersions/{v['id']}")['data']['attributes'].get('appStoreState')
+        print(f'Submit: submission is {st}; App Store Connect shows version {VERSION} as {vst}.', flush=True)
+        if vst == 'WAITING_FOR_REVIEW' or st in ('WAITING_FOR_REVIEW', 'IN_REVIEW'):
+            print(f'CONFIRMED: Cowdrey.MD {VERSION} is Waiting for Review.')
+            return
+        time.sleep(20)
+
+
 if '--build-only' in sys.argv:
     # After an iPhone build: only move the version number and attach the new build. Text and screenshots are
     # left alone, so edits made by hand in App Store Connect are kept.
@@ -327,6 +367,10 @@ whats_new(loc)
 review(v)
 for display, files in L['screenshots'].items():
     step(f'Screenshots: {display}')(upload_set)(loc, display, files)
+try:
+    submit_for_review(v)
+except ApiError as e:
+    print(f'Submit: Apple refused the submission: {e}')
 
 print('\nApp Store listing for Cowdrey.MD', VERSION)
 for status, name, detail in results:

@@ -1,7 +1,7 @@
 # Terms of Use and Privacy
 
 **bradcowdrey.com and everything Bradley Cowdrey publishes: apps, AI skills, books, lessons and more**
-Last updated: November 1, 2026 · Applies to: bradcowdrey.com, Cowdrey.MD, Meridian, Two Degrees, AI skills, books, lessons, articles, and anything I publish in the future
+Last updated: November 2, 2026 · Applies to: bradcowdrey.com, Cowdrey.MD, Meridian, Two Degrees, AI skills, books, lessons, articles, and anything I publish in the future
 
 ---
 
@@ -214,7 +214,7 @@ What each Service does:
   - For cities in the United States, the app sends the city's coordinates, rounded to about a kilometre, to the US National Weather Service, to get its severe weather alerts.
   - The rain map loads from GitHub Pages, its map code from cdnjs (Cloudflare), its radar images from RainViewer and its map from OpenFreeMap. They receive the area of the map you're looking at, as any online map does.
   - Notifications are off unless you turn them on. When they're on, the app checks the forecast and alerts for My Location (or your first city) in the background, as often as your device allows, and decides on your device whether to notify you. Nothing about the notifications is sent to me.
-  - If you choose "Use My Location" (Two Degrees asks once, after you agree to these terms), it shows the weather where you are, first in your cities. Your device asks your permission first; on the web, your browser does. Your location is rounded to about a kilometre and sent only to Open-Meteo, to get its weather, and to name the city you're in, to your device's own location service (Apple's on Mac, iPhone and iPad, your phone's on Android; on the web, Open-Meteo). When those can't name it, the app uses its built-in GeoNames city list, on your device. The place it finds is kept on your device with your cities and removed when you turn Use My Location off. It is never sent to me. Turn it off any time in Two Degrees' settings.
+  - If you choose "Use My Location" (Two Degrees asks once, after you agree to these terms), it shows the weather where you are, first in your cities. Your device asks your permission first; on the web, your browser does. Your location is rounded to about a kilometre and sent only to the weather services described above (Open-Meteo, and the US National Weather Service for places in the United States), to get its weather and alerts, and to name the city you're in, to your device's own location service (Apple's on Mac, iPhone and iPad, your phone's on Android; on the web, Open-Meteo). When those can't name it, the app uses its built-in GeoNames city list, on your device. The place it finds is kept on your device with your cities and removed when you turn Use My Location off. It is never sent to me. Turn it off any time in Two Degrees' settings.
   - The web version, at bradcowdrey.com/two-degrees, loads from GitHub Pages, along with the GeoNames city list it uses to name places.
 - **Updates:**
   - The Mac apps contact GitHub to check for and download updates.

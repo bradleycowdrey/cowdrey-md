@@ -6,6 +6,7 @@ attaches the newest processed build for the version in tauri.conf.json. It never
 that stays a person's decision in App Store Connect.
 
 With --build-only (after each iPhone build) it only sets the version number and attaches the build.
+If listing.json names a version in withdrawFromReview, that exact version is first taken out of App Review.
 
 Each step runs on its own and reports what happened, so one refusal doesn't stop the rest.
 Environment: APPLE_API_ISSUER, APPLE_API_KEY (key ID), P8 (private key text).
@@ -158,6 +159,45 @@ def availability():
     return f'{len(terr)} territories'
 
 
+def withdraw_from_review():
+    """Take a version out of App Review, but only the exact version named in listing.json's withdrawFromReview.
+
+    Keyed on the version string, so a later submission of another version is never cancelled by mistake.
+    Waits until Apple has released the version for editing, so the rest of the listing can fill it in."""
+    target = L.get('withdrawFromReview')
+    if not target:
+        return
+    vs = call('GET', f'/v1/apps/{APP}/appStoreVersions?filter[platform]=IOS&limit=20')['data']
+    v = next((x for x in vs if x['attributes']['versionString'] == target), None)
+    if not v:
+        print(f'Withdraw: no version {target} found; nothing to do.')
+        return
+    state = v['attributes'].get('appStoreState')
+    print(f'Withdraw: version {target} is {state}.')
+    subs = call('GET', f'/v1/reviewSubmissions?filter[app]={APP}&filter[platform]=IOS&limit=20&include=items')
+    active = [x for x in subs['data'] if x['attributes'].get('state') in ('READY_FOR_REVIEW', 'WAITING_FOR_REVIEW', 'IN_REVIEW', 'UNRESOLVED_ISSUES')]
+    for sub in active:
+        # Only a submission that carries this version.
+        items = call('GET', f"/v1/reviewSubmissions/{sub['id']}/items?include=appStoreVersion&limit=50")
+        ids = [(i.get('relationships', {}).get('appStoreVersion', {}).get('data') or {}).get('id') for i in items['data']]
+        if v['id'] not in ids:
+            continue
+        a = sub['attributes']
+        print(f"Withdraw: submission {sub['id']} is {a.get('state')}, submitted {a.get('submittedDate')}. Cancelling it.")
+        call('PATCH', f"/v1/reviewSubmissions/{sub['id']}", {'data': {'type': 'reviewSubmissions', 'id': sub['id'], 'attributes': {'canceled': True}}})
+    if not active:
+        print('Withdraw: no active review submission found.')
+    open_states = ('PREPARE_FOR_SUBMISSION', 'DEVELOPER_REJECTED', 'REJECTED', 'METADATA_REJECTED', 'INVALID_BINARY')
+    for _ in range(30):
+        st = call('GET', f"/v1/appStoreVersions/{v['id']}")['data']['attributes'].get('appStoreState')
+        if st in open_states:
+            print(f'Withdraw: version {target} is now {st}, so it can be edited.')
+            return
+        print(f'Withdraw: waiting for Apple to release {target} (now {st})…', flush=True)
+        time.sleep(20)
+    print(f'Withdraw: {target} is still not editable after 10 minutes. Run this workflow again shortly.')
+
+
 def editable_version():
     vs = call('GET', f'/v1/apps/{APP}/appStoreVersions?filter[platform]=IOS&limit=20')['data']
     open_states = ('PREPARE_FOR_SUBMISSION', 'DEVELOPER_REJECTED', 'REJECTED', 'METADATA_REJECTED', 'INVALID_BINARY')
@@ -209,6 +249,10 @@ def whats_new(loc):
     # Apple accepts What's New only on an update, not on an app's first version, so it's sent on its own.
     if not L.get('whatsNew'):
         return 'none in listing.json'
+    vs = call('GET', f'/v1/apps/{APP}/appStoreVersions?filter[platform]=IOS&limit=20')['data']
+    if not any(x['attributes'].get('appStoreState') in ('READY_FOR_SALE', 'REPLACED_WITH_NEW_VERSION', 'REMOVED_FROM_SALE', 'DEVELOPER_REMOVED_FROM_SALE')
+               for x in vs):
+        return 'skipped: Apple allows What\'s New only once a version has been released'
     call('PATCH', f"/v1/appStoreVersionLocalizations/{loc['id']}", {'data': {'type': 'appStoreVersionLocalizations', 'id': loc['id'], 'attributes': {
         'whatsNew': L['whatsNew']}}})
 
@@ -273,6 +317,7 @@ info_text(info)
 age_rating(info)
 price()
 availability()
+withdraw_from_review()
 v = editable_version()
 version_fields(v)
 attach_build(v)

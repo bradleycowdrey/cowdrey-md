@@ -204,6 +204,15 @@ def version_text(loc):
         'supportUrl': L['supportUrl'], 'marketingUrl': L['marketingUrl']}}})
 
 
+@step("What's New in This Version")
+def whats_new(loc):
+    # Apple accepts What's New only on an update, not on an app's first version, so it's sent on its own.
+    if not L.get('whatsNew'):
+        return 'none in listing.json'
+    call('PATCH', f"/v1/appStoreVersionLocalizations/{loc['id']}", {'data': {'type': 'appStoreVersionLocalizations', 'id': loc['id'], 'attributes': {
+        'whatsNew': L['whatsNew']}}})
+
+
 @step('App Review contact and notes (add a phone number by hand)')
 def review(v):
     attrs = dict(L['review'])
@@ -269,6 +278,7 @@ version_fields(v)
 attach_build(v)
 loc = version_localization(v)
 version_text(loc)
+whats_new(loc)
 review(v)
 for display, files in L['screenshots'].items():
     step(f'Screenshots: {display}')(upload_set)(loc, display, files)

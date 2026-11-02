@@ -19,7 +19,7 @@ The **App Store listing** workflow (`.github/workflows/app-store-listing.yml`) f
 
 ## Promotional text (170)
 
-A Markdown editor that feels like Docs and Word. Write on one side, see a clean, printable page on the other. Free, private, and it works offline.
+Cowdrey.MD 2.0: edit files where they live, sync a folder across devices, search every document, and export to Word or PDF. Free, private, no account.
 
 ## Description (4000)
 
@@ -30,12 +30,13 @@ WORKS LIKE PAGES AND WORD
 • A formatting bar above the keyboard: styles, bold, italic, lists, links and more
 • Format, Insert, Share and More panels slide up from the bottom
 • Double-tap anywhere on the page to edit that spot
+• Switch between writing and reading and you stay in the same place
 
 WRITE
 • Syntax-highlighted Markdown with lists that continue and renumber themselves
 • A Word-style ribbon for bold, headings, lists, links, tables, quotes and code
 • Find and replace, with match case and regular expressions
-• Focus mode, typewriter mode, line numbers and four editor themes
+• Focus mode, typewriter mode, editor and code line numbers, and four editor themes
 
 SEE THE PAGE
 • Editor, page or both at once, on iPhone and iPad
@@ -44,26 +45,45 @@ SEE THE PAGE
 • LaTeX math and Mermaid diagrams, drawn right on the page
 • Light and dark mode
 
-KEEP AND SHARE
-• Many documents in tabs, with an outline of your headings
-• Export Markdown (.md) or a standalone web page (.html) through the share sheet: Save to Files, AirDrop, Mail or any app
+YOUR FILES, WHERE THEY LIVE
+• Open a file from Files, iCloud Drive or Google Drive, and your changes save back to it
+• Keep a sync folder, such as one in iCloud Drive, so your iPhone, iPad and Mac show the same documents
+• Make Cowdrey.MD your default app for Markdown files
+
+FIND AND ORGANIZE
+• Search every document at once
+• Folders, pins and sorting
+• Version history: go back to any earlier version from the last 90 days, and undo it if you change your mind
+• An outline of your headings
+
+SHARE AND EXPORT
+• PDF, Word document (.docx), web page (.html) or Markdown (.md), through the share sheet: Save to Files, AirDrop, Mail or any app
+• Print from your iPhone or iPad
 • Copy Markdown, copy HTML, or copy with formatting to paste into Docs, Word or Mail
-• Open .md and .txt files from Files
 
 PRIVATE BY DESIGN
-• Your documents stay on your device
+• Your documents stay on your device and in the files and folders you choose
 • No account, no ads, no tracking
-• Works fully offline
+• Works offline
 
-Free. Forever. Made by Bradley Cowdrey (bradcowdrey.com). Also available for Mac and in any web browser.
+Free. Forever. Made by Bradley Cowdrey (bradcowdrey.com). Also available for Mac, Android and in any web browser.
 
 ## Keywords (100)
 
-markdown,editor,md,notes,writing,text,latex,math,mermaid,docs,preview,export,html,journal,outline
+markdown,editor,md,notes,writing,text,latex,math,mermaid,docs,preview,pdf,word,export,sync,outline
 
 ## What's New in This Version
 
-First release on iPhone and iPad. On iPhone it works like Pages and Word: read the page, tap Edit to write, with a formatting bar above the keyboard and Format and Insert panels.
+Cowdrey.MD 2.0 is a big step up:
+
+• Your files, where they live: open a file from Files or iCloud Drive and your changes save back to it
+• Sync folder: keep your documents in a folder such as iCloud Drive, and see them on iPhone, iPad and Mac
+• Search every document, with folders, pins and sorting
+• Version history: restore any version from the last 90 days
+• Export to PDF and Word, and print
+• Stay in the same place when you switch between writing and reading
+• Editor and code line numbers, and a blurred background behind panels
+• Clearer Terms of Use and Privacy
 
 ## App Review Information
 
@@ -73,17 +93,17 @@ First release on iPhone and iPad. On iPhone it works like Pages and Word: read t
 
   Cowdrey.MD is a free Markdown editor for writers, students and professionals who write notes, documents and reports in plain text. It shows a clean, printable page of what you write, with tables, task lists, math and diagrams. On iPhone it works like Pages and Word: read the document as a page, tap Edit to write, with a formatting bar above the keyboard. Documents are stored on the device, with no account needed.
 
-  Setup: no login or credentials. On first launch, tap "I agree" to the Terms of Use. A sample document opens, demonstrating every feature. Tap Edit to write; use the formatting bar, the paintbrush (Format) and + (Insert). Tap Done to see the page. The share button exports Markdown or a web page through the iOS share sheet. The ··· menu has New document, Open, Find, Word count and Appearance. Any .md or .txt file opens from the Files app with "Open in Cowdrey.MD".
+  Setup: no login or credentials. On first launch, tap "I agree" to the Terms of Use. A sample document opens, demonstrating every feature. Tap Edit to write; use the formatting bar, the paintbrush (Format) and + (Insert). Tap Done to see the page. The share button exports PDF, Word, Markdown or a web page through the iOS share sheet, and prints. The ··· menu has New document, Open, Save to Files, Version history, Sync folder, Find, Word count and Appearance. Open… and Sync folder use the iOS Files picker; the files stay where the user keeps them, and the app saves changes back to them. Any .md or .txt file opens from the Files app with "Open in Cowdrey.MD".
 
   No accounts, login, user-generated content shared with others, paid content or in-app purchases.
 
-  External services: none. No servers, data providers, authentication, payments, analytics, advertising or AI services. Everything runs on the device and works offline; web links open in Safari. Bundled open-source libraries (CodeMirror, markdown-it, MathJax, Mermaid, highlight.js, DOMPurify, Lucide) and SIL Open Font License fonts are used under their licenses (MIT, Apache 2.0, SIL OFL).
+  External services: the app's only own network request reads the current Terms of Use from GitHub (raw.githubusercontent.com), at most once a day, so it knows when they change. It sends nothing about the user or their documents. An image the user links in a document by web address loads from that address, as in any web page. There are no servers of our own, data providers, authentication, payments, analytics, advertising or AI services. Files and folders the user picks may be in a cloud service such as iCloud Drive; iOS handles that. Everything else runs on the device and works offline; web links open in Safari. Bundled open-source libraries (CodeMirror, markdown-it, MathJax, Mermaid, highlight.js, DOMPurify, Lucide) and SIL Open Font License fonts are used under their licenses (MIT, Apache 2.0, SIL OFL).
 
   Regions: the app works the same in all regions; the interface is in English. Not a regulated industry; no protected third-party material.
 
 ## App Privacy
 
-Choose **Data Not Collected**. The app has no analytics, accounts or servers, and documents never leave the device unless the user shares them.
+Choose **Data Not Collected**. The app has no analytics, accounts or servers, and documents never leave the device unless the user shares them or keeps them in a cloud folder they choose. The daily terms check sends nothing about the user.
 
 ## Export compliance
 

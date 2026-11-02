@@ -132,6 +132,39 @@ jobs:
           print('Document types:', d['CFBundleDocumentTypes']); print('Imported types:', d['UTImportedTypeDeclarations'])
           PY
 
+      # Each run signs on a fresh machine: Xcode makes an "Apple Development: Created via API" certificate whose
+      # private key dies with the machine, and Apple caps how many an account may hold, so signing fails once
+      # they pile up. Revoke only those; Developer ID, Apple Distribution and any certificate with a person's
+      # name are never touched. The other apps' builds share this Apple account and do the same.
+      - name: Clear earlier builds' throwaway signing certificates
+        if: env.HAS_KEY == 'true'
+        env:
+          P8: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: |
+          set -o pipefail
+          python3 - <<'PY' 2>&1 | tee -a "$RUNNER_TEMP/ios-build.log"
+          import os, time, json, urllib.request, jwt
+          tok = jwt.encode({"iss": os.environ["APPLE_API_ISSUER"].strip(), "iat": int(time.time()), "exp": int(time.time()) + 600,
+                            "aud": "appstoreconnect-v1"}, os.environ["P8"].replace("\r", "").strip(), algorithm="ES256",
+                           headers={"kid": os.environ["APPLE_API_KEY"].strip(), "typ": "JWT"})
+          def call(method, path):
+              req = urllib.request.Request("https://api.appstoreconnect.apple.com/v1" + path, method=method, headers={"Authorization": "Bearer " + tok})
+              with urllib.request.urlopen(req) as r:
+                  raw = r.read()
+                  return json.loads(raw) if raw else {}
+          certs = call("GET", "/certificates?limit=200&fields[certificates]=name,displayName,certificateType")["data"]
+          kept = []
+          for c in certs:
+              a = c["attributes"]
+              name = a.get("name") or a.get("displayName") or ""
+              if a.get("certificateType") in ("DEVELOPMENT", "IOS_DEVELOPMENT") and "Created via API" in name:
+                  call("DELETE", "/certificates/" + c["id"])
+                  print("Revoked throwaway certificate: %s (%s)" % (name, a.get("certificateType")))
+              else:
+                  kept.append("%s (%s)" % (name, a.get("certificateType")))
+          print("Kept %d certificate(s): %s" % (len(kept), "; ".join(kept) or "none"))
+          PY
+
       - name: Build, sign and upload to TestFlight
         if: env.HAS_KEY == 'true'
         working-directory: desktop

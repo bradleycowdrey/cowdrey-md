@@ -1,6 +1,4 @@
 {
-  "submitForReview": "2.0.0",
-  "withdrawFromReview": "1.0.18",
   "bundleId": "com.bradcowdrey.cowdreymd",
   "locale": "en-US",
   "subtitle": "Write Markdown, see the page",

@@ -1,7 +1,7 @@
 # Terms of Use and Privacy
 
 **bradcowdrey.com and everything Bradley Cowdrey publishes: apps, AI skills, books, lessons and more**
-Last updated: November 2, 2026 · Applies to: bradcowdrey.com, Cowdrey.MD, Meridian, Two Degrees, AI skills, books, lessons, articles, and anything I publish in the future
+Last updated: November 8, 2026 · Applies to: bradcowdrey.com, Cowdrey.MD, Meridian, Two Degrees, AI skills, books, lessons, articles, and anything I publish in the future
 
 ---
 
@@ -207,6 +207,7 @@ What each Service does:
 - **Meridian:**
   - Your cities stay on your device. The app itself sends them nowhere.
   - If you choose "Use My Location", Meridian uses your device's location to name the city you're in. Your device's own location service turns it into a city name (Apple's on Mac and iPhone, your phone's on Android); Meridian keeps only that name, on your device. Turn it off any time in Settings → Show My Location.
+  - When a city on your list has no built-in photo, Meridian downloads one once from Wikimedia (Wikipedia and Wikimedia Commons). The request contains only the city's name. Wikimedia receives your device's IP address, as with any web request, under its own [privacy policy](https://foundation.wikimedia.org/wiki/Policy:Privacy_policy). The photos stay on your device. Turn it off any time in Settings → Download City Photos. The built-in and downloaded photos are by their credited photographers, under their own free licences, listed in Settings → Photo Credits.
   - The web version doesn't use your location. It marks your city using your browser's time zone, and sends nothing anywhere.
 - **Two Degrees:**
   - Your cities stay on your device.

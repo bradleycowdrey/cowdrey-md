@@ -448,7 +448,7 @@ function drawRuler() {
       const k = i % steps;
       const n = i / steps;
       g.beginPath();
-      if (k === 0) { if (n) g.fillText(String(n), Math.round(x) + .5, h / 2); }
+      if (k === 0) { if (n && x > 5 && x < w - 5) g.fillText(String(n), Math.round(x) + .5, h / 2); }
       else {
         const len = (steps === 8 && k === 4) || steps === 2 ? 6 : (k % 2 === 0 ? 4 : 2.5);
         g.moveTo(Math.round(x) + .5, h / 2 - len / 2); g.lineTo(Math.round(x) + .5, h / 2 + len / 2); g.stroke();
@@ -2079,7 +2079,7 @@ function cleanPreview() {
 }
 function exportHtml() {
   const cs = getComputedStyle(document.documentElement);
-  const names = ['--paper', '--paper-ink', '--paper-muted', '--paper-line', '--paper-code', '--paper-accent', '--paper-mark', '--page-shadow', '--hl-kw', '--hl-str', '--hl-num', '--hl-com', '--hl-fn', '--hl-type', '--sol-bg', '--sol-ink', '--sol-head', '--sol-link', '--sol-code', '--sol-line', '--c-note', '--c-tip', '--c-important', '--c-warning', '--c-caution', '--font-ui', '--font-mono', '--font-serif', '--font-times', '--canvas'];
+  const names = ['--paper', '--paper-ink', '--paper-muted', '--paper-line', '--paper-code', '--paper-accent', '--paper-mark', '--page-shadow', '--hl-kw', '--hl-str', '--hl-num', '--hl-com', '--hl-fn', '--hl-type', '--ink', '--sol-bg', '--sol-ink', '--sol-head', '--sol-link', '--sol-code', '--sol-line', '--c-note', '--c-tip', '--c-important', '--c-warning', '--c-caution', '--font-ui', '--font-mono', '--font-serif', '--font-times', '--canvas'];
   const tokens = names.map((n) => `${n}: ${cs.getPropertyValue(n).trim()};`).join(' ');
   const title = cur().title;
   const html = `<!doctype html>
@@ -2487,7 +2487,7 @@ cmd('code', { label: 'Inline code', icon: 'code', key: 'Mod-e', run: () => wrapI
 cmd('sup', { label: 'Superscript', icon: 'superscript', key: 'Mod-.', run: () => wrapInline('^') });
 cmd('sub', { label: 'Subscript', icon: 'subscript', key: 'Mod-,', run: () => wrapInline('~') });
 cmd('clearFormat', { label: 'Clear formatting', icon: 'remove-formatting', key: 'Mod-\\', run: clearFormatting });
-for (let n = 1; n <= 6; n++) cmd('h' + n, { label: 'Heading ' + n, icon: n <= 3 ? 'heading-' + n : 'heading', key: 'Mod-Alt-' + n, run: () => setHeading(n) });
+for (let n = 1; n <= 6; n++) cmd('h' + n, { label: 'Heading ' + n, icon: 'heading-' + n, key: 'Mod-Alt-' + n, run: () => setHeading(n) });
 cmd('normal', { label: 'Normal text', icon: 'pilcrow', key: 'Mod-Alt-0', run: () => setHeading(0) });
 cmd('ul', { label: 'Bulleted list', icon: 'list', key: 'Mod-Shift-8', run: () => toggleBlock('ul') });
 cmd('ol', { label: 'Numbered list', icon: 'list-ordered', key: 'Mod-Shift-7', run: () => toggleBlock('ol') });
@@ -2700,7 +2700,7 @@ C.undo.short = 'Undo'; C.redo.short = 'Redo'; C.formatTable.short = 'Tidy table'
 
 const STYLE_CARDS = [
   ['normal', 'Normal', 'font-family:var(--font-serif);font-size:13px'],
-  ['h1', 'Heading 1', 'font-weight:700;font-size:17px'],
+  ['h1', 'Heading 1', 'font-weight:700;font-size:15.5px;letter-spacing:-.03em'],
   ['h2', 'Heading 2', 'font-weight:650;font-size:15px'],
   ['h3', 'Heading 3', 'font-weight:650;font-size:13.5px'],
   ['h4', 'Heading 4', 'font-weight:600;font-size:12.5px'],
@@ -2711,7 +2711,7 @@ const PAGE_STYLES = [
   ['cowdrey', 'Cowdrey', 'font-family:var(--font-serif)'],
   ['github', 'GitHub', 'font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;font-weight:600'],
   ['clearness', 'Clearness', 'font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-weight:300'],
-  ['solarized', 'Solarized', 'font-family:var(--font-ui);color:#CB4B16'],
+  ['solarized', 'Solarized', 'font-family:var(--font-ui);color:var(--sol-head)'],
   ['manuscript', 'Manuscript', 'font-family:var(--font-times)'],
 ];
 const RIBBON = {
@@ -3824,6 +3824,7 @@ if (TAURI) {
   }, true);
   C.saveMd.label = 'Export Markdown (.md)…';
   C.exportHtml.label = 'Export web page (.html)…';
+  C.exportDocx.label = 'Export Word document (.docx)…';
   setSaveState = ((orig) => (kind) => { orig(kind); if (kind === 'saved') saveStateEl.querySelector('span').textContent = cur() && cur().path ? `Autosaved · ⌘S saves ${baseName(cur().path)}` : 'Autosaved · ⌘S saves to a file'; })(setSaveState);
 }
 

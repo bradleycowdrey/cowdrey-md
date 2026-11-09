@@ -18,6 +18,7 @@ It combines MacDown's side-by-side writing, a Docs-style title bar, menus and pa
 
 ## What's new
 
+- **2.0.1: Polish.** About thirty small fixes to spacing, alignment, dark mode, focus rings, task lists and printing, on every platform.
 - **2.0.0: Cowdrey.MD 2.0.** Everything since 1.0 in one release: native apps for Mac, iPhone, iPad and Android; files opened and saved in place; a sync folder; search, folders, pins and version history; PDF and Word export; and keeping your place between writing and reading. From 2.0, versions follow Semantic Versioning (major.minor.patch). See the [changelog](CHANGELOG.md).
 - **1.0.30: the essentials of a full writing app.**
   - **PDF on every platform:** Print or save as PDF in the Mac, iPhone, iPad and Android apps, and Share PDF on iPhone and iPad.

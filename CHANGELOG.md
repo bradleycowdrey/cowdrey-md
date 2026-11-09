@@ -4,6 +4,18 @@ iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are 
 
 Versions follow [Semantic Versioning](https://semver.org) from 2.0.0: **major** (3.0.0) for a big change in how the app works or stores documents, **minor** (2.1.0) for new features, **patch** (2.0.1) for fixes and polish. Every platform shares one version number.
 
+## 2.0.1
+
+Small polish across every platform, from a screen-by-screen review.
+
+- **Top bar and menus.** The Heading 1 style sample is no longer cut off, ticked menu rows are the same height as the rest, Heading 4 has its own icon, and a long title ends in an ellipsis. On the Mac, Word export is named like the other exports.
+- **Sidebar and tabs.** In dark mode the selected Outline or Documents tab looks raised, the new-tab button has a hover highlight, and a long folder name no longer makes its row taller.
+- **Dialogs.** Links use the app's blue, shortcut rows have unbroken lines, and Delete buttons are readable in dark mode.
+- **iPhone, iPad and Android.** Messages no longer cover the Edit button or the formatting bar, the documents list has larger buttons, and page style cards scroll to the edge of the sheet.
+- **The page.** Task lists wrap under their text and nest properly, quotes lose a stray gap, and the table of contents is evenly spaced.
+- **Printing.** Printing from dark mode uses dark text on white paper, headings stay with their text, rules print and Copy buttons don't.
+- **Keyboard.** Focus rings are complete on the menu bar, tabs, zoom slider and version list.
+
 ## 2.0.0
 
 Cowdrey.MD 2.0 brings together everything since 1.0: a full writing app on Mac, iPhone, iPad, Android and the web.

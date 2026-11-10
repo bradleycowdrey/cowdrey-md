@@ -1,19 +1,19 @@
 {
-  "version": "2.0.1",
-  "notes": "Small polish across the app: tidier menus and tabs, better dark mode details, task lists that wrap properly, and cleaner printing.",
-  "pub_date": "2026-11-09T22:00:47Z",
+  "version": "2.0.2",
+  "notes": "Android and the Mac now work like the iPhone app: the Mac share menu, files changed elsewhere are picked up, and Appearance in the View menu.",
+  "pub_date": "2026-11-10T21:12:03Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0daSkJ4d2ZDUGtKZGhoR2pQTFBwR2J1anlEVTNuVHJlVDRoMUIwRFRrQUVCOGtnMnFVQ04zdW1HcDNESC83a0RXWDBPWmQwTFlpaUVIR3hvU1p2OEFrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MjYxNjQ3CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpwaERzYzBkdFhKRVN2cEI0S0tBeTlIUk1YZ3I0ZlNZWUZuY3Bhd2szOEJNckgrTFhLbCt1cnh6elFtalRXSUJqazRqamVqMFVNQjlNZFF4czRmZElEQT09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v2.0.1/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0lJeVFOblpTUjZ2bmxwUkpFY1lSYlA5L3pZU2RVYWNhSTBmVnRWVkgrZG1Rb1RQNXg5a2VmMTZwQkUxcFdmM0pveEFBeGZnbDFqWWZSYmZQb3Y5aUFzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MzQ1MTIzCWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpkY1ZrQTJVNmxmVVlab2JEY2hqMUdPc0U0TkZHNlJTbmJrT2I3SXg2Z25RL21CeTJlaVQrS1BxbStHTUJ6R2xhS0NMdURvbytoVS8rS2ZTdUYyUFlCZz09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v2.0.2/Cowdrey.MD_universal.app.tar.gz"
     },
     "darwin-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0daSkJ4d2ZDUGtKZGhoR2pQTFBwR2J1anlEVTNuVHJlVDRoMUIwRFRrQUVCOGtnMnFVQ04zdW1HcDNESC83a0RXWDBPWmQwTFlpaUVIR3hvU1p2OEFrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MjYxNjQ3CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpwaERzYzBkdFhKRVN2cEI0S0tBeTlIUk1YZ3I0ZlNZWUZuY3Bhd2szOEJNckgrTFhLbCt1cnh6elFtalRXSUJqazRqamVqMFVNQjlNZFF4czRmZElEQT09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v2.0.1/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0lJeVFOblpTUjZ2bmxwUkpFY1lSYlA5L3pZU2RVYWNhSTBmVnRWVkgrZG1Rb1RQNXg5a2VmMTZwQkUxcFdmM0pveEFBeGZnbDFqWWZSYmZQb3Y5aUFzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MzQ1MTIzCWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpkY1ZrQTJVNmxmVVlab2JEY2hqMUdPc0U0TkZHNlJTbmJrT2I3SXg2Z25RL21CeTJlaVQrS1BxbStHTUJ6R2xhS0NMdURvbytoVS8rS2ZTdUYyUFlCZz09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v2.0.2/Cowdrey.MD_universal.app.tar.gz"
     },
     "darwin-universal": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0daSkJ4d2ZDUGtKZGhoR2pQTFBwR2J1anlEVTNuVHJlVDRoMUIwRFRrQUVCOGtnMnFVQ04zdW1HcDNESC83a0RXWDBPWmQwTFlpaUVIR3hvU1p2OEFrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MjYxNjQ3CWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpwaERzYzBkdFhKRVN2cEI0S0tBeTlIUk1YZ3I0ZlNZWUZuY3Bhd2szOEJNckgrTFhLbCt1cnh6elFtalRXSUJqazRqamVqMFVNQjlNZFF4czRmZElEQT09Cg==",
-      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v2.0.1/Cowdrey.MD_universal.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUKytLR1B4RllQV0lJeVFOblpTUjZ2bmxwUkpFY1lSYlA5L3pZU2RVYWNhSTBmVnRWVkgrZG1Rb1RQNXg5a2VmMTZwQkUxcFdmM0pveEFBeGZnbDFqWWZSYmZQb3Y5aUFzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MzQ1MTIzCWZpbGU6Q293ZHJleS5NRF91bml2ZXJzYWwuYXBwLnRhci5negpkY1ZrQTJVNmxmVVlab2JEY2hqMUdPc0U0TkZHNlJTbmJrT2I3SXg2Z25RL21CeTJlaVQrS1BxbStHTUJ6R2xhS0NMdURvbytoVS8rS2ZTdUYyUFlCZz09Cg==",
+      "url": "https://github.com/bradleycowdrey/cowdrey-md/releases/download/v2.0.2/Cowdrey.MD_universal.app.tar.gz"
     }
   }
 }

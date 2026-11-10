@@ -61,7 +61,7 @@ def rel(t, i):
 def step(name, fn):
     try:
         out = fn()
-        print(f'[OK] {name}' + (f' — {out}' if out else ''), flush=True)
+        print(f'[OK] {name}' + (f' — {out}' if isinstance(out, str) and out else ''), flush=True)
         return out
     except Exception as e:
         print(f'[NEEDS YOU] {name} — {e}', flush=True)
@@ -146,6 +146,8 @@ def what_to_test(b):
 step('TestFlight test information', test_information)
 step('Beta App Review contact', review_contact)
 build = step('Newest processed build', newest_build)
+if build:
+    print(f"     build {build['attributes']['version']}, uploaded {build['attributes']['uploadedDate']}")
 group = step(f'External group "{GROUP}" with a public link', public_group)
 if build:
     step('What to Test', lambda: what_to_test(build))

@@ -22,6 +22,7 @@ Read each repo's `README.md`, `CHANGELOG.md` and `.github/workflows/` to see the
 - **Made by Bradley Cowdrey · bradcowdrey.com** in the README header, the About box and the product page.
 - **Plain, consistent wording** in the interface and docs. Apple's style where it applies (e.g. "10:21 PM", "+1 hr").
 - **Works on every platform** the app targets, with a layout made for each (Mac menus and shortcuts, iPhone sheets and safe areas, Android Back button and edge-to-edge).
+- **Screenshots are always dark mode.** Every picture of an app (README, website cards and product pages, App Store, share images) shows the app in its dark version. Never use a light-mode capture.
 - **Tested in CI**: a self-test or end-to-end test suite runs on every push; build logs are published to a public branch (`ios-build-log`, `android-build-log`) so they can be read without signing in.
 
 ## Terms of Use and Privacy (one shared document)

@@ -1,6 +1,6 @@
 // Native features of Cowdrey.MD on Android, adapted from tauri-plugin-sharekit 0.3.1 (MIT, see LICENSE).
 // - Sharing text and files through the Android share sheet.
-// - Printing, and saving as PDF, through the Android print dialog (its "Save as PDF" printer).
+// - Printing through the Android print dialog, and making a PDF to send through the share sheet.
 // - Files edited in place: a file chosen in the system picker keeps a lasting permission, so changes are saved back to it.
 // - A sync folder: a folder chosen once in the system picker, whose Markdown files the app lists, reads, writes and deletes.
 package app.tauri.share
@@ -9,6 +9,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.print.PdfWriter
 import android.print.PrintAttributes
 import android.print.PrintManager
 import android.provider.DocumentsContract
@@ -116,6 +117,51 @@ class SharePlugin(private val activity: Activity) : Plugin(activity) {
                 invoke.resolve()
             } catch (e: Exception) {
                 invoke.reject(e.message ?: "Could not print")
+            }
+        }
+    }
+
+    /** Makes a PDF of the page, like the iPhone's Share PDF, and offers it in the share sheet. */
+    @Command
+    fun exportPdf(invoke: Invoke) {
+        val args = invoke.getArgs()
+        val title = args.getString("title", "Document") ?: "Document"
+        val a4 = args.optBoolean("a4", false)
+        activity.runOnUiThread {
+            val wv = webView
+            if (wv == null) {
+                invoke.reject("There is no page to put in the PDF")
+                return@runOnUiThread
+            }
+            try {
+                val safe = title.replace(Regex("[/\\\\:]"), "-").ifBlank { "Document" }
+                val dir = File(activity.cacheDir, "pdf").apply { mkdirs() }
+                val out = File(dir, "$safe.pdf")
+                val attrs = PrintAttributes.Builder()
+                    .setMediaSize(if (a4) PrintAttributes.MediaSize.ISO_A4 else PrintAttributes.MediaSize.NA_LETTER)
+                    .setResolution(PrintAttributes.Resolution("pdf", "pdf", 600, 600))
+                    .setMinMargins(PrintAttributes.Margins.NO_MARGINS)
+                    .build()
+                PdfWriter.write(wv.createPrintDocumentAdapter(title), attrs, out) { error ->
+                    activity.runOnUiThread {
+                        if (error != null) {
+                            invoke.reject(error)
+                            return@runOnUiThread
+                        }
+                        val uri = FileProvider.getUriForFile(activity, "${activity.packageName}.fileprovider", out)
+                        val send = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            type = "application/pdf"
+                            putExtra(Intent.EXTRA_STREAM, uri)
+                            putExtra(Intent.EXTRA_TITLE, "$safe.pdf")
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        activity.startActivity(Intent.createChooser(send, "$safe.pdf"))
+                        invoke.resolve()
+                    }
+                }
+            } catch (e: Exception) {
+                invoke.reject(e.message ?: "Could not make the PDF")
             }
         }
     }

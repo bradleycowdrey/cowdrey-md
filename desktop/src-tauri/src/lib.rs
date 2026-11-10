@@ -152,13 +152,20 @@ fn print_page(window: tauri::WebviewWindow) -> Result<(), String> {
     window.print().map_err(|e| e.to_string())
 }
 
-/// Writes a copy to share into the app's temporary folder and returns its path, for the share sheet.
-#[cfg(mobile)]
+/// Writes a copy to share into the app's temporary folder and returns its path, for the share sheet
+/// (iPhone, iPad and Android) or the share menu (Mac).
 #[tauri::command]
-fn write_share_file(name: String, contents: String, base64: Option<String>) -> Result<String, String> {
+fn write_share_file(app: AppHandle, name: String, contents: String, base64: Option<String>) -> Result<String, String> {
     use base64::Engine;
     let name: String = name.chars().map(|c| if matches!(c, '/' | '\\' | ':') { '-' } else { c }).collect();
-    let path = std::env::temp_dir().join(if name.trim().is_empty() { "Untitled.md".into() } else { name });
+    // Android has no usable temporary folder of its own: use a folder in the app's cache, which the share sheet can
+    // read. A subfolder, because the plugin copies the file into the cache folder itself before sharing it.
+    #[cfg(target_os = "android")]
+    let dir = app.path().app_cache_dir().map_err(|e| e.to_string())?.join("outgoing");
+    #[cfg(not(target_os = "android"))]
+    let dir = { let _ = &app; std::env::temp_dir() };
+    std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    let path = dir.join(if name.trim().is_empty() { "Untitled.md".into() } else { name });
     match base64 {
         Some(b) => std::fs::write(&path, base64::engine::general_purpose::STANDARD.decode(b).map_err(|e| e.to_string())?),
         None => std::fs::write(&path, contents),
@@ -315,7 +322,7 @@ pub fn run() {
     let builder = builder
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
-        .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, write_binary_file, list_folder, write_in_folder, remove_file, print_page, quit_app, allow_exit, set_menu, hold_quit])
+        .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, write_binary_file, list_folder, write_in_folder, remove_file, print_page, write_share_file, quit_app, allow_exit, set_menu, hold_quit])
         .on_menu_event(|app, event| {
             if event.id().0 == "app:quit" || event.id().0 == "app:closeWindow" {
                 flush_then_quit(app);
@@ -325,6 +332,9 @@ pub fn run() {
                 let _ = app.emit("menu-command", cmd.to_string());
             }
         });
+    // The Mac share menu (Mail, Messages, AirDrop, Notes) for Share… and Share Cowdrey.MD.
+    #[cfg(target_os = "macos")]
+    let builder = builder.plugin(tauri_plugin_sharekit::init());
     #[cfg(target_os = "android")]
     let builder = builder.plugin(tauri_plugin_fs::init());
     #[cfg(mobile)]

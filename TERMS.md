@@ -1,7 +1,7 @@
 # Terms of Use and Privacy
 
 **bradcowdrey.com and everything Bradley Cowdrey publishes: apps, AI skills, books, lessons and more**
-Last updated: November 8, 2026 · Applies to: bradcowdrey.com, Cowdrey.MD, Meridian, Two Degrees, AI skills, books, lessons, articles, and anything I publish in the future
+Last updated: November 10, 2026 · Applies to: bradcowdrey.com, Cowdrey.MD, Meridian, Two Degrees, AI skills, books, lessons, articles, and anything I publish in the future
 
 ---
 
@@ -18,7 +18,7 @@ This summary is for convenience only. The full terms below are what count.
 - **I can freely use feedback you send me.** Your personal information is different: I use it only as Sections 15 and 16 say.
 - **Two Degrees is not a safety tool.** Follow official weather warnings.
 - **Meridian's times can be wrong.** Confirm meetings and travel.
-- **Cowdrey.MD documents saved in a browser or in a phone or tablet app can be erased.** Keep your own copies.
+- **Cowdrey.MD documents saved in a browser or in the Mac, phone or tablet app can be erased.** Keep your own copies.
 - **Location is optional.** Meridian and Two Degrees use where you are only if you choose "Use My Location". It never reaches me.
 - **When these terms change,** the apps ask you to agree again, no more than once a month (Section 18).
 - **Your local law may give you rights these terms can't remove.** Where it does, these terms apply as far as that law allows.
@@ -83,7 +83,7 @@ You accept every risk of using the Services. That includes losing data or work, 
 
 ## 6. Notices for each app and for AI content
 
-**Cowdrey.MD** is a text editor. In a web browser, your documents are stored only in that browser's storage. Clearing the browser's data, using a private window, switching browsers or devices, or an update can erase them. In the iPhone, iPad and Android apps, your documents are stored in the app's own storage on that device. Deleting the app, clearing its data or losing the device erases them. A file you open with Open…, or save with Save to Files, stays where it is, and Cowdrey.MD saves your changes to it. A file sent to Cowdrey.MD from another app (such as Mail, Google Drive or Gmail) is copied in instead, and changes are not written back to it. If you choose a sync folder, Cowdrey.MD also keeps every document as a file in that folder, and deleting a document deletes its file. Sync depends on your device and the cloud service you choose; when a document is changed in two places at once, Cowdrey.MD keeps both versions, but sync can still miss or duplicate changes. Version history is kept on your device for 90 days and is erased with the app's data. What you see in the preview, PDF, Word document, HTML or copied text may not match what you expect. Check anything important before you rely on it, send it or print it.
+**Cowdrey.MD** is a text editor. In a web browser, your documents are stored only in that browser's storage. Clearing the browser's data, using a private window, switching browsers or devices, or an update can erase them. In the Mac, iPhone, iPad and Android apps, your documents are stored in the app's own storage on that device. Deleting the app, clearing its data or losing the device erases them. A file you open with Open…, or save with Save to Files, stays where it is, and Cowdrey.MD saves your changes to it. A file sent to Cowdrey.MD from another app (such as Mail, Google Drive or Gmail) is copied in instead, and changes are not written back to it. If you choose a sync folder, Cowdrey.MD also keeps every document as a file in that folder, and deleting a document deletes its file. Sync depends on your device and the cloud service you choose; when a document is changed in two places at once, Cowdrey.MD keeps both versions, but sync can still miss or duplicate changes. Version history is kept on your device for 90 days and is erased with the app's data. What you see in the preview, PDF, Word document, HTML or copied text may not match what you expect. Check anything important before you rely on it, send it or print it.
 
 **Meridian** shows times using your device's clock and time-zone data, which can be wrong or out of date, especially around daylight-saving changes. Always confirm meeting and travel times with the people involved and with official sources.
 
@@ -220,7 +220,7 @@ What each Service does:
 - **Updates:**
   - The Mac apps contact GitHub to check for and download updates.
   - Cowdrey.MD for Android, when downloaded from bradcowdrey.com, asks GitHub once a day whether a newer version exists. If you choose to update, it downloads the new version from GitHub.
-  - App Store apps are updated by Apple. They contact GitHub only for the terms check below.
+  - App Store and TestFlight apps are updated by Apple. They contact GitHub only for the terms check below.
 - **Terms checks:**
   - Cowdrey.MD (every version, including the web) and the Meridian apps read these terms from GitHub at most once a day, to know when they change. The request sends nothing about you, your documents or your cities.
   - Two Degrees doesn't check online; each new version of its apps carries the current terms.
@@ -359,7 +359,7 @@ This table summarizes Sections 6, 9, 15 and 20 for each app. Where it and those 
 |---|---|---|---|
 | **What it is** | Markdown text editor | World clock and time-zone planner | Weather in °F and °C at once |
 | **Platforms** | Mac, iPhone and iPad, Android, web | Mac, iPhone, Android, web (time zones only) | Mac, iPhone and iPad, Android, web, with widgets |
-| **Where you get it** | bradcowdrey.com and GitHub; app stores where listed | bradcowdrey.com and GitHub; app stores where listed | bradcowdrey.com and GitHub; app stores where listed, and TestFlight |
+| **Where you get it** | bradcowdrey.com and GitHub; app stores where listed, and TestFlight | bradcowdrey.com and GitHub; app stores where listed | bradcowdrey.com and GitHub; app stores where listed, and TestFlight |
 | **Price** | Free | Free | Free |
 | **Account** | None | None | None |
 | **Ads, analytics, tracking** | None | None | None |

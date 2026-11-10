@@ -1301,7 +1301,7 @@ Lists continue themselves when you press Enter, and numbered lists count up for 
 
 1. Draft in the editor
 2. Check the page preview
-3. Export to Markdown, HTML, or paste straight into Docs or Word
+3. Export to Word, PDF, a web page or Markdown, or paste straight into Docs or Word
 
 ### Task lists you can tick
 
@@ -1422,7 +1422,7 @@ const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAg
 // self-updates. Only the Mac app gets TAURI; MOBILE_APP keeps the native bridge for links, files and sharing.
 const NATIVE = window.__TAURI__ || null;
 const MOBILE_APP = !!NATIVE && (/iPhone|iPad|iPod|Android/.test(navigator.userAgent) || navigator.maxTouchPoints > 1);
-const ANDROID_APP = MOBILE_APP && /Android/.test(navigator.userAgent); // no share sheet or downloads in its web view
+const ANDROID_APP = MOBILE_APP && /Android/.test(navigator.userAgent); // no downloads in its web view: files go through the share sheet or the system picker
 const TAURI = MOBILE_APP ? null : NATIVE; // set when running as the installed Mac app
 if (MOBILE_APP) {
   document.documentElement.classList.add('mobile-app');
@@ -1438,7 +1438,7 @@ function applyDynamicType() {
   document.documentElement.style.setProperty('--dt', String(Math.min(1.5, Math.max(0.85, px / 17))));
 }
 if (MOBILE_APP) { applyDynamicType(); document.addEventListener('visibilitychange', () => { if (!document.hidden) applyDynamicType(); }); }
-const ON_DEVICE = MOBILE_APP ? 'on this device' : 'in this browser'; // where autosaved documents live
+const ON_DEVICE = NATIVE ? 'on this device' : 'in this browser'; // where autosaved documents live
 // Web links leave the app: in the iPhone app they open in Safari instead of replacing the editor.
 const openExternal = (url) => { if (NATIVE) NATIVE.opener.openUrl(url).catch(() => {}); else window.open(url, '_blank', 'noopener'); };
 const baseName = (p) => String(p).split(/[\\/]/).pop();
@@ -1470,13 +1470,14 @@ const makeDoc = (content = '', title = 'Untitled document', autoTitle = true) =>
 const WELCOME = ((md) => {
   const phone = matchMedia('(max-width: 600px), (max-height: 500px) and (pointer: coarse)').matches;
   const swap = (a, b) => { md = md.replace(a, b); };
-  if (MOBILE_APP) { swap('it saves to this browser automatically', 'it saves on this device automatically'); swap('Documents live in this browser only.', 'Documents live on this device.'); }
+  if (NATIVE) { swap('it saves to this browser automatically', 'it saves on this device automatically'); swap('Documents live in this browser only.', 'Documents live on this device.'); }
   if (phone) {
     swap('You write plain text on the left, and I render a clean, printable page on the right as you type.', 'Tap **Edit** to write in plain text, then **Done** to see it as a clean, printable page.');
     swap('Start fresh with **New document** in the sidebar.', 'Start fresh with **New document** in the ⋯ menu.');
     swap('The ribbon above does the typing for you, but every format has a shortcut:', 'The formatting bar above the keyboard does the typing for you, and every format has a keyboard shortcut too:');
     swap('| Home ribbon |', '| Formatting bar |');
   }
+  if (!isMac) md = md.replace(/<kbd>⌘⇧(\w)<\/kbd>/g, '<kbd>Ctrl+Shift+$1</kbd>').replace(/<kbd>⌘(.)<\/kbd>/g, '<kbd>Ctrl+$1</kbd>');
   return md;
 })($('#welcome-md').textContent.replace(/^\n/, ''));
 
@@ -2654,8 +2655,10 @@ window.addEventListener('pagehide', flushSave);
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) { flushSave(); return; }
   if (isLinked(cur())) refreshLinked(cur());
+  refreshPath(cur());
   if (S.lib) syncLibrary();
 });
+if (TAURI) window.addEventListener('focus', () => refreshPath(cur()));
 
 function autoTitle() {
   const d = cur(); if (!d || !d.autoTitle) return;
@@ -2684,6 +2687,7 @@ function openDoc(id) {
   titleInput.value = d.title;
   versions.save(d, 'open');
   if (isLinked(d)) refreshLinked(d);
+  refreshPath(d);
   closeFind();
   render(); renderTabs(); renderDocsList();
   canvas.scrollTop = 0;
@@ -3187,6 +3191,14 @@ async function writeLinked(d) {
 }
 const scheduleLinkSave = debounce(() => { for (const d of docs) if (isLinked(d) && d.content !== d.diskContent) writeLinked(d); }, 1200);
 // When a linked document is shown again, take the file's newer text if this copy has no unsaved edits.
+// Mac: a file changed in another app (or synced by iCloud Drive or Dropbox) is shown fresh when you come back to it,
+// unless this copy has unsaved edits (then Save still asks before overwriting).
+async function refreshPath(d) {
+  if (!TAURI || !d || !d.path || d.diskContent == null || d.content !== d.diskContent) return;
+  let f; try { f = await TAURI.core.invoke('read_text_file', { path: d.path }); } catch { return; }
+  if (!f || typeof f.content !== 'string' || f.content === d.diskContent || d.content !== d.diskContent) return;
+  applyText(d, f.content, 'remote'); d.diskContent = f.content; markDirty(d.id); scheduleSave();
+}
 async function refreshLinked(d) {
   if (!isLinked(d) || linkBusy.has(d.id)) return;
   try {
@@ -3404,7 +3416,13 @@ async function saveFile(name, data, mime) {
     } catch (e) { toast(`Could not save: ${e}`); return null; }
   }
   if (ANDROID_APP) {
-    // Android's web view can't download or share files: save through the system's "Save to" picker instead.
+    // Like the iPhone: the share sheet sends a copy to Gmail, Drive, Messages, Nearby Share and the rest.
+    try {
+      const path = await NATIVE.core.invoke('write_share_file', binary ? { name, contents: '', base64: toBase64(data) } : { name, contents: data });
+      await NATIVE.core.invoke('plugin:sharekit|share_file', { url: 'file://' + path, mimeType: mime, title: name });
+      return;
+    } catch {}
+    // Without the share sheet, save through the system's "Save to" picker.
     try {
       const ext = name.split('.').pop();
       const path = await NATIVE.dialog.save({ defaultPath: name, filters: [{ name: FILTER_NAMES[ext] || ext.toUpperCase(), extensions: [ext] }] });
@@ -3877,9 +3895,10 @@ cmd('copyRich', { label: 'Copy for Docs or Word', icon: 'clipboard-copy', key: '
 cmd('copyHtml', { label: 'Copy HTML source', icon: 'code', run: () => copyText(cleanPreview().innerHTML, 'HTML copied') });
 cmd('copyMd', { label: 'Copy Markdown', icon: 'copy', run: () => copyText(cm.getValue(), 'Markdown copied') });
 cmd('print', { label: MOBILE_APP && !ANDROID_APP ? 'Print…' : 'Print or save as PDF…', icon: 'printer', key: 'Mod-p', global: true, hidden: () => inArtifact(), run: () => printDoc(false) });
-cmd('exportPdf', { label: MOBILE_APP ? 'Share PDF…' : 'Export PDF…', icon: 'file-text', key: 'Mod-Alt-p', global: true, hidden: () => inArtifact() || ANDROID_APP, run: () => printDoc(true) });
+cmd('exportPdf', { label: MOBILE_APP ? 'Share PDF…' : 'Export PDF…', icon: 'file-text', key: 'Mod-Alt-p', global: true, hidden: () => inArtifact(), run: () => printDoc(true) });
+cmd('shareDoc', { label: 'Share…', icon: 'share', hidden: () => !TAURI, run: () => macShare(slugFile(cur().title) + '.md', cm.getValue()) });
 cmd('renameDoc', { label: 'Rename', icon: 'pencil-line', run: () => { titleInput.focus(); titleInput.select(); } });
-cmd('deleteDoc', { label: 'Delete document…', icon: 'trash-2', run: () => openDialog({ title: `Delete “${cur().title}”?`, body: `<p>This removes the document from ${MOBILE_APP ? 'this device' : 'this browser'}. It cannot be undone.</p>`, actions: [{ label: 'Keep it' }, { label: 'Delete', danger: true, run: () => deleteDoc(currentId) }] }) });
+cmd('deleteDoc', { label: 'Delete document…', icon: 'trash-2', run: () => openDialog({ title: `Delete “${cur().title}”?`, body: `<p>This removes the document from ${NATIVE ? 'this device' : 'this browser'}. It cannot be undone.</p>`, actions: [{ label: 'Keep it' }, { label: 'Delete', danger: true, run: () => deleteDoc(currentId) }] }) });
 
 cmd('undo', { label: 'Undo', icon: 'undo-2', hint: 'Mod-z', disabled: () => !cm.historySize().undo, run: () => { cm.undo(); cm.focus(); } });
 cmd('redo', { label: 'Redo', icon: 'redo-2', hint: 'Mod-Shift-z', disabled: () => !cm.historySize().redo, run: () => { cm.redo(); cm.focus(); } });
@@ -3947,6 +3966,7 @@ cmd('toggleCodeLines', { label: 'Code line numbers', icon: 'list-ordered', check
 cmd('toggleWrap', { label: 'Word wrap', icon: 'wrap-text', checked: () => S.wrap, run: () => { S.wrap = !S.wrap; applyEditorPrefs(); } });
 cmd('toggleRuler', { label: 'Ruler', icon: 'ruler', checked: () => S.ruler, run: () => { S.ruler = !S.ruler; applyPagePrefs(); } });
 cmd('toggleGuides', { label: 'Page breaks', icon: 'scissors-line-dashed', checked: () => S.guides, run: () => { S.guides = !S.guides; applyPagePrefs(); } });
+[['system', 'Match system', 'sun-moon'], ['light', 'Light', 'sun'], ['dark', 'Dark', 'moon']].forEach(([v, l, i]) => cmd('theme_' + v, { label: 'Appearance: ' + l, icon: i, checked: () => S.appTheme === v, run: () => { S.appTheme = v; saveSettings(); applyTheme(); } }));
 cmd('zoomIn', { label: 'Zoom in', icon: 'zoom-in', key: 'Mod-Alt-=', global: true, run: () => setZoom(Math.round(scale * 100) + 10) });
 cmd('zoomOut', { label: 'Zoom out', icon: 'zoom-out', key: 'Mod-Alt--', global: true, run: () => setZoom(Math.round(scale * 100) - 10) });
 cmd('zoomFit', { label: 'Fit page width', icon: 'move-horizontal', checked: () => S.zoom === 'fit', run: () => setZoom('fit') });
@@ -4010,9 +4030,9 @@ document.addEventListener('keydown', (e) => {
    Menubar (Docs)
    ================================================================ */
 const MENUS = [
-  ['File', ['newDoc', 'openFile', 'openRecent', 'pasteDoc', '-', 'saveNow', 'saveAs', 'saveAll', 'renameDoc', 'history', 'syncFolder', '-', 'closeTab', 'closeOtherTabs', 'closeAllTabs', 'reopenTab', '-', 'saveMd', 'exportDocx', 'exportHtml', 'exportPdf', 'print', '-', 'copyRich', 'copyMd', 'copyHtml', '-', 'deleteDoc']],
+  ['File', ['newDoc', 'openFile', 'openRecent', 'pasteDoc', '-', 'saveNow', 'saveAs', 'saveAll', 'renameDoc', 'history', 'syncFolder', '-', 'closeTab', 'closeOtherTabs', 'closeAllTabs', 'reopenTab', '-', 'saveMd', 'exportDocx', 'exportHtml', 'exportPdf', 'print', 'shareDoc', '-', 'copyRich', 'copyMd', 'copyHtml', '-', 'deleteDoc']],
   ['Edit', ['undo', 'redo', '-', 'selectAll', 'find', 'replace', '-', 'formatTable', 'clearFormat']],
-  ['View', ['view_editor', 'view_split', 'view_preview', '-', 'toggleOutline', 'toggleRail', 'toggleRuler', 'toggleGuides', 'toggleLineNumbers', 'toggleCodeLines', 'toggleWrap', '-', 'toggleFocus', 'toggleTypewriter', 'toggleSync', '-', 'zoomIn', 'zoomOut', 'zoomFit', 'zoom100', 'fullscreen', '-', 'nextTab', 'prevTab']],
+  ['View', ['view_editor', 'view_split', 'view_preview', '-', 'toggleOutline', 'toggleRail', 'toggleRuler', 'toggleGuides', 'toggleLineNumbers', 'toggleCodeLines', 'toggleWrap', '-', 'toggleFocus', 'toggleTypewriter', 'toggleSync', '-', 'theme_system', 'theme_light', 'theme_dark', '-', 'zoomIn', 'zoomOut', 'zoomFit', 'zoom100', 'fullscreen', '-', 'nextTab', 'prevTab']],
   ['Insert', ['image', 'imageUrl', 'table', 'link', '-', 'codeBlock', 'math', 'diagram', 'callout', 'details', '-', 'footnote', 'deflist', 'hr', 'toc', 'date', 'frontMatter']],
   ['Format', ['bold', 'italic', 'underline', 'strike', 'highlight', 'code', 'sup', 'sub', '-', 'normal', 'h1', 'h2', 'h3', 'h4', '-', 'ul', 'ol', 'task', 'quote', 'indent', 'outdent', '-', 'clearFormat']],
   ['Tools', ['wordCount', 'formatTable', '-', 'typographer', 'breaks', 'toggleMath', 'toggleDiagrams']],
@@ -4043,7 +4063,7 @@ const APP_URL = 'https://bradcowdrey.com/cowdrey-md';
 const MAC_URL = 'https://github.com/bradleycowdrey/cowdrey-md/releases/latest';
 const SHARE_TEXT = 'Cowdrey.MD is a free Markdown editor by Bradley Cowdrey. Free. Forever.';
 $('#shareAppBtn').addEventListener('click', (e) => {
-  const canShare = MOBILE_APP || (typeof navigator.share === 'function' && !inArtifact());
+  const canShare = NATIVE || (typeof navigator.share === 'function' && !inArtifact());
   openPopover(e.currentTarget, `<div class="mhead">Share Cowdrey.MD</div><p class="share-blurb" id="shareBlurb">${esc(SHARE_TEXT)} Pass it on to anyone who writes in Markdown.</p>
     ${canShare ? `<button type="button" class="mi" data-share="native">${ic('share')}<span>Share…</span><span></span></button>` : ''}
     <button type="button" class="mi" data-share="web">${ic('link')}<span>Copy link to the web app</span><span></span></button>
@@ -4059,8 +4079,8 @@ $('#shareAppBtn').addEventListener('click', (e) => {
   }, { alignRight: true, label: 'Share Cowdrey.MD', describedBy: 'shareBlurb' });
 });
 $('#exportBtn').addEventListener('click', (e) => {
-  const ids = ['copyRich', 'copyMd', 'copyHtml', '-', 'saveMd', 'exportDocx', 'exportHtml', 'exportPdf', 'print'];
-  openPopover(e.currentTarget, '<div class="mhead">Copy or download</div>' + menuHtml(ids), (ev) => { const b = ev.target.closest('[data-cmd]'); if (b) runCmd(b.dataset.cmd); }, { alignRight: true });
+  const ids = ['copyRich', 'copyMd', 'copyHtml', '-', 'saveMd', 'exportDocx', 'exportHtml', 'exportPdf', 'print', ...(TAURI ? ['-', 'shareDoc'] : [])];
+  openPopover(e.currentTarget, '<div class="mhead">' + (TAURI ? 'Copy or export' : MOBILE_APP ? 'Copy or share' : 'Copy or download') + '</div>' + menuHtml(ids), (ev) => { const b = ev.target.closest('[data-cmd]'); if (b) runCmd(b.dataset.cmd); }, { alignRight: true });
 });
 
 /* table & callout pickers */
@@ -4516,7 +4536,7 @@ function openLegal() { openExternal(LEGAL_URL); }
 // Terms: asked on first launch, and again whenever TERMS.md changes, but at most once every 30 days.
 // The newest known version is either the one built into the app (build.py) or the one on GitHub,
 // which bradcowdrey.com/legal also shows, fetched at most once a day. Agreeing stores its fingerprint.
-const TERMS_BUILT = { hash: '965a77a3', date: 'November 8, 2026' };
+const TERMS_BUILT = { hash: 'c3df2214', date: 'November 10, 2026' };
 const TERMS_SOURCE = 'https://raw.githubusercontent.com/bradleycowdrey/cowdrey-md/main/TERMS.md';
 const TERMS_GAP = 30 * 864e5; // at most one request to agree a month
 function termsHash(text) {
@@ -4929,7 +4949,24 @@ function shareAnchor() {
   const r = b && b.getBoundingClientRect();
   return r && r.width ? { x: r.left + r.width / 2, y: r.bottom } : { x: innerWidth - 40, y: 60 };
 }
+// The Mac share menu (Mail, Messages, AirDrop, Notes) for a copy of the document, or for the app's link.
+function macAnchor() {
+  const b = document.querySelector('#exportBtn') || document.querySelector('#shareAppBtn');
+  const r = b ? b.getBoundingClientRect() : { left: innerWidth / 2, bottom: 0, width: 0 };
+  return { x: r.left + r.width / 2, y: r.bottom, preferredEdge: 'bottom' };
+}
+async function macShare(name, text) {
+  try {
+    const path = await TAURI.core.invoke('write_share_file', { name, contents: text });
+    await TAURI.core.invoke('plugin:sharekit|share_file', { url: path, mimeType: 'text/markdown', title: name, position: macAnchor() });
+  } catch (e) { toast(`Could not share: ${e}`); }
+}
 function shareApp() {
+  if (TAURI) {
+    TAURI.core.invoke('plugin:sharekit|share_text', { text: `${SHARE_TEXT} ${APP_URL}`, position: macAnchor() })
+      .catch(() => copyText(APP_URL, 'Link to Cowdrey.MD copied'));
+    return;
+  }
   if (ANDROID_APP) {
     NATIVE.core.invoke('plugin:sharekit|share_text', { text: `${SHARE_TEXT} ${APP_URL}`, title: 'Cowdrey.MD' })
       .catch(() => copyText(APP_URL, 'Link to Cowdrey.MD copied'));
@@ -4984,7 +5021,7 @@ const SHEETS = {
   },
   share: {
     title: 'Share and export',
-    body: () => mGroup('Send a copy', [mRow('saveMd', { label: ANDROID_APP ? 'Save Markdown (.md)…' : MOBILE_APP ? 'Share Markdown (.md)…' : 'Download Markdown (.md)' }), mRow('exportDocx', { label: ANDROID_APP ? 'Save Word document (.docx)…' : MOBILE_APP ? 'Share Word document (.docx)…' : 'Download Word document (.docx)' }), mRow('exportHtml', { label: ANDROID_APP ? 'Save web page (.html)…' : MOBILE_APP ? 'Share web page (.html)…' : 'Download web page (.html)' }), mRow('print'), mRow('exportPdf')])
+    body: () => mGroup('Send a copy', [mRow('saveMd', { label: MOBILE_APP ? 'Share Markdown (.md)…' : 'Download Markdown (.md)' }), mRow('exportDocx', { label: MOBILE_APP ? 'Share Word document (.docx)…' : 'Download Word document (.docx)' }), mRow('exportHtml', { label: MOBILE_APP ? 'Share web page (.html)…' : 'Download web page (.html)' }), mRow('print'), mRow('exportPdf')])
       + mGroup('Copy', [mRow('copyRich'), mRow('copyMd'), mRow('copyHtml')])
       + mGroup('', [mAct('shareApp', 'heart', 'Share Cowdrey.MD with a friend')]),
   },

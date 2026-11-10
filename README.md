@@ -18,6 +18,7 @@ It combines MacDown's side-by-side writing, a Docs-style title bar, menus and pa
 
 ## What's new
 
+- **2.0.2: Android and the Mac work like the iPhone.** The Android share sheet for Markdown, Word, web pages and PDF; a Mac share menu; the Mac picks up files changed in other apps; Appearance in the Mac View menu.
 - **2.0.1: Polish.** About thirty small fixes to spacing, alignment, dark mode, focus rings, task lists and printing, on every platform.
 - **2.0.0: Cowdrey.MD 2.0.** Everything since 1.0 in one release: native apps for Mac, iPhone, iPad and Android; files opened and saved in place; a sync folder; search, folders, pins and version history; PDF and Word export; and keeping your place between writing and reading. From 2.0, versions follow Semantic Versioning (major.minor.patch). See the [changelog](CHANGELOG.md).
 - **1.0.30: the essentials of a full writing app.**
@@ -79,7 +80,7 @@ See the [changelog](CHANGELOG.md) for every release.
 - **Version history** for each document: a version when it opens and every 10 minutes while it changes, kept on the device for 90 days; restoring can be undone
 - **Sync folder** (Mac, iPhone, iPad, Android): every document is also a Markdown file in a folder you choose, such as iCloud Drive; changes go both ways, subfolders are folders, and a document changed in two places keeps both versions
 - On iPhone, iPad and Android, **Open…** and **Save to Files** keep the file where it is and save edits back to it
-- Autosaves to the browser's local storage, or the app's storage on a phone or tablet
+- Autosaves to the browser's local storage, or the app's own storage in the Mac, iPhone, iPad and Android apps
 - Open `.md` files, paste as a new document, export **Markdown**, a **Word document (.docx)**, a standalone **web page (.html)** or a **PDF** (Print or save as PDF on every platform, Share PDF on iPhone and iPad), copy Markdown or HTML, or **Copy for Docs or Word** (rich text)
 - Word count dialog with reading and speaking time and a Flesch reading-ease score
 
@@ -101,7 +102,7 @@ python3 build.py
 
 ## Tests
 
-`tests/e2e.mjs` drives the real app in Chromium through 85 scenarios: editing commands, lists, find and replace, tables, pictures, attempted script injection, math and diagrams, tabs and documents, search, folders and pins, version history, sync folders, files kept in place on iPhone, persistence, export (including a Word document checked part by part), printing, clipboard, sync scroll, zoom, themes, accessibility and large-document speed. It also covers the phone layout (Edit and Done, panels, Back, pinch, edge swipe), the iPhone and Android apps (share sheet, file picker, Open with, update checks), status bars, and touch screens. Two audits run as well: every arrow and chevron control must respond or be greyed out, and no control may appear only on hover. `tests/matrix.mjs` runs every command at five window sizes in light and dark. GitHub Actions runs it on every push (`.github/workflows/tests.yml`).
+`tests/e2e.mjs` drives the real app in Chromium through 90 scenarios: editing commands, lists, find and replace, tables, pictures, attempted script injection, math and diagrams, tabs and documents, search, folders and pins, version history, sync folders, files kept in place on iPhone, persistence, export (including a Word document checked part by part), printing, clipboard, sync scroll, zoom, themes, accessibility and large-document speed. It also covers the phone layout (Edit and Done, panels, Back, pinch, edge swipe), the iPhone and Android apps (share sheet, file picker, Open with, update checks), status bars, and touch screens. Two audits run as well: every arrow and chevron control must respond or be greyed out, and no control may appear only on hover. `tests/matrix.mjs` runs every command at five window sizes in light and dark. GitHub Actions runs it on every push (`.github/workflows/tests.yml`).
 
 ```sh
 (cd desktop && npm ci) && npm install --no-save playwright && npx playwright install chromium

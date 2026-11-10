@@ -1,8 +1,19 @@
 # Changelog
 
-iPhone and iPad builds go to TestFlight and the App Store. Mac app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
+iPhone and iPad builds go to TestFlight and the App Store. Mac and Android app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
 Versions follow [Semantic Versioning](https://semver.org) from 2.0.0: **major** (3.0.0) for a big change in how the app works or stores documents, **minor** (2.1.0) for new features, **patch** (2.0.1) for fixes and polish. Every platform shares one version number.
+
+## 2.0.2
+
+Android and the Mac now work like the iPhone app.
+
+- **Android shares like the iPhone.** Share Markdown, Word and web page now open the Android share sheet (Gmail, Drive, Messages, Nearby Share) instead of a Save dialog, and **Share PDF…** makes a PDF and shares it in one step. Save as a file… still saves to your phone.
+- **The Mac has a share menu.** **File → Share…** and **Share Cowdrey.MD** open the Mac share menu (Mail, Messages, AirDrop, Notes).
+- **The Mac picks up changes made elsewhere.** A file you have open is refreshed when you come back to Cowdrey.MD, if it was changed in another app or synced from another Mac, as on iPhone and Android. Your unsaved edits are never replaced.
+- **Appearance on the Mac.** Match system, Light and Dark are in the View menu.
+- **Clearer wording.** The Mac app says documents are saved on this device, the welcome document lists Word and PDF export, and shortcuts show Ctrl on Android, Windows and Linux.
+- **Terms of Use and Privacy** now name the Mac app's own storage and TestFlight.
 
 ## 2.0.1
 
@@ -21,7 +32,7 @@ Small polish across every platform, from a screen-by-screen review.
 Cowdrey.MD 2.0 brings together everything since 1.0: a full writing app on Mac, iPhone, iPad, Android and the web.
 
 - **Write anywhere.** Native apps for Mac, iPhone, iPad and Android, and the web app, with a Pages- and Word-style layout on phones and tablets.
-- **Your files, where they live.** Open and save files in place on every platform, make Cowdrey.MD your default Markdown app, and keep a **sync folder** (such as iCloud Drive) so every device shows the same documents.
+- **Your files, where they live.** Open and save files in place in the Mac, iPhone, iPad and Android apps, make Cowdrey.MD your default Markdown app, and keep a **sync folder** (such as iCloud Drive) so every device shows the same documents.
 - **Find and organize.** Search every document, folders, pins, sorting, and **version history** with undoable restore.
 - **Share and publish.** PDF on every platform, Word documents, web pages, Markdown, and the system share sheet with print.
 - **Write comfortably.** Keep your place between writing and reading, editor and code line numbers, focus and typewriter modes, and a blurred background behind every panel.

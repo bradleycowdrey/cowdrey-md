@@ -620,6 +620,38 @@ await test('Mac app: Check for updates finds a newer release and offers the DMG'
   eq(Q.errors, [], 'page errors'); await Q.ctx.close();
 });
 
+await test('Mac app: like the iPhone, picks up a file changed elsewhere, shares through the share menu, and has Appearance', async () => {
+  const Q = await newPage({ init: () => {
+    window.__disk = '# Plan\n\nFirst draft.'; window.__calls = [];
+    localStorage.setItem('cowdrey.md:updateChecked', String(Date.now()));
+    window.__TAURI__ = {
+      core: { invoke: async (c, a) => {
+        window.__calls.push([c, a]);
+        if (c === 'take_opened_files') { if (window.__handed) return []; window.__handed = true; return [{ name: 'Plan.md', path: '/Users/me/Plan.md', content: window.__disk }]; }
+        if (c === 'read_text_file') return { name: 'Plan.md', path: a.path, content: window.__disk };
+        if (c === 'write_share_file') return '/tmp/' + a.name;
+        return null;
+      } },
+      app: { getVersion: async () => '2.0.2' }, dialog: {}, event: { listen: async () => {} }, opener: { openUrl: async () => {} },
+    };
+  } });
+  await settle(Q, 400);
+  eq(await cmv(Q), '# Plan\n\nFirst draft.', 'file opened');
+  await Q.evaluate(() => { window.__disk = '# Plan\n\nEdited in another app.'; window.dispatchEvent(new Event('focus')); }); await settle(Q, 300);
+  eq(await cmv(Q), '# Plan\n\nEdited in another app.', 'newer text shown when the app is back in front');
+  await Q.evaluate(() => { const cm = document.querySelector('.CodeMirror').CodeMirror; cm.setValue(cm.getValue() + '\nMy edit.'); window.__disk = '# Plan\n\nChanged again.'; window.dispatchEvent(new Event('focus')); }); await settle(Q, 300);
+  ok((await cmv(Q)).includes('My edit.'), 'unsaved edits are never replaced');
+  await menu(Q, 'shareDoc'); await settle(Q, 200);
+  const calls = await Q.evaluate(() => window.__calls.filter(([c]) => /share/.test(c)));
+  eq(calls.map(([c]) => c), ['write_share_file', 'plugin:sharekit|share_file'], 'share menu');
+  eq(calls[1][1].url, '/tmp/Plan.md');
+  await menu(Q, 'theme_dark'); await settle(Q, 150);
+  eq(await Q.evaluate(() => document.documentElement.getAttribute('data-theme')), 'dark', 'Appearance: Dark from the View menu');
+  await Q.click('[data-menu="2"]'); ok(await Q.$('#popover [data-cmd="theme_dark"] .chk'), 'Dark is ticked'); await Q.keyboard.press('Escape');
+  ok((await Q.textContent('#sidebar')).includes('on this device'), 'documents are on this device, not in a browser');
+  eq(Q.errors, [], 'page errors'); await Q.ctx.close();
+});
+
 await test('Mac app: the daily check stays quiet when up to date and respects Skip', async () => {
   const Q = await newPage({ init: () => {
     window.__TAURI__ = { core: { invoke: async () => [] }, app: { getVersion: async () => '1.0.1' }, dialog: {}, event: { listen: async () => {} }, opener: { openUrl: async () => {} } };
@@ -1162,7 +1194,10 @@ await test('Android app: opens and saves through the system file picker; Back cl
   const T = await newPage({ width: 412, height: 915, userAgent: 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Mobile Safari/537.36', init: () => {
     window.__calls = { saved: [], invoke: [] };
     window.__TAURI__ = {
-      core: { invoke: async (c) => { window.__calls.invoke.push(c); if (c === 'take_opened_files' && !window.__handed) { window.__handed = true; return [{ name: '', path: 'content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3DShared%20notes.md', content: '' }]; } return null; } },
+      core: { invoke: async (c, a) => { window.__calls.invoke.push(c); if (c === 'take_opened_files' && !window.__handed) { window.__handed = true; return [{ name: '', path: 'content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3DShared%20notes.md', content: '' }]; }
+        if (c === 'write_share_file') { (window.__calls.shared ||= []).push([a.name, (a.contents || '').length]); return '/data/user/0/com.bradcowdrey.cowdreymd/cache/outgoing/' + a.name; }
+        if (c === 'plugin:sharekit|share_file') { if (window.__noShare) throw new Error('no share sheet'); (window.__calls.sheet ||= []).push(a.url); return null; }
+        return null; } },
       app: { getVersion: async () => '1.0.20' }, event: { listen: async () => {} }, opener: { openUrl: async (u) => { (window.__calls.opened = window.__calls.opened || []).push(u); } },
       dialog: {
         save: async (o) => 'content://com.android.externalstorage.documents/document/primary%3ADocuments%2F' + encodeURIComponent(o.defaultPath),
@@ -1180,9 +1215,17 @@ await test('Android app: opens and saves through the system file picker; Back cl
   await T.click('#mBar [data-m="more"]'); await T.click('#mSheet [data-cmd="openFile"]'); await settle(T, 400);
   eq(await T.evaluate(() => document.querySelector('#docTitle').value), 'Trip notes');
   ok((await cmv(T)).includes('Pack the charger.'), 'content read');
-  // Save: share panel → "Save Markdown" → system picker
+  // Share: like the iPhone, "Share Markdown" sends a copy through the Android share sheet
   await T.click('#mBar [data-m="share"]'); await settle(T, 200);
-  eq((await T.textContent('#mSheet [data-cmd="saveMd"]')).trim(), 'Save Markdown (.md)…');
+  eq((await T.textContent('#mSheet [data-cmd="saveMd"]')).trim(), 'Share Markdown (.md)…');
+  ok(await T.$('#mSheet [data-cmd="exportPdf"]'), 'Share PDF is offered on Android too');
+  await T.click('#mSheet [data-cmd="saveMd"]'); await settle(T, 300);
+  const sh = await T.evaluate(() => [window.__calls.shared, window.__calls.sheet]);
+  ok(sh[0].length === 1 && sh[0][0][0] === 'Trip notes.md' && sh[0][0][1] > 10, 'copy written for sharing');
+  eq(sh[1], ['file:///data/user/0/com.bradcowdrey.cowdreymd/cache/outgoing/Trip notes.md'], 'shared through the share sheet');
+  // Without a share sheet, it falls back to the system "Save to" picker
+  await T.evaluate(() => { window.__noShare = true; });
+  await T.click('#mBar [data-m="share"]'); await settle(T, 200);
   await T.click('#mSheet [data-cmd="saveMd"]'); await settle(T, 300);
   const saved = await T.evaluate(() => window.__calls.saved);
   eq(saved.length, 1); ok(/Trip%20notes\.md$/.test(saved[0][0]) && saved[0][1] > 10, 'saved to the picked file');

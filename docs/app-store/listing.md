@@ -6,7 +6,7 @@ The **App Store listing** workflow (`.github/workflows/app-store-listing.yml`) f
 
 | Field | Value |
 |---|---|
-| Name (30) | Cowdrey.MD |
+| Name (30) | Cowdrey.MD Markdown Editor |
 | Subtitle (30) | Write Markdown, see the page |
 | Category | Productivity (secondary: Utilities) |
 | Content rights | Does not contain, show or access third-party content |
@@ -93,7 +93,7 @@ Cowdrey.MD 2.0 is a big step up:
 
   Cowdrey.MD is a free Markdown editor for writers, students and professionals who write notes, documents and reports in plain text. It shows a clean, printable page of what you write, with tables, task lists, math and diagrams. On iPhone it works like Pages and Word: read the document as a page, tap Edit to write, with a formatting bar above the keyboard. Documents are stored on the device, with no account needed.
 
-  Setup: no login or credentials. On first launch, tap "I agree" to the Terms of Use. A sample document opens, demonstrating every feature. Tap Edit to write; use the formatting bar, the paintbrush (Format) and + (Insert). Tap Done to see the page. The share button exports PDF, Word, Markdown or a web page through the iOS share sheet, and prints. The ··· menu has New document, Open, Save to Files, Version history, Sync folder, Find, Word count and Appearance. Open… and Sync folder use the iOS Files picker; the files stay where the user keeps them, and the app saves changes back to them. Any .md or .txt file opens from the Files app with "Open in Cowdrey.MD".
+  Setup: no login or credentials. On first launch, tap "I agree" to the Terms of Use. A sample document opens, demonstrating every feature. Tap Edit to write; use the formatting bar, the paintbrush (Format) and + (Insert). Tap Done to see the page. The share button exports PDF, Word, Markdown or a web page through the iOS share sheet, and prints. The ··· menu has New document, Open, Save to Files, Version history, Sync folder, Find, Word count and Appearance. Open… and Sync folder use the iOS Files picker; the files stay where the user keeps them, and the app saves changes back to them. Any Markdown file (.md, .markdown) opens from the Files app with Open With → Cowdrey.MD; .txt files open through ··· → Open….
 
   No accounts, login, user-generated content shared with others, paid content or in-app purchases.
 

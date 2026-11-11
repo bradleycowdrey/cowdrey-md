@@ -66,7 +66,7 @@ PRIVATE BY DESIGN
 • No account, no ads, no tracking
 • Works offline
 
-Free. Forever. Made by Bradley Cowdrey (bradcowdrey.com). Also available for Mac, Android and in any web browser.
+Free. Forever. Made by Bradley Cowdrey (bradcowdrey.com). Also available for Mac and on the web.
 
 ## Keywords (100)
 
@@ -90,6 +90,8 @@ Cowdrey.MD 2.0 is a big step up:
 - Sign-in required: No
 - Contact: Bradley Cowdrey, legal@bradcowdrey.com (add a phone number in App Store Connect)
 - Notes (also sent to App Review in answer to their Guideline 2.1 information request):
+
+  Guideline 2.3.10: the description no longer mentions other platforms. This submission is version 2.0.2 (build 32).
 
   Cowdrey.MD is a free Markdown editor for writers, students and professionals who write notes, documents and reports in plain text. It shows a clean, printable page of what you write, with tables, task lists, math and diagrams. On iPhone it works like Pages and Word: read the document as a page, tap Edit to write, with a formatting bar above the keyboard. Documents are stored on the device, with no account needed.
 

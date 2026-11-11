@@ -317,18 +317,23 @@ def submit_for_review(v):
         print('Submit: not submitted, because these steps need attention first: ' + '; '.join(problems))
         return
     subs = call('GET', f'/v1/reviewSubmissions?filter[app]={APP}&filter[platform]=IOS&limit=20')['data']
-    live = [x for x in subs if x['attributes'].get('state') in ('WAITING_FOR_REVIEW', 'IN_REVIEW', 'UNRESOLVED_ISSUES')]
-    for x in live:
-        items = call('GET', f"/v1/reviewSubmissions/{x['id']}/items?include=appStoreVersion&limit=50")['data']
-        if any((i.get('relationships', {}).get('appStoreVersion', {}).get('data') or {}).get('id') == v['id'] for i in items):
-            print(f"Submit: {VERSION} is already submitted ({x['attributes'].get('state')}).")
+    has_version = lambda x: any((i.get('relationships', {}).get('appStoreVersion', {}).get('data') or {}).get('id') == v['id']
+                                for i in call('GET', f"/v1/reviewSubmissions/{x['id']}/items?include=appStoreVersion&limit=50")['data'])
+    for x in subs:
+        st = x['attributes'].get('state')
+        if st in ('WAITING_FOR_REVIEW', 'IN_REVIEW') and has_version(x):
+            print(f"Submit: {VERSION} is already submitted ({st}).")
             return
+    # After a rejection the submission stays open with "unresolved issues": the fixed version goes back in it.
+    reopen = next((x for x in subs if x['attributes'].get('state') == 'UNRESOLVED_ISSUES' and has_version(x)), None)
     for _ in range(30):  # a cancelled submission must finish cancelling before a new one opens
         subs = call('GET', f'/v1/reviewSubmissions?filter[app]={APP}&filter[platform]=IOS&limit=20')['data']
         if not any(x['attributes'].get('state') in ('CANCELING', 'COMPLETING') for x in subs):
             break
         print('Submit: waiting for the earlier submission to finish cancelling…', flush=True); time.sleep(20)
-    draft = next((x for x in subs if x['attributes'].get('state') == 'READY_FOR_REVIEW'), None)
+    draft = reopen or next((x for x in subs if x['attributes'].get('state') == 'READY_FOR_REVIEW'), None)
+    if reopen:
+        print(f"Submit: resubmitting the submission with unresolved issues ({reopen['id']}).")
     if not draft:
         draft = call('POST', '/v1/reviewSubmissions', {'data': {'type': 'reviewSubmissions', 'attributes': {'platform': 'IOS'},
                                                                'relationships': {'app': rel('apps', APP)}}})['data']
@@ -358,7 +363,23 @@ def submit_for_review(v):
                 if attempt == 4:
                     raise
                 print(f'Submit: Apple not ready yet, trying again in a minute:\n{e}', flush=True); time.sleep(60)
-    call('PATCH', f"/v1/reviewSubmissions/{draft['id']}", {'data': {'type': 'reviewSubmissions', 'id': draft['id'], 'attributes': {'submitted': True}}})
+    try:
+        call('PATCH', f"/v1/reviewSubmissions/{draft['id']}", {'data': {'type': 'reviewSubmissions', 'id': draft['id'], 'attributes': {'submitted': True}}})
+    except ApiError as e:
+        if not reopen:
+            raise
+        # If Apple won't take the reopened submission back, cancel it and submit the version in a new one.
+        print(f'Submit: the reopened submission was refused ({e}); submitting in a new one.', flush=True)
+        call('PATCH', f"/v1/reviewSubmissions/{reopen['id']}", {'data': {'type': 'reviewSubmissions', 'id': reopen['id'], 'attributes': {'canceled': True}}})
+        for _ in range(30):
+            if call('GET', f"/v1/reviewSubmissions/{reopen['id']}")['data']['attributes'].get('state') not in ('CANCELING', 'UNRESOLVED_ISSUES'):
+                break
+            time.sleep(20)
+        draft = call('POST', '/v1/reviewSubmissions', {'data': {'type': 'reviewSubmissions', 'attributes': {'platform': 'IOS'},
+                                                               'relationships': {'app': rel('apps', APP)}}})['data']
+        call('POST', '/v1/reviewSubmissionItems', {'data': {'type': 'reviewSubmissionItems', 'relationships': {
+            'reviewSubmission': rel('reviewSubmissions', draft['id']), 'appStoreVersion': rel('appStoreVersions', v['id'])}}})
+        call('PATCH', f"/v1/reviewSubmissions/{draft['id']}", {'data': {'type': 'reviewSubmissions', 'id': draft['id'], 'attributes': {'submitted': True}}})
     for _ in range(15):
         st = call('GET', f"/v1/reviewSubmissions/{draft['id']}")['data']['attributes'].get('state')
         vst = call('GET', f"/v1/appStoreVersions/{v['id']}")['data']['attributes'].get('appStoreState')

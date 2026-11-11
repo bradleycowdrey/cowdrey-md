@@ -1,0 +1,23 @@
+App: Cowdrey.MD Markdown Editor (6826704085), version 2.0.2
+Submit: resubmitting the submission with unresolved issues (4a9d4140-e8da-42b9-ace9-153d9ae74ab7).
+Submit: the reopened submission was refused (PATCH /v1/appStoreVersions/dc722255-6806-47fb-a44e-23efebafb9f0 → HTTP 409: appStoreVersions with id 'dc722255-6806-47fb-a44e-23efebafb9f0' is not in valid state.: This resource cannot be reviewed, please check associated errors to see why.
+  · STATE_ERROR: Version is not ready to be submitted yet, please try again later.); submitting in a new one.
+Submit: submission is WAITING_FOR_REVIEW; App Store Connect shows version 2.0.2 as WAITING_FOR_REVIEW.
+CONFIRMED: Cowdrey.MD 2.0.2 is Waiting for Review.
+
+App Store listing for Cowdrey.MD 2.0.2
+[OK] Content rights: no third-party content
+[OK] Category: Productivity, then Utilities
+[OK] Subtitle and privacy policy URL
+[OK] Age rating: 4+ (none of the listed content) — set 24 answers; set these by hand: gracRatingClassificationNumber
+[OK] Price: free
+[OK] Availability: every country and region — already set
+[OK] Version number and copyright — 2.0.2
+[OK] Build: newest processed upload of this version — build 2.0.2.32
+[OK] Description, keywords, promotional text, support and marketing URLs
+[OK] What's New in This Version — skipped: Apple allows What's New only once a version has been released
+[OK] App Review contact and notes (add a phone number by hand)
+[OK] Screenshots: APP_IPHONE_67 — 5 already uploaded
+[OK] Screenshots: APP_IPAD_PRO_3GEN_129 — 3 already uploaded
+
+Still to do in App Store Connect: App Privacy (choose "Data Not Collected"), a phone number for App Review, then Add for Review.

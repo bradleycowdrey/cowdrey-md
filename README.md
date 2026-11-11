@@ -4,14 +4,14 @@ A Markdown editor by **Bradley Cowdrey** · [bradcowdrey.com](https://bradcowdre
 
 It combines MacDown's side-by-side writing, a Docs-style title bar, menus and paper page, and a Word-style ribbon, ruler and status bar. It is one self-contained web page with no build server and no backend.
 
-### [⬇ Download for Mac](https://github.com/bradleycowdrey/cowdrey-md/releases/latest/download/Cowdrey.MD.dmg) · [⬇ Download for Android](https://github.com/bradleycowdrey/cowdrey-md/releases/latest/download/Cowdrey.MD.apk) · iPhone and iPad: coming soon to the App Store · [Open in your browser](https://bradcowdrey.com/cowdrey-md)
+### [⬇ Download for Mac](https://github.com/bradleycowdrey/cowdrey-md/releases/latest/download/Cowdrey.MD.dmg) · [⬇ Download for Android](https://github.com/bradleycowdrey/cowdrey-md/releases/latest/download/Cowdrey.MD.apk) · [⬇ iPhone and iPad (TestFlight)](https://testflight.apple.com/join/bDgfhxge) · [Open in your browser](https://bradcowdrey.com/cowdrey-md)
 
 [![The Cowdrey.MD page at bradcowdrey.com/cowdrey-md, with the editor running in a Mac window. Click to open it.](docs/product-page.png)](https://bradcowdrey.com/cowdrey-md)
 
 **Free. Forever.**
 - **Mac:** a `.dmg` for Apple silicon and Intel Macs. Open it and drag Cowdrey.MD into Applications. It's signed with an Apple Developer ID and notarized by Apple, so it opens with a double-click, and it keeps itself up to date.
 - **Android 8.0 or later:** an `.apk` signed with the Cowdrey.MD upload key. Open it on your phone and tap Install; later versions come from ··· → Check for updates.
-- **iPhone and iPad:** in Apple's App Review now (iOS 15 or later).
+- **iPhone and iPad (iOS 15 or later):** install it now with Apple's TestFlight: open [testflight.apple.com/join/bDgfhxge](https://testflight.apple.com/join/bDgfhxge) on your iPhone or iPad, install the free TestFlight app if asked, then tap Install. TestFlight installs each new version as it comes out. The App Store version is in Apple's App Review.
 - **Any browser:** [bradcowdrey.com/cowdrey-md/app](https://bradcowdrey.com/cowdrey-md/app).
 
 [![Latest release](https://img.shields.io/github/v/release/bradleycowdrey/cowdrey-md?label=latest%20version)](https://github.com/bradleycowdrey/cowdrey-md/releases/latest)

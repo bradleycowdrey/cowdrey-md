@@ -169,5 +169,12 @@ if build and group:
         d = call('GET', f"/v1/builds/{build['id']}/buildBetaDetail")['data']['attributes']
         return f"external testing: {d.get('externalBuildState')}"
     step('Build state', state)
+    # Every build in the public group, so the log shows which one testers get.
+    for b in call('GET', f"/v1/betaGroups/{group['id']}/builds?limit=20")['data']:
+        try:
+            st = call('GET', f"/v1/builds/{b['id']}/buildBetaDetail")['data']['attributes'].get('externalBuildState')
+        except ApiError as e:
+            st = str(e)
+        print(f"     in the group: build {b['attributes']['version']} — {st}")
     g = call('GET', f"/v1/betaGroups/{group['id']}")['data']['attributes']
     print(f"\nPUBLIC LINK: {g.get('publicLink') or '(not issued yet: Apple issues it once a build has passed beta review)'}")

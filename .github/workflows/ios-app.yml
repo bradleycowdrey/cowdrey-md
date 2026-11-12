@@ -19,7 +19,9 @@ jobs:
   ios:
     name: Build Cowdrey.MD for iPhone and iPad
     runs-on: macos-latest
+    # The Swift plugin is compiled for this iOS version (Tauri's default is 13.0, too old for its file picker code).
     env:
+      IPHONEOS_DEPLOYMENT_TARGET: '15.0'
       # App Store Connect API key (Users and Access, Integrations, Admin access). With it, Xcode makes the
       # Apple Distribution certificate and App Store profile itself, and the build is uploaded to TestFlight.
       APPLE_API_ISSUER: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}

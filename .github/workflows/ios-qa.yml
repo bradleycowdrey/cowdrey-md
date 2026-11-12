@@ -19,6 +19,9 @@ jobs:
   qa:
     name: Photograph the iPhone app's panels in the Simulator
     runs-on: macos-latest
+    # The Swift plugin is compiled for this iOS version (Tauri's default is 13.0, too old for its file picker code).
+    env:
+      IPHONEOS_DEPLOYMENT_TARGET: '15.0'
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4

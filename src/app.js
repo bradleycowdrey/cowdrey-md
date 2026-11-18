@@ -14,6 +14,9 @@ const NATIVE = window.__TAURI__ || null;
 const MOBILE_APP = !!NATIVE && (/iPhone|iPad|iPod|Android/.test(navigator.userAgent) || navigator.maxTouchPoints > 1);
 const ANDROID_APP = MOBILE_APP && /Android/.test(navigator.userAgent); // no downloads in its web view: files go through the share sheet or the system picker
 const TAURI = MOBILE_APP ? null : NATIVE; // set when running as the installed Mac app
+// The Mac App Store build (Rust feature app-store) sets this before the page runs: the App Store updates it,
+// so it has no Check for updates and never offers a download.
+const APP_STORE = !!TAURI && window.__COWDREY_APP_STORE__ === true;
 if (MOBILE_APP) {
   document.documentElement.classList.add('mobile-app');
   // An app's interface doesn't pinch-zoom like a web page; the page has its own zoom and Dynamic Type sizes the text.
@@ -2575,7 +2578,7 @@ cmd('shortcuts', { label: 'Keyboard shortcuts', icon: 'keyboard', key: 'Mod-/', 
 cmd('guide', { label: 'Markdown guide', icon: 'book-open-text', run: () => newDoc(WELCOME, 'Markdown guide') });
 cmd('legal', { label: 'Terms & Privacy', icon: 'scale', run: openLegal });
 cmd('about', { label: 'About Cowdrey.MD', icon: 'info', run: showAbout });
-cmd('checkUpdates', { label: 'Check for updates…', icon: 'refresh-cw', hidden: () => !TAURI && !ANDROID_APP, run: () => checkForUpdates(true) });
+cmd('checkUpdates', { label: 'Check for updates…', icon: 'refresh-cw', hidden: () => APP_STORE || (!TAURI && !ANDROID_APP), run: () => checkForUpdates(true) });
 cmd('history', { label: 'Version history…', icon: 'history', key: 'Mod-Alt-y', global: true, run: showHistory });
 cmd('wordCount', { label: 'Word count', icon: 'file-digit', key: 'Mod-Alt-w', global: true, run: showStats });
 
@@ -3262,7 +3265,7 @@ async function installUpdate(update) {
 }
 // Mac: signed in-place updates. Android (APK from bradcowdrey.com): offer the new APK, which installs over this one.
 async function checkForUpdates(manual) {
-  if (!TAURI && !ANDROID_APP) return;
+  if (APP_STORE || (!TAURI && !ANDROID_APP)) return;
   const native = TAURI || NATIVE;
   let current = '0';
   try { current = await native.app.getVersion(); } catch {}

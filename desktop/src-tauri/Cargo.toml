@@ -34,8 +34,17 @@ tauri-plugin-fs = "2"
 tauri-plugin-sharekit = { path = "plugins/sharekit" }
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
-tauri-plugin-updater = "2"
-tauri-plugin-process = "2"
+tauri-plugin-updater = { version = "2", optional = true }
+tauri-plugin-process = { version = "2", optional = true }
+
+# The direct-download Mac app (DMG) updates itself: `updater` is on by default. The Mac App Store build
+# (.github/workflows/mac-app-store.yml) is made with `--no-default-features --features app-store`: no
+# self-updater (the App Store updates it), and security-scoped bookmarks so the sandboxed app can reopen
+# recent files, save back to them and keep its sync folder after a restart.
+[features]
+default = ["updater"]
+updater = ["dep:tauri-plugin-updater", "dep:tauri-plugin-process"]
+app-store = []
 
 [profile.release]
 codegen-units = 1

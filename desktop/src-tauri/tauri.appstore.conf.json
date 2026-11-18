@@ -1,0 +1,14 @@
+{
+  "bundle": {
+    "targets": ["app"],
+    "createUpdaterArtifacts": false,
+    "macOS": {
+      "entitlements": "AppStore.entitlements"
+    }
+  },
+  "app": {
+    "security": {
+      "capabilities": ["appstore", "macos-share"]
+    }
+  }
+}

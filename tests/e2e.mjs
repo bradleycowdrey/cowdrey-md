@@ -664,6 +664,25 @@ await test('Mac app: the daily check stays quiet when up to date and respects Sk
   await Q.ctx.close();
 });
 
+await test('Mac App Store build: no Check for updates, no update check at launch, files still open', async () => {
+  const Q = await newPage({ init: () => {
+    window.__calls = [];
+    Object.defineProperty(window, '__COWDREY_APP_STORE__', { value: true }); // as the app-store Rust build sets it
+    window.__TAURI__ = { core: { invoke: async (c) => { window.__calls.push(c); return c === 'take_opened_files' ? [] : null; } }, app: { getVersion: async () => '1.0.1' }, dialog: {}, event: { listen: async () => {} }, opener: { openUrl: async (u) => { window.__calls.push(u); } } };
+  } });
+  let asked = 0;
+  await Q.route('https://api.github.com/**', (r) => { asked++; return r.fulfill({ contentType: 'application/json', body: JSON.stringify({ tag_name: 'v9.0.0', assets: [] }) }); });
+  await settle(Q, 6000);
+  eq(asked, 0, 'no update check at launch');
+  ok(!(await Q.evaluate(() => document.querySelector('#dialog').open)), 'no update dialog');
+  await Q.click('[data-menu="6"]');
+  ok(!(await Q.$('#popover [data-cmd="checkUpdates"]')), 'Help has no Check for updates'); await Q.keyboard.press('Escape');
+  ok(await Q.evaluate(() => window.__calls.includes('take_opened_files')), 'files opened from Finder are still picked up');
+  const spec = await Q.evaluate(() => window.__calls.includes('set_menu'));
+  ok(spec, 'menu bar still built');
+  eq(Q.errors, [], 'page errors'); await Q.ctx.close();
+});
+
 await test('web version has no update menu item', async () => {
   await P.click('[data-menu="6"]');
   ok(!(await P.$('#popover [data-cmd="checkUpdates"]')), 'hidden on the web'); await P.keyboard.press('Escape');

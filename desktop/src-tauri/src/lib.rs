@@ -8,6 +8,15 @@ use tauri::menu::{CheckMenuItem, IsMenuItem, Menu, MenuItem, PredefinedMenuItem,
 use tauri::Wry;
 use tauri::{AppHandle, Emitter, Manager, RunEvent, WindowEvent};
 
+mod bookmarks;
+
+// The Mac App Store build must never carry the self-updater: build it with --no-default-features --features app-store.
+#[cfg(all(feature = "app-store", feature = "updater"))]
+compile_error!("the app-store build is made without the updater: use --no-default-features --features app-store");
+
+/// True in the Mac App Store build: no self-updates, and the page hides Check for updates.
+pub const APP_STORE: bool = cfg!(feature = "app-store");
+
 /// Files macOS asked us to open (Finder double-click, "Open With", drag onto the Dock icon)
 /// that the page has not picked up yet.
 struct PendingFiles(Mutex<Vec<String>>);
@@ -24,6 +33,7 @@ struct OpenedFile {
 
 fn load(path: &Path) -> Option<OpenedFile> {
     let content = std::fs::read_to_string(path).ok()?;
+    bookmarks::remember(path);
     Some(OpenedFile {
         name: path.file_name()?.to_string_lossy().into_owned(),
         path: path.to_string_lossy().into_owned(),
@@ -53,7 +63,9 @@ fn read_text_file(path: String) -> Result<OpenedFile, String> {
 
 #[tauri::command]
 fn write_text_file(path: String, contents: String) -> Result<(), String> {
-    std::fs::write(&path, contents).map_err(|e| e.to_string())
+    std::fs::write(&path, contents).map_err(|e| e.to_string())?;
+    bookmarks::remember(Path::new(&path));
+    Ok(())
 }
 
 /// Writes bytes sent as base64 (Word documents and other binary exports).
@@ -119,6 +131,7 @@ fn list_folder(dir: String) -> Result<FolderListing, String> {
         }
     }
     walk(root, root, 0, &mut files, &mut folders);
+    bookmarks::remember(root);
     let name = root.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| dir.clone());
     Ok(FolderListing { name, files, folders })
 }
@@ -264,9 +277,12 @@ fn submenu(app: &AppHandle, title: &str, items: &[Item]) -> tauri::Result<Submen
 #[tauri::command]
 fn set_menu(app: AppHandle, menus: Vec<MenuSpec>) -> Result<(), String> {
     let build = || -> tauri::Result<Menu<Wry>> {
-        let app_items: Vec<Item> = vec![
-            Box::new(MenuItem::with_id(&app, "cmd:about", "About Cowdrey.MD", true, None::<&str>)?),
-            Box::new(MenuItem::with_id(&app, "cmd:checkUpdates", "Check for Updates…", true, None::<&str>)?),
+        let mut app_items: Vec<Item> = vec![Box::new(MenuItem::with_id(&app, "cmd:about", "About Cowdrey.MD", true, None::<&str>)?)];
+        // The App Store updates the App Store build itself.
+        if !APP_STORE {
+            app_items.push(Box::new(MenuItem::with_id(&app, "cmd:checkUpdates", "Check for Updates…", true, None::<&str>)?));
+        }
+        app_items.extend::<Vec<Item>>(vec![
             Box::new(PredefinedMenuItem::separator(&app)?),
             Box::new(PredefinedMenuItem::services(&app, None)?),
             Box::new(PredefinedMenuItem::separator(&app)?),
@@ -276,7 +292,7 @@ fn set_menu(app: AppHandle, menus: Vec<MenuSpec>) -> Result<(), String> {
             Box::new(PredefinedMenuItem::separator(&app)?),
             // a custom Quit so the page can save before the app exits (the predefined one skips that)
             Box::new(MenuItem::with_id(&app, "app:quit", "Quit Cowdrey.MD", true, Some("CmdOrCtrl+Q"))?),
-        ];
+        ]);
         let mut subs: Vec<Submenu<Wry>> = vec![submenu(&app, "Cowdrey.MD", &app_items)?];
         let mut window_added = false;
         for m in &menus {
@@ -318,10 +334,26 @@ pub fn run() {
     let builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init());
-    #[cfg(desktop)]
+    // In-place updates (and the relaunch after one) are for the direct-download Mac app only.
+    #[cfg(all(desktop, feature = "updater"))]
     let builder = builder
         .plugin(tauri_plugin_updater::Builder::new().build())
-        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_process::init());
+    // The App Store build tells the page what it is before the page runs, so it hides Check for updates.
+    #[cfg(feature = "app-store")]
+    let builder = builder.plugin(
+        tauri::plugin::Builder::<tauri::Wry>::new("cowdrey-app-store")
+            .js_init_script("Object.defineProperty(window, '__COWDREY_APP_STORE__', { value: true });")
+            .build(),
+    );
+    // App Store build: start using the bookmarks for recent files, saved-back files and the sync folder again.
+    #[cfg(all(target_os = "macos", feature = "app-store"))]
+    let builder = builder.setup(|app| {
+        bookmarks::restore(app.path().app_data_dir().ok());
+        Ok(())
+    });
+    #[cfg(desktop)]
+    let builder = builder
         .invoke_handler(tauri::generate_handler![take_opened_files, read_text_file, write_text_file, write_binary_file, list_folder, write_in_folder, remove_file, print_page, write_share_file, quit_app, allow_exit, set_menu, hold_quit])
         .on_menu_event(|app, event| {
             if event.id().0 == "app:quit" || event.id().0 == "app:closeWindow" {

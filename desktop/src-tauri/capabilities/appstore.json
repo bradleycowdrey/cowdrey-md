@@ -1,0 +1,16 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "appstore",
+  "description": "Permissions for the main window of the Mac App Store build: as default.json, without the self-updater. Only tauri.appstore.conf.json selects it.",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "dialog:default",
+    "opener:default"
+  ],
+  "platforms": [
+    "macOS"
+  ]
+}

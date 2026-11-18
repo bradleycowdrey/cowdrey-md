@@ -7,6 +7,8 @@
                                this workflow made (their IDs are in STATE_JSON, kept on the mac-app-store-log branch)
                                are revoked/deleted first, so the account never collects them; nothing else is touched.
                                Also makes sure the app record has a macOS version (adds the macOS platform).
+  revoke STATE_JSON            Revokes the certificates listed in STATE_JSON (this run's, once the upload is done)
+                               and writes back only the ones that could not be revoked.
   wait-build BUILD_NUMBER      Waits (bounded) until App Store Connect lists the uploaded macOS build.
 
 Environment: APPLE_API_ISSUER, APPLE_API_KEY (key ID), P8 (private key text), VERSION (app version).
@@ -94,6 +96,33 @@ def list_certs():
     return call('GET', '/v1/certificates?limit=200&fields[certificates]=name,displayName,certificateType,expirationDate')['data']
 
 
+def revoke_ids(ids, whose):
+    """Revokes the certificates with these IDs; returns the ones still there (the call failed)."""
+    left = []
+    for cid in ids:
+        try:
+            call('DELETE', f'/v1/certificates/{cid}')
+            log(f'Revoked {whose} certificate {cid}')
+        except ApiError as e:
+            if e.code == 404:
+                log(f'Certificate {cid} ({whose}) is already gone')
+            else:
+                log(f'Could not revoke {whose} certificate {cid}: {e}')
+                left.append(cid)
+    return left
+
+
+def revoke(state_path):
+    """After the upload: revokes this run's certificates and keeps in STATE_JSON only those that are left."""
+    try:
+        state = json.load(open(state_path))
+    except Exception:
+        return
+    left = revoke_ids(state.get('certificates', []), 'this run\'s')
+    state['certificates'] = left
+    json.dump(state, open(state_path, 'w'))
+
+
 def prepare(out_dir, state_path):
     os.makedirs(out_dir, exist_ok=True)
     state = {}
@@ -106,12 +135,7 @@ def prepare(out_dir, state_path):
     log(f'App record: {APP}')
 
     # 1. Earlier runs' throwaway certificates and profiles (only the ones this workflow made, by ID).
-    for cid in state.get('certificates', []):
-        try:
-            call('DELETE', f'/v1/certificates/{cid}')
-            log(f'Revoked the previous run\'s certificate {cid}')
-        except ApiError as e:
-            log(f'Previous certificate {cid}: {e}' if e.code != 404 else f'Previous certificate {cid} is already gone')
+    revoke_ids(state.get('certificates', []), 'the previous run\'s')
     for p in call('GET', f'/v1/profiles?filter[name]={urllib.parse.quote(PROFILE_PREFIX)}&limit=200')['data']:
         if p['attributes']['name'].startswith(PROFILE_PREFIX):
             try:
@@ -201,5 +225,7 @@ def wait_build(number):
 if __name__ == '__main__':
     if sys.argv[1] == 'prepare':
         prepare(sys.argv[2], sys.argv[3])
+    elif sys.argv[1] == 'revoke':
+        revoke(sys.argv[2])
     elif sys.argv[1] == 'wait-build':
         wait_build(sys.argv[2])

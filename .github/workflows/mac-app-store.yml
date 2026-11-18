@@ -56,6 +56,8 @@ jobs:
         run: |
           echo "LOG=$RUNNER_TEMP/mac-app-store.log" >> "$GITHUB_ENV"
           echo "WORK=$RUNNER_TEMP/mas" >> "$GITHUB_ENV"
+          # Build number: run number and attempt, so "Re-run jobs" (same run number) makes a new build number.
+          echo "BUILD=${{ github.run_number }}.${{ github.run_attempt }}" >> "$GITHUB_ENV"
 
       - uses: actions/setup-node@v4
         with:
@@ -126,7 +128,7 @@ jobs:
           set_key() { /usr/libexec/PlistBuddy -c "Set :$1 $3" "$PL" 2>/dev/null || /usr/libexec/PlistBuddy -c "Add :$1 $2 $3" "$PL"; }
           # The version people see is the app version; the build number goes up with every run of this workflow.
           set_key CFBundleShortVersionString string "$VERSION"
-          set_key CFBundleVersion string "${{ github.run_number }}"
+          set_key CFBundleVersion string "$BUILD"
           set_key LSApplicationCategoryType string public.app-category.productivity
           # Export compliance: Cowdrey.MD ships no cryptography of its own. Its only encryption is HTTPS through
           # macOS (WebKit/URLSession) for the Terms of Use check and linked images, which is exempt, so no
@@ -152,22 +154,32 @@ jobs:
           set -o pipefail
           mkdir -p ~/.appstoreconnect/private_keys
           printf '%s\n' "$P8" > ~/.appstoreconnect/private_keys/AuthKey_${APPLE_API_KEY}.p8
-          echo "Validating build ${{ github.run_number }} (version $VERSION)" | tee -a "$LOG"
+          echo "Validating build $BUILD (version $VERSION)" | tee -a "$LOG"
           xcrun altool --validate-app --type macos --file "$RUNNER_TEMP/Cowdrey.MD.pkg" --apiKey "$APPLE_API_KEY" --apiIssuer "$APPLE_API_ISSUER" 2>&1 | tee -a "$LOG"
-          echo "Uploading build ${{ github.run_number }} (version $VERSION)" | tee -a "$LOG"
+          echo "Uploading build $BUILD (version $VERSION)" | tee -a "$LOG"
           xcrun altool --upload-app --type macos --file "$RUNNER_TEMP/Cowdrey.MD.pkg" --apiKey "$APPLE_API_KEY" --apiIssuer "$APPLE_API_ISSUER" 2>&1 | tee -a "$LOG"
           grep -q "UPLOAD SUCCEEDED\|No errors uploading" "$LOG" || { echo "The upload did not report success." | tee -a "$LOG"; exit 1; }
 
       - name: Wait for App Store Connect to list the build
         run: |
           set -o pipefail
-          python3 .github/scripts/mac_app_store.py wait-build "${{ github.run_number }}" 2>&1 | tee -a "$LOG"
+          python3 .github/scripts/mac_app_store.py wait-build "$BUILD" 2>&1 | tee -a "$LOG"
 
       - uses: actions/upload-artifact@v4
         with:
           name: Cowdrey.MD-MacAppStore
           path: ${{ runner.temp }}/Cowdrey.MD.pkg
           if-no-files-found: ignore
+
+      # Apple re-signs App Store builds, so the throwaway certificates can be revoked as soon as the upload is
+      # done; they then never hold one of the account's few distribution certificate slots between runs. If this
+      # step does not get to run, the next run revokes them first (the IDs stay in state.json).
+      - name: Revoke this run's certificates
+        if: always()
+        run: |
+          set -o pipefail
+          [[ -f "$WORK/state.json" ]] || exit 0
+          python3 .github/scripts/mac_app_store.py revoke "$WORK/state.json" 2>&1 | tee -a "$LOG" || true
 
       - name: Remove the keychain and key
         if: always()
@@ -187,7 +199,7 @@ jobs:
           printf '%s\n' "$OUT" > /tmp/log.txt
           STATE="$WORK/state.json"; [[ -f "$STATE" ]] || echo '{}' > "$STATE"; cp "$STATE" /tmp/state.json
           cd "$(mktemp -d)" && git init -q -b mac-app-store-log && cp /tmp/log.txt mac-app-store.log && cp /tmp/state.json state.json
-          echo "${{ job.status }} · run ${{ github.run_number }} · ${{ github.sha }}" > status.txt
+          echo "${{ job.status }} · run ${{ github.run_number }} · build $BUILD · ${{ github.sha }}" > status.txt
           git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com add .
           git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -qm "Mac App Store build log, run ${{ github.run_number }}"
           git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" mac-app-store-log

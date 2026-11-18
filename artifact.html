@@ -3413,7 +3413,8 @@ async function saveFile(name, data, mime) {
       const path = await TAURI.dialog.save({ defaultPath: name, filters: [{ name: FILTER_NAMES[ext] || ext.toUpperCase(), extensions: [ext] }] });
       if (!path) return null;
       if (binary) await TAURI.core.invoke('write_binary_file', { path, base64: toBase64(data) });
-      else await TAURI.core.invoke('write_text_file', { path, contents: data });
+      // An export is not a document the app reopens, so it keeps no bookmark (Mac App Store build).
+      else await TAURI.core.invoke('write_text_file', { path, contents: data, remember: false });
       toast(`Saved ${baseName(path)}`);
       return path;
     } catch (e) { toast(`Could not save: ${e}`); return null; }
@@ -4070,15 +4071,16 @@ $('#shareAppBtn').addEventListener('click', (e) => {
   openPopover(e.currentTarget, `<div class="mhead">Share Cowdrey.MD</div><p class="share-blurb" id="shareBlurb">${esc(SHARE_TEXT)} Pass it on to anyone who writes in Markdown.</p>
     ${canShare ? `<button type="button" class="mi" data-share="native">${ic('share')}<span>Share…</span><span></span></button>` : ''}
     <button type="button" class="mi" data-share="web">${ic('link')}<span>Copy link to the web app</span><span></span></button>
-    <button type="button" class="mi" data-share="mac">${ic('laptop')}<span>Copy Mac download link</span><span></span></button>
+    ${APP_STORE ? '' : `<button type="button" class="mi" data-share="mac">${ic('laptop')}<span>Copy Mac download link</span><span></span></button>`}
     <button type="button" class="mi" data-share="message">${ic('message-square-text')}<span>Copy a message to send</span><span></span></button>`, (ev) => {
     const b = ev.target.closest('[data-share]'); if (!b) return;
     closePopover();
     const kind = b.dataset.share;
     if (kind === 'native') shareApp();
     if (kind === 'web') copyText(APP_URL, 'Link to Cowdrey.MD copied');
-    if (kind === 'mac') copyText(MAC_URL, 'Mac download link copied');
-    if (kind === 'message') copyText(`${SHARE_TEXT}\n\nUse it in your browser: ${APP_URL}\nGet it for Mac: ${MAC_URL}`, 'Message copied, ready to paste');
+    // The Mac App Store build never points to a download from outside the App Store (Guideline 2.4.5).
+    if (kind === 'mac' && !APP_STORE) copyText(MAC_URL, 'Mac download link copied');
+    if (kind === 'message') copyText(`${SHARE_TEXT}\n\nUse it in your browser: ${APP_URL}` + (APP_STORE ? '' : `\nGet it for Mac: ${MAC_URL}`), 'Message copied, ready to paste');
   }, { alignRight: true, label: 'Share Cowdrey.MD', describedBy: 'shareBlurb' });
 });
 $('#exportBtn').addEventListener('click', (e) => {

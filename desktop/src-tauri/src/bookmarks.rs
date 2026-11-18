@@ -35,6 +35,7 @@ mod imp {
         fn CFURLCreateBookmarkData(alloc: CFTypeRef, url: CFTypeRef, options: CFOptionFlags, keys: CFTypeRef, relative: CFTypeRef, error: *mut CFTypeRef) -> CFTypeRef;
         fn CFURLCreateByResolvingBookmarkData(alloc: CFTypeRef, data: CFTypeRef, options: CFOptionFlags, relative: CFTypeRef, keys: CFTypeRef, is_stale: *mut Boolean, error: *mut CFTypeRef) -> CFTypeRef;
         fn CFURLStartAccessingSecurityScopedResource(url: CFTypeRef) -> Boolean;
+        fn CFURLStopAccessingSecurityScopedResource(url: CFTypeRef);
         fn CFURLGetFileSystemRepresentation(url: CFTypeRef, resolve_against_base: Boolean, buffer: *mut u8, max_len: CFIndex) -> Boolean;
         fn CFDataCreate(alloc: CFTypeRef, bytes: *const u8, len: CFIndex) -> CFTypeRef;
         fn CFDataGetLength(data: CFTypeRef) -> CFIndex;
@@ -87,11 +88,11 @@ mod imp {
             let started = CFURLStartAccessingSecurityScopedResource(url) != 0;
             let mut buf = vec![0u8; 4096];
             let ok = CFURLGetFileSystemRepresentation(url, 1, buf.as_mut_ptr(), buf.len() as CFIndex) != 0;
-            if !started {
+            if !started || !ok {
+                if started {
+                    CFURLStopAccessingSecurityScopedResource(url);
+                }
                 CFRelease(url);
-                return None;
-            }
-            if !ok {
                 return None;
             }
             let end = buf.iter().position(|&b| b == 0).unwrap_or(buf.len());
@@ -119,8 +120,25 @@ mod imp {
         }
     }
 
-    fn covered(items: &[(String, String)], path: &Path) -> bool {
-        items.iter().any(|(p, _)| path.starts_with(Path::new(p)))
+    /// The entry for `path` itself, or for a folder it is in.
+    fn covering(items: &[(String, String)], path: &Path) -> Option<usize> {
+        items.iter().position(|(p, _)| path.starts_with(Path::new(p)))
+    }
+
+    /// Past MAX entries, the oldest file bookmarks go. Folder bookmarks (the sync folder) are never dropped.
+    fn trim(items: &mut Vec<(String, String)>) {
+        let mut over = items.len().saturating_sub(MAX);
+        if over == 0 {
+            return;
+        }
+        items.retain(|(p, _)| {
+            if over > 0 && !Path::new(p).is_dir() {
+                over -= 1;
+                false
+            } else {
+                true
+            }
+        });
     }
 
     pub fn restore(data_dir: PathBuf) {
@@ -131,8 +149,15 @@ mod imp {
         for (path, b64) in saved {
             let Ok(bytes) = engine.decode(&b64) else { continue };
             let Some((now, stale)) = resolve(&bytes) else { continue };
-            // A moved or replaced file gets a fresh bookmark; the page still knows it by its old path.
-            let b64 = if stale { create(&now).map(|b| engine.encode(b)).unwrap_or(b64) } else { b64 };
+            // A moved or replaced file gets a fresh bookmark, kept under the path it has now (the old path no
+            // longer exists, so access granted under it would never be used).
+            let (path, b64) = if stale {
+                let b64 = create(&now).map(|b| engine.encode(b)).unwrap_or(b64);
+                (now.to_string_lossy().into_owned(), b64)
+            } else {
+                (path, b64)
+            };
+            items.retain(|(p, _): &(String, String)| p != &path);
             items.push((path, b64));
         }
         let mut store = STORE.lock().unwrap();
@@ -143,7 +168,17 @@ mod imp {
 
     pub fn remember(path: &Path) {
         let mut store = STORE.lock().unwrap();
-        if store.file.is_none() || covered(&store.items, path) {
+        if store.file.is_none() {
+            return;
+        }
+        // Already covered (by its own bookmark or a folder's): move that entry to the newest end, so the paths
+        // in use are the last to be dropped.
+        if let Some(i) = covering(&store.items, path) {
+            if i + 1 != store.items.len() {
+                let item = store.items.remove(i);
+                store.items.push(item);
+                save(&store);
+            }
             return;
         }
         let Some(bytes) = create(path) else { return };
@@ -151,10 +186,7 @@ mod imp {
         // A folder replaces the bookmarks of the files inside it.
         store.items.retain(|(p, _)| !Path::new(p).starts_with(path));
         store.items.push((key, base64::engine::general_purpose::STANDARD.encode(bytes)));
-        let len = store.items.len();
-        if len > MAX {
-            store.items.drain(..len - MAX);
-        }
+        trim(&mut store.items);
         save(&store);
     }
 }

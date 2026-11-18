@@ -61,10 +61,13 @@ fn read_text_file(path: String) -> Result<OpenedFile, String> {
     load(Path::new(&path)).ok_or_else(|| format!("Could not read {path}"))
 }
 
+/// `remember: false` (exports) keeps no bookmark for the file: the app never opens it again by its path.
 #[tauri::command]
-fn write_text_file(path: String, contents: String) -> Result<(), String> {
+fn write_text_file(path: String, contents: String, remember: Option<bool>) -> Result<(), String> {
     std::fs::write(&path, contents).map_err(|e| e.to_string())?;
-    bookmarks::remember(Path::new(&path));
+    if remember.unwrap_or(true) {
+        bookmarks::remember(Path::new(&path));
+    }
     Ok(())
 }
 

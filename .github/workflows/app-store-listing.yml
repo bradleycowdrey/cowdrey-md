@@ -10,7 +10,8 @@ on:
       - .github/workflows/app-store-listing.yml
   # After each iPhone build uploads, attach it to the App Store version once Apple has processed it.
   workflow_run:
-    workflows: ['iPhone app']
+    # After each Mac App Store build, attach it to the macOS version the same way (never submitted).
+    workflows: ['iPhone app', 'Mac App Store']
     types: [completed]
     branches: [main]
   workflow_dispatch:
@@ -37,6 +38,7 @@ jobs:
           pip install --quiet pyjwt cryptography
           # After an iPhone build only the build is attached; the full listing is filled in when docs/app-store changes.
           MODE=$([[ "${{ github.event_name }}" == workflow_run ]] && echo --build-only || true)
+          if [[ "${{ github.event.workflow_run.name }}" == 'Mac App Store' ]]; then MODE=--mac-build-only; fi
           python3 .github/scripts/app_store_listing.py $MODE 2>&1 | tee "$RUNNER_TEMP/listing.log"
 
       # The result goes on the app-store-log branch, so it can be read without signing in to GitHub.

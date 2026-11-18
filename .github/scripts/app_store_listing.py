@@ -6,6 +6,11 @@ attaches the newest processed build for the version in tauri.conf.json. It submi
 submitForReview names the exact version, and only after every other step succeeded.
 
 With --build-only (after each iPhone build) it only sets the version number and attaches the build.
+
+macOS (same app record, universal purchase): listing.json's "mac" section gives the Mac text differences and the
+APP_DESKTOP screenshots. The MAC_OS version gets its text, screenshots and newest processed macOS build, and is
+submitted only when listing.json's submitForReviewMac names the exact version. --mac-build-only (after a Mac App
+Store build) only sets the macOS version number and attaches the build.
 If listing.json names a version in withdrawFromReview, that exact version is first taken out of App Review.
 
 Each step runs on its own and reports what happened, so one refusal doesn't stop the rest.
@@ -68,6 +73,7 @@ def step(name):
                 return out
             except Exception as e:
                 results.append(('NEEDS YOU', name, str(e)))
+        run.raw = fn
         return run
     return wrap
 
@@ -206,13 +212,13 @@ def withdraw_from_review():
     print(f'Withdraw: {target} is still not editable after 10 minutes. Run this workflow again shortly.')
 
 
-def editable_version():
-    vs = call('GET', f'/v1/apps/{APP}/appStoreVersions?filter[platform]=IOS&limit=20')['data']
+def editable_version(platform='IOS'):
+    vs = call('GET', f'/v1/apps/{APP}/appStoreVersions?filter[platform]={platform}&limit=20')['data']
     open_states = ('PREPARE_FOR_SUBMISSION', 'DEVELOPER_REJECTED', 'REJECTED', 'METADATA_REJECTED', 'INVALID_BINARY')
     v = next((x for x in vs if x['attributes'].get('appStoreState') in open_states or x['attributes'].get('appVersionState') in open_states), None)
     if v:
         return v
-    return call('POST', '/v1/appStoreVersions', {'data': {'type': 'appStoreVersions', 'attributes': {'platform': 'IOS', 'versionString': VERSION},
+    return call('POST', '/v1/appStoreVersions', {'data': {'type': 'appStoreVersions', 'attributes': {'platform': platform, 'versionString': VERSION},
                                                          'relationships': {'app': rel('apps', APP)}}})['data']
 
 
@@ -224,12 +230,16 @@ def version_fields(v):
 
 
 @step('Build: newest processed upload of this version')
-def attach_build(v):
+def attach_build(v, platform='IOS', tries=45):
     # Right after an upload, Apple takes 5–30 minutes to process the build: wait for it.
-    for _ in range(45):
-        builds = call('GET', f'/v1/builds?filter[app]={APP}&filter[preReleaseVersion.version]={VERSION}&sort=-uploadedDate&limit=10')['data']
+    # Only builds of this platform: the Mac App Store builds share the app record and version numbers.
+    for _ in range(tries):
+        builds = call('GET', f'/v1/builds?filter[app]={APP}&filter[preReleaseVersion.version]={VERSION}'
+                             f'&filter[preReleaseVersion.platform]={platform}&sort=-uploadedDate&limit=10')['data']
         ok = [b for b in builds if b['attributes'].get('processingState') == 'VALID' and not b['attributes'].get('expired')]
         if ok or not any(b['attributes'].get('processingState') == 'PROCESSING' for b in builds) and builds:
+            break
+        if not builds and platform == 'MAC_OS':  # nothing uploaded (the Mac workflow waits until its upload is listed)
             break
         print('Waiting for Apple to process the build…', flush=True); time.sleep(60)
     if not ok:
@@ -246,28 +256,32 @@ def version_localization(v):
 
 
 @step('Description, keywords, promotional text, support and marketing URLs')
-def version_text(loc):
+def version_text(loc, T=None):
+    T = T or L  # the Mac section overrides some fields; the rest come from the iPhone listing
     call('PATCH', f"/v1/appStoreVersionLocalizations/{loc['id']}", {'data': {'type': 'appStoreVersionLocalizations', 'id': loc['id'], 'attributes': {
-        'description': L['description'], 'keywords': L['keywords'], 'promotionalText': L['promotionalText'],
-        'supportUrl': L['supportUrl'], 'marketingUrl': L['marketingUrl']}}})
+        'description': T.get('description', L['description']), 'keywords': T.get('keywords', L['keywords']),
+        'promotionalText': T.get('promotionalText', L['promotionalText']),
+        'supportUrl': T.get('supportUrl', L['supportUrl']), 'marketingUrl': T.get('marketingUrl', L['marketingUrl'])}}})
 
 
 @step("What's New in This Version")
-def whats_new(loc):
+def whats_new(loc, platform='IOS', T=None):
     # Apple accepts What's New only on an update, not on an app's first version, so it's sent on its own.
-    if not L.get('whatsNew'):
+    T = T or L
+    if not T.get('whatsNew'):
         return 'none in listing.json'
-    vs = call('GET', f'/v1/apps/{APP}/appStoreVersions?filter[platform]=IOS&limit=20')['data']
+    vs = call('GET', f'/v1/apps/{APP}/appStoreVersions?filter[platform]={platform}&limit=20')['data']
     if not any(x['attributes'].get('appStoreState') in ('READY_FOR_SALE', 'REPLACED_WITH_NEW_VERSION', 'REMOVED_FROM_SALE', 'DEVELOPER_REMOVED_FROM_SALE')
                for x in vs):
         return 'skipped: Apple allows What\'s New only once a version has been released'
     call('PATCH', f"/v1/appStoreVersionLocalizations/{loc['id']}", {'data': {'type': 'appStoreVersionLocalizations', 'id': loc['id'], 'attributes': {
-        'whatsNew': L['whatsNew']}}})
+        'whatsNew': T['whatsNew']}}})
 
 
 @step('App Review contact and notes (add a phone number by hand)')
-def review(v):
+def review(v, extra=None):
     attrs = dict(L['review'])
+    attrs.update(extra or {})
     try:
         d = call('GET', f"/v1/appStoreVersions/{v['id']}/appStoreReviewDetail")['data']
     except ApiError:
@@ -307,16 +321,16 @@ def upload_set(loc, display, files):
     return f'{len(files)} uploaded'
 
 
-def submit_for_review(v):
-    """Submit the version for App Review, only when listing.json's submitForReview names this exact version
-    and every earlier step succeeded. Then report the state App Store Connect shows."""
-    if L.get('submitForReview') != VERSION:
+def submit_for_review(v, platform='IOS', key='submitForReview'):
+    """Submit the version for App Review, only when listing.json's submitForReview (submitForReviewMac for macOS)
+    names this exact version and every earlier step succeeded. Then report the state App Store Connect shows."""
+    if L.get(key) != VERSION:
         return
     problems = [n for st, n, _ in results if st != 'OK']
     if problems:
         print('Submit: not submitted, because these steps need attention first: ' + '; '.join(problems))
         return
-    subs = call('GET', f'/v1/reviewSubmissions?filter[app]={APP}&filter[platform]=IOS&limit=20')['data']
+    subs = call('GET', f'/v1/reviewSubmissions?filter[app]={APP}&filter[platform]={platform}&limit=20')['data']
     has_version = lambda x: any((i.get('relationships', {}).get('appStoreVersion', {}).get('data') or {}).get('id') == v['id']
                                 for i in call('GET', f"/v1/reviewSubmissions/{x['id']}/items?include=appStoreVersion&limit=50")['data'])
     for x in subs:
@@ -327,7 +341,7 @@ def submit_for_review(v):
     # After a rejection the submission stays open with "unresolved issues": the fixed version goes back in it.
     reopen = next((x for x in subs if x['attributes'].get('state') == 'UNRESOLVED_ISSUES' and has_version(x)), None)
     for _ in range(30):  # a cancelled submission must finish cancelling before a new one opens
-        subs = call('GET', f'/v1/reviewSubmissions?filter[app]={APP}&filter[platform]=IOS&limit=20')['data']
+        subs = call('GET', f'/v1/reviewSubmissions?filter[app]={APP}&filter[platform]={platform}&limit=20')['data']
         if not any(x['attributes'].get('state') in ('CANCELING', 'COMPLETING') for x in subs):
             break
         print('Submit: waiting for the earlier submission to finish cancelling…', flush=True); time.sleep(20)
@@ -335,7 +349,7 @@ def submit_for_review(v):
     if reopen:
         print(f"Submit: resubmitting the submission with unresolved issues ({reopen['id']}).")
     if not draft:
-        draft = call('POST', '/v1/reviewSubmissions', {'data': {'type': 'reviewSubmissions', 'attributes': {'platform': 'IOS'},
+        draft = call('POST', '/v1/reviewSubmissions', {'data': {'type': 'reviewSubmissions', 'attributes': {'platform': platform},
                                                                'relationships': {'app': rel('apps', APP)}}})['data']
     # Screenshots uploaded moments ago must finish processing before Apple accepts the version.
     loc = version_localization(v)
@@ -375,7 +389,7 @@ def submit_for_review(v):
             if call('GET', f"/v1/reviewSubmissions/{reopen['id']}")['data']['attributes'].get('state') not in ('CANCELING', 'UNRESOLVED_ISSUES'):
                 break
             time.sleep(20)
-        draft = call('POST', '/v1/reviewSubmissions', {'data': {'type': 'reviewSubmissions', 'attributes': {'platform': 'IOS'},
+        draft = call('POST', '/v1/reviewSubmissions', {'data': {'type': 'reviewSubmissions', 'attributes': {'platform': platform},
                                                                'relationships': {'app': rel('apps', APP)}}})['data']
         call('POST', '/v1/reviewSubmissionItems', {'data': {'type': 'reviewSubmissionItems', 'relationships': {
             'reviewSubmission': rel('reviewSubmissions', draft['id']), 'appStoreVersion': rel('appStoreVersions', v['id'])}}})
@@ -389,6 +403,38 @@ def submit_for_review(v):
             return
         time.sleep(20)
 
+
+def mac_listing(build_only=False):
+    """The macOS version on the same app record. Never submitted unless submitForReviewMac names this version."""
+    M = L.get('mac')
+    if not M:
+        return
+    try:
+        mv = editable_version('MAC_OS')
+    except ApiError as e:
+        results.append(('NEEDS YOU', 'macOS: version', f'{e}\nAdd the macOS platform: App Store Connect > Apps > Cowdrey.MD > + next to iOS App > macOS.'))
+        return
+    step('macOS: version number and copyright')(version_fields.raw)(mv)
+    step('macOS: build: newest processed macOS upload of this version')(attach_build.raw)(mv, 'MAC_OS', 45 if build_only else 2)
+    if build_only:
+        return
+    mloc = version_localization(mv)
+    step('macOS: description, keywords, promotional text, URLs')(version_text.raw)(mloc, M)
+    step("macOS: What's New in This Version")(whats_new.raw)(mloc, 'MAC_OS', M)
+    step('macOS: App Review contact and notes')(review.raw)(mv, M.get('review'))
+    for display, files in M.get('screenshots', {}).items():
+        step(f'macOS: screenshots: {display}')(upload_set)(mloc, display, files)
+    try:
+        submit_for_review(mv, 'MAC_OS', 'submitForReviewMac')
+    except ApiError as e:
+        print(f'Submit (macOS): Apple refused the submission: {e}')
+
+
+if '--mac-build-only' in sys.argv:
+    mac_listing(build_only=True)
+    for status, name, detail in results:
+        print(f"[{status}] {name}" + (f" — {detail}" if detail else ''))
+    sys.exit(0)
 
 if '--build-only' in sys.argv:
     # After an iPhone build: only move the version number and attach the new build. Text and screenshots are
@@ -428,6 +474,8 @@ try:
     submit_for_review(v)
 except ApiError as e:
     print(f'Submit: Apple refused the submission: {e}')
+# After the iPhone submission, so a macOS step that needs attention never holds up the iPhone version.
+mac_listing()
 
 print('\nApp Store listing for Cowdrey.MD', VERSION)
 for status, name, detail in results:

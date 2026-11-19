@@ -460,6 +460,13 @@ def submit_for_review(v, platform='IOS', key='submitForReview'):
         print(f'Submit: submission is {st}; App Store Connect shows version {VERSION} as {vst}.', flush=True)
         if vst == 'WAITING_FOR_REVIEW' or st in ('WAITING_FOR_REVIEW', 'IN_REVIEW'):
             print(f'CONFIRMED: Cowdrey.MD {VERSION} for {PLATFORM_NAME[platform]} is Waiting for Review.')
+            # Apple checks the binary again right after a submission; a problem shows up as Invalid Binary.
+            for _ in range(12):
+                time.sleep(20)
+                vst = call('GET', f"/v1/appStoreVersions/{v['id']}")['data']['attributes'].get('appStoreState')
+                if vst != 'WAITING_FOR_REVIEW':
+                    break
+            print(f'Submit: 4 minutes later, App Store Connect shows version {VERSION} as {vst}.', flush=True)
             return
         time.sleep(20)
 
@@ -470,6 +477,17 @@ def mac_listing(build_only=False):
     if not M:
         return
     st = report_state('MAC_OS')
+    mv0, _ = version_state('MAC_OS')
+    if mv0:
+        try:
+            b = call('GET', f"/v1/appStoreVersions/{mv0['id']}/build")['data']
+            a = (b or {}).get('attributes') or {}
+            print(f"macOS: attached build {a.get('version') or 'none'}" + (f" ({a.get('processingState')}, uploaded {a.get('uploadedDate')})" if b else ''))
+        except ApiError as e:
+            print(f'macOS: attached build unknown ({e})')
+    if st == 'INVALID_BINARY':
+        print('macOS: Apple marked the attached build Invalid Binary (the reason is in the email Apple sent the account holder); '
+              'the newest valid build is attached below.')
     if st in LOCKED:
         print(f'macOS: version {VERSION} is {st}, so it is left as it is (not edited or resubmitted).')
         return

@@ -393,11 +393,19 @@ def submit_for_review(v, platform='IOS', key='submitForReview'):
     subs = call('GET', f'/v1/reviewSubmissions?filter[app]={APP}&filter[platform]={platform}&limit=20')['data']
     has_version = lambda x: any((i.get('relationships', {}).get('appStoreVersion', {}).get('data') or {}).get('id') == v['id']
                                 for i in call('GET', f"/v1/reviewSubmissions/{x['id']}/items?include=appStoreVersion&limit=50")['data'])
+    vst = call('GET', f"/v1/appStoreVersions/{v['id']}")['data']['attributes'].get('appStoreState')
     for x in subs:
         st = x['attributes'].get('state')
         if st in ('WAITING_FOR_REVIEW', 'IN_REVIEW') and has_version(x):
-            print(f"Submit: {VERSION} is already submitted ({st}).")
-            return
+            if vst in LOCKED:
+                print(f"Submit: {VERSION} is already submitted ({st}).")
+                return
+            # A submission that still says Waiting for Review while its version is back to editable (after Apple
+            # marked the build Invalid Binary) is stale: cancel it, so the version goes in a new one.
+            print(f"Submit: submission {x['id']} says {st} but the version is {vst}; cancelling the stale submission.", flush=True)
+            call('PATCH', f"/v1/reviewSubmissions/{x['id']}", {'data': {'type': 'reviewSubmissions', 'id': x['id'], 'attributes': {'canceled': True}}})
+            subs = call('GET', f'/v1/reviewSubmissions?filter[app]={APP}&filter[platform]={platform}&limit=20')['data']
+            break
     # After a rejection the submission stays open with "unresolved issues": the fixed version goes back in it.
     reopen = next((x for x in subs if x['attributes'].get('state') == 'UNRESOLVED_ISSUES' and has_version(x)), None)
     for _ in range(30):  # a cancelled submission must finish cancelling before a new one opens

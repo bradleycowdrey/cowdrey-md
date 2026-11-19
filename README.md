@@ -4,14 +4,14 @@ A Markdown editor by **Bradley Cowdrey** · [bradcowdrey.com](https://bradcowdre
 
 It combines MacDown's side-by-side writing, a Docs-style title bar, menus and paper page, and a Word-style ribbon, ruler and status bar. It is one self-contained web page with no build server and no backend.
 
-### [⬇ Download for Mac](https://github.com/bradleycowdrey/cowdrey-md/releases/latest/download/Cowdrey.MD.dmg) · [⬇ Download for Android](https://github.com/bradleycowdrey/cowdrey-md/releases/latest/download/Cowdrey.MD.apk) · [⬇ iPhone and iPad (TestFlight)](https://testflight.apple.com/join/bDgfhxge) · [Open in your browser](https://bradcowdrey.com/cowdrey-md)
+### [⬇ Download for Mac](https://github.com/bradleycowdrey/cowdrey-md/releases/latest/download/Cowdrey.MD.dmg) · [⬇ Download for Android](https://github.com/bradleycowdrey/cowdrey-md/releases/latest/download/Cowdrey.MD.apk) · [⬇ iPhone and iPad (App Store)](https://apps.apple.com/app/id6826704085) · [Open in your browser](https://bradcowdrey.com/cowdrey-md)
 
 [![The Cowdrey.MD page at bradcowdrey.com/cowdrey-md, with the editor running in a Mac window. Click to open it.](docs/product-page.png)](https://bradcowdrey.com/cowdrey-md)
 
 **Free. Forever.**
-- **Mac:** a `.dmg` for Apple silicon and Intel Macs. Open it and drag Cowdrey.MD into Applications. It's signed with an Apple Developer ID and notarized by Apple, so it opens with a double-click, and it keeps itself up to date.
+- **Mac:** a `.dmg` for Apple silicon and Intel Macs. Open it and drag Cowdrey.MD into Applications. It's signed with an Apple Developer ID and notarized by Apple, so it opens with a double-click, and it keeps itself up to date. A Mac App Store version is in Apple's App Review; until it's out, the `.dmg` is the way to get the Mac app.
 - **Android 8.0 or later:** an `.apk` signed with the Cowdrey.MD upload key. Open it on your phone and tap Install; later versions come from ··· → Check for updates.
-- **iPhone and iPad (iOS 15 or later):** install it now with Apple's TestFlight: open [testflight.apple.com/join/bDgfhxge](https://testflight.apple.com/join/bDgfhxge) on your iPhone or iPad, install the free TestFlight app if asked, then tap Install. TestFlight installs each new version as it comes out. The App Store version is in Apple's App Review.
+- **iPhone and iPad (iOS 15 or later):** get it free on the [App Store](https://apps.apple.com/app/id6826704085), and it updates like any other app. To try new versions before they reach the App Store, join the beta with Apple's TestFlight: [testflight.apple.com/join/bDgfhxge](https://testflight.apple.com/join/bDgfhxge).
 - **Any browser:** [bradcowdrey.com/cowdrey-md/app](https://bradcowdrey.com/cowdrey-md/app).
 
 [![Latest release](https://img.shields.io/github/v/release/bradleycowdrey/cowdrey-md?label=latest%20version)](https://github.com/bradleycowdrey/cowdrey-md/releases/latest)
@@ -121,6 +121,12 @@ bradcowdrey.com serves this repository's GitHub Pages copy (`https://bradleycowd
 Download the latest `.dmg` from [Releases](https://github.com/bradleycowdrey/cowdrey-md/releases/latest). It runs on Apple silicon and Intel Macs and works offline.
 
 The Mac app checks for a newer release once a day (and from **Help → Check for updates…**). With update signing set up, **Install and restart** downloads the signed update, saves your work, replaces the app and reopens it; otherwise it offers the new DMG. Without that secret, `node desktop/sign-update.mjs <private-key> "<notes>"` signs the released bundle and writes `updates/latest.json`; pushing it publishes the update. Automatic signing needs one repository secret, `TAURI_SIGNING_PRIVATE_KEY`, holding the private key that matches the public key in `desktop/src-tauri/tauri.conf.json`. The DMG is built by GitHub Actions (`.github/workflows/mac-app.yml`) whenever the version in `desktop/src-tauri/tauri.conf.json` changes on `main`, a tag such as `v1.0.1` is pushed, or the workflow is run by hand. The `desktop/` folder wraps `index.html` with [Tauri](https://tauri.app) and copies every library in, so nothing loads from the internet. Releases are signed with the Developer ID certificate and notarized by Apple when the `DEVELOPER_ID_P12`, `DEVELOPER_ID_P12_PASSWORD`, `CODESIGN_IDENTITY`, `NOTARY_APPLE_ID`, `NOTARY_PASSWORD` and `NOTARY_TEAM_ID` secrets are set; Apple's notarization can add anywhere from a few minutes to over an hour to a release build.
+
+## Mac App Store app
+
+`.github/workflows/mac-app-store.yml` builds a sandboxed Mac App Store version from the same Tauri project (`desktop/src-tauri/tauri.appstore.conf.json`, the `app-store` Cargo feature and `AppStore.entitlements`): it has no self-updater, and it keeps security-scoped bookmarks to the files and folders you pick. It runs when the version changes on `main` (or by hand), signs with throwaway certificates made through the App Store Connect API, uploads to the same app record as the iPhone app, and publishes its log to the `mac-app-store-log` branch. The DMG above is built separately and is unchanged.
+
+`.github/workflows/app-store-listing.yml` fills in both App Store versions from `docs/app-store/listing.json` (the `mac` section holds the Mac text and screenshots) and publishes its log to the `app-store-log` branch. It submits a version for App Review only when `submitForReview` (iPhone and iPad) or `submitForReviewMac` (Mac) names that exact version, and never touches a version that is already with Apple or released.
 
 ## iPhone and iPad app
 

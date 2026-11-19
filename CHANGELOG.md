@@ -1,6 +1,6 @@
 # Changelog
 
-iPhone and iPad builds go to TestFlight and the App Store. Mac and Android app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
+iPhone and iPad builds go to TestFlight (beta) and the [App Store](https://apps.apple.com/app/id6826704085). Mac and Android app releases are on [GitHub Releases](https://github.com/bradleycowdrey/cowdrey-md/releases). The web app at [bradcowdrey.com/cowdrey-md](https://bradcowdrey.com/cowdrey-md) updates with every push to `main`.
 
 Versions follow [Semantic Versioning](https://semver.org) from 2.0.0: **major** (3.0.0) for a big change in how the app works or stores documents, **minor** (2.1.0) for new features, **patch** (2.0.1) for fixes and polish. Every platform shares one version number.
 

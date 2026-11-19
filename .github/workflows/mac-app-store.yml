@@ -6,8 +6,9 @@ name: Mac App Store
 # Nothing is submitted for review. The direct-download DMG (mac-app.yml) is unchanged.
 on:
   push:
-    # Only a version bump on main makes a new App Store build (checked in the first job, so a merge or a
-    # change elsewhere never uploads one). Run it by hand (workflow_dispatch) to build the current version again.
+    # Only a version bump on main, or a change to this workflow or its script, makes a new App Store build (checked
+    # in the first job, so a merge or a change elsewhere never uploads one). Run it by hand (workflow_dispatch) to
+    # build the current version again.
     branches: [main]
   workflow_dispatch:
 
@@ -20,7 +21,7 @@ concurrency:
 
 jobs:
   gate:
-    name: On a push, go on only for a version change
+    name: On a push, go on only for a version change or a change to this workflow
     runs-on: ubuntu-latest
     outputs:
       go: ${{ steps.gate.outputs.go }}
@@ -34,7 +35,8 @@ jobs:
           if [[ "${{ github.event_name }}" == push && "${{ github.ref }}" == refs/heads/main ]]; then
             BEFORE="${{ github.event.before }}"
             git cat-file -e "$BEFORE^{commit}" 2>/dev/null || BEFORE=HEAD~1
-            git diff --quiet "$BEFORE" HEAD -- desktop/src-tauri/tauri.conf.json && GO=false
+            git diff --quiet "$BEFORE" HEAD -- desktop/src-tauri/tauri.conf.json .github/workflows/mac-app-store.yml \
+              .github/scripts/mac_app_store.py && GO=false
           fi
           echo "go=$GO" >> "$GITHUB_OUTPUT"
           echo "Build for the Mac App Store: $GO"
@@ -159,6 +161,7 @@ jobs:
           echo "Uploading build $BUILD (version $VERSION)" | tee -a "$LOG"
           xcrun altool --upload-app --type macos --file "$RUNNER_TEMP/Cowdrey.MD.pkg" --apiKey "$APPLE_API_KEY" --apiIssuer "$APPLE_API_ISSUER" 2>&1 | tee -a "$LOG"
           grep -q "UPLOAD SUCCEEDED\|No errors uploading" "$LOG" || { echo "The upload did not report success." | tee -a "$LOG"; exit 1; }
+          echo "UPLOADED=true" >> "$GITHUB_ENV"
 
       - name: Wait for App Store Connect to list the build
         run: |
@@ -171,11 +174,12 @@ jobs:
           path: ${{ runner.temp }}/Cowdrey.MD.pkg
           if-no-files-found: ignore
 
-      # Apple re-signs App Store builds, so the throwaway certificates can be revoked as soon as the upload is
-      # done; they then never hold one of the account's few distribution certificate slots between runs. If this
-      # step does not get to run, the next run revokes them first (the IDs stay in state.json).
-      - name: Revoke this run's certificates
-        if: always()
+      # An uploaded build's certificates stay valid until App Review is done: with them revoked right after the
+      # upload, the submitted macOS version went to "Invalid Binary". So after an upload they are kept, and their
+      # IDs go in state.json; the next run (normally the next version) revokes them before it makes its own, so
+      # don't re-run this while a build is in review. A run that uploaded nothing revokes its certificates at once.
+      - name: Revoke this run's certificates (only if nothing was uploaded)
+        if: always() && env.UPLOADED != 'true'
         run: |
           set -o pipefail
           [[ -f "$WORK/state.json" ]] || exit 0

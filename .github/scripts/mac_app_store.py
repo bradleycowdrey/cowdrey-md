@@ -7,8 +7,9 @@
                                this workflow made (their IDs are in STATE_JSON, kept on the mac-app-store-log branch)
                                are revoked/deleted first, so the account never collects them; nothing else is touched.
                                Also makes sure the app record has a macOS version (adds the macOS platform).
-  revoke STATE_JSON            Revokes the certificates listed in STATE_JSON (this run's, once the upload is done)
-                               and writes back only the ones that could not be revoked.
+  revoke STATE_JSON            Revokes the certificates listed in STATE_JSON (this run's, when it uploaded nothing;
+                               an uploaded build's certificates stay valid until the next run, so App Review never
+                               sees a revoked signature) and writes back only the ones that could not be revoked.
   wait-build BUILD_NUMBER      Waits (bounded) until App Store Connect lists the uploaded macOS build.
 
 Environment: APPLE_API_ISSUER, APPLE_API_KEY (key ID), P8 (private key text), VERSION (app version).

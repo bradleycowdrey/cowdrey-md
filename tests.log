@@ -1,0 +1,94 @@
+PASS  boots without errors and renders the welcome document
+PASS  bold toggles on and off; italic inside bold keeps the bold
+PASS  bold with no selection wraps the word under the cursor
+PASS  headings: Ctrl+Alt+2 sets, repeats to clear, Ctrl+Alt+0 resets
+PASS  lists: bullets, numbering, checklist and quote toggle over a selection
+PASS  Enter continues a numbered list and Tab indents it
+PASS  link: selection becomes [text](https://) with the URL selected
+PASS  pasting a URL over selected text makes a link
+PASS  footnotes number themselves and add the note at the end
+PASS  table picker inserts a 3 × 4 table that renders
+PASS  Tidy table aligns columns, keeps alignment, pads ragged rows, respects escaped pipes
+PASS  find counts matches, honours case and regex; replace all with $1
+PASS  ticking a checkbox in the preview updates the source
+PASS  security: raw HTML cannot run script
+PASS  math: prices are not math, real math is
+PASS  a broken diagram shows an error and leaves no debris
+PASS  front matter renders and keeps source lines aligned
+PASS  documents: new, auto-title, switch tabs keeps text and undo, close, delete
+PASS  renaming sticks and auto-title stops overwriting it
+PASS  work and settings survive a reload
+PASS  sync scroll follows the editor
+PASS  zoom controls and fit
+PASS  theme button cycles light, dark, system
+PASS  word count dialog and shortcuts dialog open and close
+PASS  outline click moves the cursor to the heading
+PASS  export Markdown and HTML download real files
+PASS  copy Markdown puts the source on the clipboard
+PASS  pasting an image adds a picture reference
+PASS  shortcuts do not edit the document while typing the title
+PASS  every button has an accessible name
+PASS  large document stays responsive
+PASS  missing preview engine keeps the editor usable
+PASS  full storage shows a clear warning instead of failing silently
+FAIL  phone: reading view of the page, Edit opens the editor with a formatting bar, Done goes back (Pages/Word style)
+      pinch in returns to fit: "fit", got 150
+PASS  line numbers never cover the text (phone, narrow window and wide editor view)
+PASS  phone: Format, Insert, Share and More sheets, Documents panel and rename
+PASS  keyboard: ribbon tabs keep focus and move with arrow keys; tab close is a real button
+PASS  dark theme renders without errors
+PASS  regex replace keeps lookarounds and expands $1
+PASS  replace that contains the search text moves on instead of looping
+PASS  typing with find open does not yank the view back
+PASS  italic over "*one* and *two*" wraps instead of mangling
+PASS  clear formatting handles *** and leaves snake_case alone
+PASS  tidy table survives a lone backtick
+PASS  heading on an empty line, quote on mixed lines, code block mid-line
+PASS  a second picture never lands inside the first picture reference
+PASS  document HTML cannot clobber the page or collide with app ids
+PASS  links to other files do not navigate away from the editor
+PASS  two browser tabs share documents without erasing each other
+PASS  Mac app: Check for updates finds a newer release and offers the DMG
+PASS  Mac app: like the iPhone, picks up a file changed elsewhere, shares through the share menu, and has Appearance
+PASS  Mac app: the daily check stays quiet when up to date and respects Skip
+PASS  Mac App Store build: no Check for updates, no update check at launch, files still open
+PASS  web version has no update menu item
+PASS  existing users see the new name on their stored welcome document
+PASS  Mac app: signed updates install in place, save first, and restart
+PASS  Share app button copies the app link, the Mac link and a ready message
+PASS  Mac menu bar mirrors the in-app menus, shortcuts and check marks
+PASS  Mac app: files as tabs, unsaved dot, save prompts on close and quit, Save all, Open recent
+PASS  sidebar collapses to an icon strip, expands, resizes and remembers
+PASS  tablet: compact strip by default, expands over the page, tap outside closes
+PASS  small tablet: title-bar button opens the sidebar, split view shares the height, zoom stays reachable
+PASS  resizing from desktop to phone and back recovers the layout
+PASS  first visit asks to agree to the terms once; Help links to them
+PASS  changed terms: asked again, but at most once a month; GitHub's newer copy counts
+PASS  tabs sit above both panes, not inside the editor
+PASS  several documents open as tabs; next, previous and reopen work
+PASS  choosing several files in Open opens each one in its own tab
+PASS  right-click a tab: close others, close to the right, duplicate
+PASS  drag a tab to reorder it, and the order is kept after reload
+PASS  closing every tab shows "No documents open", and it stays that way after reload
+PASS  File and View menus list the tab commands
+PASS  Find and Replace open to the right of the ribbon buttons, can be dragged, and remember where
+PASS  iPhone app: runs like the web version, shares exports through the native share sheet and opens links in Safari
+PASS  Android app: opens and saves through the system file picker; Back closes panels, then leaves editing
+PASS  status bar: nothing in the title bar sits under it (Android 15 and iPad draw behind it)
+PASS  desktop: Undo and Redo grey out in the ribbon and the Edit menu when there is nothing to undo or redo
+PASS  touch screens: no hover-only controls; one tap opens a document from the list (iOS spends a tap on hover)
+PASS  every arrow or chevron control (‹ › → ▾, chevrons, panel arrows) responds, or is greyed out when it can't
+PASS  Documents: search every document, folders, pins and sorting
+PASS  Version history: versions are kept, shown and restored (undoably)
+PASS  Word export: a valid .docx with headings, lists, a table, a link, code and a picture
+PASS  Print and PDF: the page prints alone at the chosen paper size; the Mac app opens its print dialog
+PASS  Mac app: sync folder: documents become files, changes go both ways, conflicts keep both, deletes and renames follow
+PASS  iPhone app: Open keeps the file where it is and saves edits back to it; Save to Files links a document
+PASS  About shows the app icon, in light and dark
+PASS  Code line numbers: a separate option, beside the code, aligned, and left out of copies
+PASS  phone: Done shows the page at the paragraph you were editing; Edit opens the editor where you were reading
+PASS  desktop: switching Editor only and Preview only keeps your place
+PASS  no library URL points at a file that does not exist
+PASS  no uncaught page errors during the whole run
+
+90/91 passed

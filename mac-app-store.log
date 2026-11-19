@@ -1,0 +1,758 @@
+App record: 6826704085
+Deleted the earlier profile "Cowdrey.MD Mac App Store CI 3"
+Bundle ID com.bradcowdrey.cowdreymd: id 2H68KGWY7A, platform UNIVERSAL
+Created DISTRIBUTION certificate "Apple Distribution: Bradley Cowdrey (2XV97FZ86G)" (id RWL85PCB82, expires 2027-11-19T20:18:29.000+00:00)
+Created MAC_INSTALLER_DISTRIBUTION certificate "3rd Party Mac Developer Installer: Bradley Cowdrey (2XV97FZ86G)" (id 3HLL4ANN5W, expires 2027-11-19T20:18:30.000+00:00)
+Created the provisioning profile "Cowdrey.MD Mac App Store CI 5" (ACTIVE, expires 2027-11-19T20:18:29.000+00:00)
+::add-mask::***
+macOS versions on the app record: 2.0.2 (PREPARE_FOR_SUBMISSION)
+  1) E362D3A8E1621EB595A9654B51FC40E42296BA98 "Apple Distribution: Bradley Cowdrey (2XV97FZ86G)"
+  2) 5F5E2514D454C450F69C4E72911EF91428E89866 "3rd Party Mac Developer Installer: Bradley Cowdrey (2XV97FZ86G)"
+     2 valid identities found
+        Info Looking up installed tauri packages to check mismatched versions...
+[1m[92m    Updating[0m crates.io index
+[1m[92m Downloading[0m crates ...
+[1m[92m  Downloaded[0m core-foundation-sys v0.8.7
+[1m[92m  Downloaded[0m equivalent v1.0.3
+[1m[92m  Downloaded[0m adler2 v2.0.1
+[1m[92m  Downloaded[0m camino v1.2.6
+[1m[92m  Downloaded[0m fnv v1.0.7
+[1m[92m  Downloaded[0m generic-array v0.14.7
+[1m[92m  Downloaded[0m digest v0.10.7
+[1m[92m  Downloaded[0m alloc-stdlib v0.3.0
+[1m[92m  Downloaded[0m cargo-platform v0.1.9
+[1m[92m  Downloaded[0m core-graphics-types v0.2.0
+[1m[92m  Downloaded[0m bytes v1.12.1
+[1m[92m  Downloaded[0m autocfg v1.5.1
+[1m[92m  Downloaded[0m alloc-no-stdlib v3.0.0
+[1m[92m  Downloaded[0m bit-set v0.8.0
+[1m[92m  Downloaded[0m bit-vec v0.8.0
+[1m[92m  Downloaded[0m block-buffer v0.10.4
+[1m[92m  Downloaded[0m cargo_metadata v0.19.2
+[1m[92m  Downloaded[0m cfg-if v1.0.5
+[1m[92m  Downloaded[0m core-foundation v0.10.1
+[1m[92m  Downloaded[0m core-graphics v0.25.0
+[1m[92m  Downloaded[0m itoa v1.0.18
+[1m[92m  Downloaded[0m base64 v0.22.1
+[1m[92m  Downloaded[0m dirs-sys v0.5.0
+[1m[92m  Downloaded[0m dpi v0.1.2
+[1m[92m  Downloaded[0m embed_plist v1.2.2
+[1m[92m  Downloaded[0m foreign-types v0.5.0
+[1m[92m  Downloaded[0m foreign-types-shared v0.3.1
+[1m[92m  Downloaded[0m form_urlencoded v1.2.2
+[1m[92m  Downloaded[0m heck v0.5.0
+[1m[92m  Downloaded[0m ident_case v1.0.1
+[1m[92m  Downloaded[0m idna_adapter v1.2.2
+[1m[92m  Downloaded[0m tendril v0.5.1
+[1m[92m  Downloaded[0m time-core v0.1.9
+[1m[92m  Downloaded[0m anyhow v1.0.104
+[1m[92m  Downloaded[0m base64 v0.21.7
+[1m[92m  Downloaded[0m bitflags v1.3.2
+[1m[92m  Downloaded[0m block2 v0.6.2
+[1m[92m  Downloaded[0m bs58 v0.5.1
+[1m[92m  Downloaded[0m byteorder v1.5.0
+[1m[92m  Downloaded[0m cargo_toml v1.0.1
+[1m[92m  Downloaded[0m cookie v0.18.2
+[1m[92m  Downloaded[0m cpufeatures v0.2.17
+[1m[92m  Downloaded[0m crossbeam-utils v0.8.23
+[1m[92m  Downloaded[0m crypto-common v0.1.7
+[1m[92m  Downloaded[0m cssparser-macros v0.7.1
+[1m[92m  Downloaded[0m darling_macro v0.24.1
+[1m[92m  Downloaded[0m defmt-parser v1.1.0
+[1m[92m  Downloaded[0m deranged v0.5.9
+[1m[92m  Downloaded[0m dirs v7.0.0
+[1m[92m  Downloaded[0m dtoa-short v0.3.5
+[1m[92m  Downloaded[0m dunce v1.0.5
+[1m[92m  Downloaded[0m dyn-clone v1.0.20
+[1m[92m  Downloaded[0m embed-resource v3.0.12
+[1m[92m  Downloaded[0m foreign-types-macros v0.2.4
+[1m[92m  Downloaded[0m glob v0.3.4
+[1m[92m  Downloaded[0m infer v0.22.0
+[1m[92m  Downloaded[0m defmt-macros v1.2.0
+[1m[92m  Downloaded[0m hex v0.4.3
+[1m[92m  Downloaded[0m dtoa v1.0.11
+[1m[92m  Downloaded[0m fastrand v2.5.0
+[1m[92m  Downloaded[0m foldhash v0.2.0
+[1m[92m  Downloaded[0m crc32fast v1.5.2
+[1m[92m  Downloaded[0m cfb v0.14.0
+[1m[92m  Downloaded[0m displaydoc v0.2.7
+[1m[92m  Downloaded[0m erased-serde v0.4.10
+[1m[92m  Downloaded[0m iana-time-zone v0.1.65
+[1m[92m  Downloaded[0m tauri-build v2.7.3
+[1m[92m  Downloaded[0m typeid v1.0.3
+[1m[92m  Downloaded[0m utf8_iter v1.0.4
+[1m[92m  Downloaded[0m zerofrom v0.1.8
+[1m[92m  Downloaded[0m new_debug_unreachable v1.0.6
+[1m[92m  Downloaded[0m option-ext v0.2.0
+[1m[92m  Downloaded[0m ref-cast-impl v1.0.27
+[1m[92m  Downloaded[0m rustc-hash v2.1.3
+[1m[92m  Downloaded[0m serde_derive_internals v0.29.1
+[1m[92m  Downloaded[0m serialize-to-javascript v0.1.2
+[1m[92m  Downloaded[0m serialize-to-javascript-impl v0.1.2
+[1m[92m  Downloaded[0m bitflags v2.13.2
+[1m[92m  Downloaded[0m cssparser v0.37.0
+[1m[92m  Downloaded[0m ctor v1.0.13
+[1m[92m  Downloaded[0m darling v0.24.1
+[1m[92m  Downloaded[0m darling_core v0.24.1
+[1m[92m  Downloaded[0m defmt v1.2.0
+[1m[92m  Downloaded[0m dispatch2 v0.3.1
+[1m[92m  Downloaded[0m fdeflate v0.3.7
+[1m[92m  Downloaded[0m find-msvc-tools v0.1.14
+[1m[92m  Downloaded[0m flate2 v1.1.10
+[1m[92m  Downloaded[0m getrandom v0.3.4
+[1m[92m  Downloaded[0m getrandom v0.4.3
+[1m[92m  Downloaded[0m html5ever v0.39.0
+[1m[92m  Downloaded[0m icu_locale_core v2.3.0
+[1m[92m  Downloaded[0m icu_normalizer_data v2.3.0
+[1m[92m  Downloaded[0m icu_provider v2.3.1
+[1m[92m  Downloaded[0m indexmap v1.9.3
+[1m[92m  Downloaded[0m rfd v0.16.0
+[1m[92m  Downloaded[0m serde_with_macros v3.24.0
+[1m[92m  Downloaded[0m swift-rs v1.0.9
+[1m[92m  Downloaded[0m scopeguard v1.2.0
+[1m[92m  Downloaded[0m aho-corasick v1.1.5
+[1m[92m  Downloaded[0m base64 v0.23.1
+[1m[92m  Downloaded[0m cc v1.8.0
+[1m[92m  Downloaded[0m crossbeam-channel v0.5.17
+[1m[92m  Downloaded[0m derive_more v2.1.1
+[1m[92m  Downloaded[0m derive_more-impl v2.1.1
+[1m[92m  Downloaded[0m dom_query v0.28.0
+[1m[92m  Downloaded[0m hashbrown v0.12.3
+[1m[92m  Downloaded[0m http v1.5.0
+[1m[92m  Downloaded[0m ico v0.5.0
+[1m[92m  Downloaded[0m icu_collections v2.3.0
+[1m[92m  Downloaded[0m icu_properties v2.3.0
+[1m[92m  Downloaded[0m indexmap v2.14.2
+[1m[92m  Downloaded[0m tauri-plugin-fs v2.7.1
+[1m[92m  Downloaded[0m percent-encoding v2.3.2
+[1m[92m  Downloaded[0m ref-cast v1.0.27
+[1m[92m  Downloaded[0m tauri-plugin-opener v2.7.2
+[1m[92m  Downloaded[0m schemars v0.8.22
+[1m[92m  Downloaded[0m schemars v0.9.0
+[1m[92m  Downloaded[0m schemars_derive v0.8.22
+[1m[92m  Downloaded[0m semver v1.0.28
+[1m[92m  Downloaded[0m chrono v0.4.45
+[1m[92m  Downloaded[0m hashbrown v0.17.1
+[1m[92m  Downloaded[0m icu_properties_data v2.3.0
+[1m[92m  Downloaded[0m idna v1.1.0
+[1m[92m  Downloaded[0m tauri-utils v2.10.2
+[1m[92m  Downloaded[0m thiserror v2.0.21
+[1m[92m  Downloaded[0m thiserror-impl v2.0.21
+[1m[92m  Downloaded[0m yoke-derive v0.8.4
+[1m[92m  Downloaded[0m mime v0.3.17
+[1m[92m  Downloaded[0m num-conv v0.2.2
+[1m[92m  Downloaded[0m phf_codegen v0.13.1
+[1m[92m  Downloaded[0m phf_generator v0.13.1
+[1m[92m  Downloaded[0m potential_utf v0.1.6
+[1m[92m  Downloaded[0m schemars v1.2.3
+[1m[92m  Downloaded[0m selectors v0.38.0
+[1m[92m  Downloaded[0m brotli-decompressor v6.0.1
+[1m[92m  Downloaded[0m version_check v0.9.5
+[1m[92m  Downloaded[0m zerofrom-derive v0.1.8
+[1m[92m  Downloaded[0m json-patch v4.2.0
+[1m[92m  Downloaded[0m markup5ever v0.39.0
+[1m[92m  Downloaded[0m objc2-exception-helper v0.1.1
+[1m[92m  Downloaded[0m objc2-io-surface v0.3.2
+[1m[92m  Downloaded[0m objc2-quartz-core v0.3.2
+[1m[92m  Downloaded[0m phf v0.13.1
+[1m[92m  Downloaded[0m phf_macros v0.13.1
+[1m[92m  Downloaded[0m phf_shared v0.13.1
+[1m[92m  Downloaded[0m precomputed-hash v0.1.1
+[1m[92m  Downloaded[0m regex-syntax v0.8.11
+[1m[92m  Downloaded[0m tauri v2.12.4
+[1m[92m  Downloaded[0m serde_repr v0.1.21
+[1m[92m  Downloaded[0m brotli v9.0.0
+[1m[92m  Downloaded[0m icu_normalizer v2.3.0
+[1m[92m  Downloaded[0m tauri-winres v0.3.6
+[1m[92m  Downloaded[0m tinystr v0.8.4
+[1m[92m  Downloaded[0m toml_datetime v1.1.2+spec-1.1.0
+[1m[92m  Downloaded[0m toml_writer v1.1.3+spec-1.1.0
+[1m[92m  Downloaded[0m walkdir v2.5.0
+[1m[92m  Downloaded[0m writeable v0.6.4
+[1m[92m  Downloaded[0m zmij v1.0.23
+[1m[92m  Downloaded[0m lock_api v0.4.14
+[1m[92m  Downloaded[0m tauri-macros v2.7.3
+[1m[92m  Downloaded[0m tauri-plugin v2.7.2
+[1m[92m  Downloaded[0m tauri-runtime v2.12.2
+[1m[92m  Downloaded[0m tauri-runtime-wry v2.12.2
+[1m[92m  Downloaded[0m serde_core v1.0.229
+[1m[92m  Downloaded[0m serde_derive v1.0.229
+[1m[92m  Downloaded[0m servo_arc v0.4.3
+[1m[92m  Downloaded[0m sha2 v0.10.9
+[1m[92m  Downloaded[0m simd-adler32 v0.3.10
+[1m[92m  Downloaded[0m siphasher v1.0.4
+[1m[92m  Downloaded[0m string_cache_codegen v0.6.1
+[1m[92m  Downloaded[0m tauri-codegen v2.7.3
+[1m[92m  Downloaded[0m time-macros v0.2.32
+[1m[92m  Downloaded[0m toml_parser v1.1.5+spec-1.1.0
+[1m[92m  Downloaded[0m urlpattern v0.6.0
+[1m[92m  Downloaded[0m web_atoms v0.2.6
+[1m[92m  Downloaded[0m zerovec-derive v0.11.6
+[1m[92m  Downloaded[0m objc2-core-video v0.3.2
+[1m[92m  Downloaded[0m open v5.4.4
+[1m[92m  Downloaded[0m parking_lot_core v0.9.12
+[1m[92m  Downloaded[0m pin-project-lite v0.2.17
+[1m[92m  Downloaded[0m powerfmt v0.2.1
+[1m[92m  Downloaded[0m quote v1.0.47
+[1m[92m  Downloaded[0m raw-window-handle v0.6.2
+[1m[92m  Downloaded[0m rustc_version v0.4.1
+[1m[92m  Downloaded[0m same-file v1.0.6
+[1m[92m  Downloaded[0m serde-untagged v0.1.9
+[1m[92m  Downloaded[0m serde_spanned v1.1.2
+[1m[92m  Downloaded[0m socket2 v0.6.5
+[1m[92m  Downloaded[0m static_vcruntime v3.0.0
+[1m[92m  Downloaded[0m strsim v0.11.1
+[1m[92m  Downloaded[0m unicode-ident v1.0.27
+[1m[92m  Downloaded[0m web-time v1.1.0
+[1m[92m  Downloaded[0m yoke v0.8.3
+[1m[92m  Downloaded[0m litemap v0.8.3
+[1m[92m  Downloaded[0m shlex v2.0.1
+[1m[92m  Downloaded[0m synstructure v0.14.0
+[1m[92m  Downloaded[0m tray-icon v0.25.1
+[1m[92m  Downloaded[0m stable_deref_trait v1.2.1
+[1m[92m  Downloaded[0m objc2-core-data v0.3.2
+[1m[92m  Downloaded[0m objc2-encode v4.1.0
+[1m[92m  Downloaded[0m once_cell v1.21.4
+[1m[92m  Downloaded[0m tauri-plugin-dialog v2.8.3
+[1m[92m  Downloaded[0m smallvec v1.16.3
+[1m[92m  Downloaded[0m string_cache v0.9.0
+[1m[92m  Downloaded[0m parking_lot v0.12.5
+[1m[92m  Downloaded[0m proc-macro2 v1.0.107
+[1m[92m  Downloaded[0m syn v3.0.9
+[1m[92m  Downloaded[0m log v0.4.34
+[1m[92m  Downloaded[0m miniz_oxide v0.8.9
+[1m[92m  Downloaded[0m num-traits v0.2.19
+[1m[92m  Downloaded[0m plist v1.10.1
+[1m[92m  Downloaded[0m tinyvec v1.13.3
+[1m[92m  Downloaded[0m toml v1.1.8+spec-1.1.0
+[1m[92m  Downloaded[0m uuid v1.28.0
+[1m[92m  Downloaded[0m jsonptr v0.7.1
+[1m[92m  Downloaded[0m miniz_oxide v0.9.1
+[1m[92m  Downloaded[0m objc2-cloud-kit v0.3.2
+[1m[92m  Downloaded[0m objc2-core-image v0.3.2
+[1m[92m  Downloaded[0m serde v1.0.229
+[1m[92m  Downloaded[0m typenum v1.20.1
+[1m[92m  Downloaded[0m url v2.5.8
+[1m[92m  Downloaded[0m zerotrie v0.2.5
+[1m[92m  Downloaded[0m keyboard-types v0.8.3
+[1m[92m  Downloaded[0m objc2-core-graphics v0.3.2
+[1m[92m  Downloaded[0m objc2-core-text v0.3.2
+[1m[92m  Downloaded[0m png v0.17.16
+[1m[92m  Downloaded[0m memchr v2.8.3
+[1m[92m  Downloaded[0m syn v2.0.119
+[1m[92m  Downloaded[0m jiff-core v0.1.1
+[1m[92m  Downloaded[0m mio v1.2.4
+[1m[92m  Downloaded[0m muda v0.20.0
+[1m[92m  Downloaded[0m png v0.18.1
+[1m[92m  Downloaded[0m zerovec v0.11.8
+[1m[92m  Downloaded[0m objc2-web-kit v0.3.2
+[1m[92m  Downloaded[0m serde_json v1.0.154
+[1m[92m  Downloaded[0m tao v0.37.1
+[1m[92m  Downloaded[0m objc2-core-foundation v0.3.2
+[1m[92m  Downloaded[0m regex v1.13.1
+[1m[92m  Downloaded[0m winnow v1.0.4
+[1m[92m  Downloaded[0m time v0.3.55
+[1m[92m  Downloaded[0m zlib-rs v0.6.8
+[1m[92m  Downloaded[0m wry v0.57.0
+[1m[92m  Downloaded[0m quick-xml v0.42.0
+[1m[92m  Downloaded[0m serde_with v3.24.0
+[1m[92m  Downloaded[0m objc2 v0.6.5
+[1m[92m  Downloaded[0m objc2-foundation v0.3.2
+[1m[92m  Downloaded[0m objc2-app-kit v0.3.2
+[1m[92m  Downloaded[0m regex-automata v0.4.18
+[1m[92m  Downloaded[0m jiff v0.2.38
+[1m[92m  Downloaded[0m libc v0.2.191
+[1m[92m  Downloaded[0m tokio v1.53.3
+[1m[92m  Downloaded[0m window-vibrancy v0.8.1
+[1m[92m   Compiling[0m proc-macro2 v1.0.107
+[1m[92m   Compiling[0m quote v1.0.47
+[1m[92m   Compiling[0m unicode-ident v1.0.27
+[1m[92m   Compiling[0m libc v0.2.191
+[1m[92m   Compiling[0m serde_core v1.0.229
+[1m[92m   Compiling[0m syn v3.0.9
+[1m[92m   Compiling[0m siphasher v1.0.4
+[1m[92m   Compiling[0m phf_shared v0.13.1
+[1m[92m   Compiling[0m icu_normalizer_data v2.3.0
+[1m[92m   Compiling[0m shlex v2.0.1
+[1m[92m   Compiling[0m icu_properties_data v2.3.0
+[1m[92m   Compiling[0m find-msvc-tools v0.1.14
+[1m[92m   Compiling[0m syn v2.0.119
+[1m[92m   Compiling[0m cc v1.8.0
+[1m[92m   Compiling[0m synstructure v0.14.0
+[1m[92m   Compiling[0m zmij v1.0.23
+[1m[92m   Compiling[0m fastrand v2.5.0
+[1m[92m   Compiling[0m phf_generator v0.13.1
+[1m[92m   Compiling[0m stable_deref_trait v1.2.1
+[1m[92m   Compiling[0m cfg-if v1.0.5
+[1m[92m   Compiling[0m zerofrom-derive v0.1.8
+[1m[92m   Compiling[0m yoke-derive v0.8.4
+[1m[92m   Compiling[0m zerovec-derive v0.11.6
+[1m[92m   Compiling[0m serde_derive v1.0.229
+[1m[92m   Compiling[0m displaydoc v0.2.7
+[1m[92m   Compiling[0m memchr v2.8.3
+[1m[92m   Compiling[0m zerofrom v0.1.8
+[1m[92m   Compiling[0m smallvec v1.16.3
+[1m[92m   Compiling[0m serde v1.0.229
+[1m[92m   Compiling[0m yoke v0.8.3
+[1m[92m   Compiling[0m zerovec v0.11.8
+[1m[92m   Compiling[0m thiserror v2.0.21
+[1m[92m   Compiling[0m itoa v1.0.18
+[1m[92m   Compiling[0m phf_macros v0.13.1
+[1m[92m   Compiling[0m typeid v1.0.3
+[1m[92m   Compiling[0m thiserror-impl v2.0.21
+[1m[92m   Compiling[0m num-conv v0.2.2
+[1m[92m   Compiling[0m time-core v0.1.9
+[1m[92m   Compiling[0m tinystr v0.8.4
+[1m[92m   Compiling[0m phf_codegen v0.13.1
+[1m[92m   Compiling[0m ident_case v1.0.1
+[1m[92m   Compiling[0m strsim v0.11.1
+[1m[92m   Compiling[0m serde_json v1.0.154
+[1m[92m   Compiling[0m writeable v0.6.4
+[1m[92m   Compiling[0m litemap v0.8.3
+[1m[92m   Compiling[0m erased-serde v0.4.10
+[1m[92m   Compiling[0m icu_locale_core v2.3.0
+[1m[92m   Compiling[0m darling_core v0.24.1
+[1m[92m   Compiling[0m potential_utf v0.1.6
+[1m[92m   Compiling[0m zerotrie v0.2.5
+[1m[92m   Compiling[0m utf8_iter v1.0.4
+[1m[92m   Compiling[0m bitflags v2.13.2
+[1m[92m   Compiling[0m parking_lot_core v0.9.12
+[1m[92m   Compiling[0m icu_collections v2.3.0
+[1m[92m   Compiling[0m icu_provider v2.3.1
+[1m[92m   Compiling[0m objc2-exception-helper v0.1.1
+[1m[92m   Compiling[0m scopeguard v1.2.0
+[1m[92m   Compiling[0m anyhow v1.0.104
+[1m[92m   Compiling[0m new_debug_unreachable v1.0.6
+[1m[92m   Compiling[0m lock_api v0.4.14
+[1m[92m   Compiling[0m darling_macro v0.24.1
+[1m[92m   Compiling[0m darling v0.24.1
+[1m[92m   Compiling[0m phf v0.13.1
+[1m[92m   Compiling[0m string_cache_codegen v0.6.1
+[1m[92m   Compiling[0m precomputed-hash v0.1.1
+[1m[92m   Compiling[0m getrandom v0.4.3
+[1m[92m   Compiling[0m web_atoms v0.2.6
+[1m[92m   Compiling[0m serde_with_macros v3.24.0
+[1m[92m   Compiling[0m parking_lot v0.12.5
+[1m[92m   Compiling[0m icu_properties v2.3.0
+[1m[92m   Compiling[0m icu_normalizer v2.3.0
+[1m[92m   Compiling[0m semver v1.0.28
+[1m[92m   Compiling[0m winnow v1.0.4
+[1m[92m   Compiling[0m objc2 v0.6.5
+[1m[92m   Compiling[0m idna_adapter v1.2.2
+[1m[92m   Compiling[0m string_cache v0.9.0
+[1m[92m   Compiling[0m toml_parser v1.1.5+spec-1.1.0
+[1m[92m   Compiling[0m toml_datetime v1.1.2+spec-1.1.0
+[1m[92m   Compiling[0m serde_spanned v1.1.2
+[1m[92m   Compiling[0m percent-encoding v2.3.2
+[1m[92m   Compiling[0m dtoa v1.0.11
+[1m[92m   Compiling[0m toml_writer v1.1.3+spec-1.1.0
+[1m[92m   Compiling[0m objc2-encode v4.1.0
+[1m[92m   Compiling[0m autocfg v1.5.1
+[1m[92m   Compiling[0m log v0.4.34
+[1m[92m   Compiling[0m indexmap v1.9.3
+[1m[92m   Compiling[0m toml v1.1.8+spec-1.1.0
+[1m[92m   Compiling[0m dtoa-short v0.3.5
+[1m[92m   Compiling[0m form_urlencoded v1.2.2
+[1m[92m   Compiling[0m uuid v1.28.0
+[1m[92m   Compiling[0m idna v1.1.0
+[1m[92m   Compiling[0m tendril v0.5.1
+[1m[92m   Compiling[0m selectors v0.38.0
+[1m[92m   Compiling[0m aho-corasick v1.1.5
+[1m[92m   Compiling[0m derive_more-impl v2.1.1
+[1m[92m   Compiling[0m cssparser-macros v0.7.1
+[1m[92m   Compiling[0m camino v1.2.6
+[1m[92m   Compiling[0m alloc-no-stdlib v3.0.0
+[1m[92m   Compiling[0m regex-syntax v0.8.11
+[1m[92m   Compiling[0m derive_more v2.1.1
+[1m[92m   Compiling[0m alloc-stdlib v0.3.0
+[1m[92m   Compiling[0m cssparser v0.37.0
+[1m[92m   Compiling[0m markup5ever v0.39.0
+[1m[92m   Compiling[0m url v2.5.8
+[1m[92m   Compiling[0m block2 v0.6.2
+[1m[92m   Compiling[0m swift-rs v1.0.9
+[1m[92m   Compiling[0m servo_arc v0.4.3
+[1m[92m   Compiling[0m regex-automata v0.4.18
+[1m[92m   Compiling[0m serde_derive_internals v0.29.1
+[1m[92m   Compiling[0m bit-vec v0.8.0
+[1m[92m   Compiling[0m powerfmt v0.2.1
+[1m[92m   Compiling[0m hashbrown v0.17.1
+[1m[92m   Compiling[0m rustc-hash v2.1.3
+[1m[92m   Compiling[0m schemars v0.8.22
+[1m[92m   Compiling[0m deranged v0.5.9
+[1m[92m   Compiling[0m equivalent v1.0.3
+[1m[92m   Compiling[0m web-time v1.1.0
+[1m[92m   Compiling[0m hashbrown v0.12.3
+[1m[92m   Compiling[0m fnv v1.0.7
+[1m[92m   Compiling[0m cfb v0.14.0
+[1m[92m   Compiling[0m time v0.3.55
+[1m[92m   Compiling[0m regex v1.13.1
+[1m[92m   Compiling[0m indexmap v2.14.2
+[1m[92m   Compiling[0m schemars_derive v0.8.22
+[1m[92m   Compiling[0m bit-set v0.8.0
+[1m[92m   Compiling[0m dispatch2 v0.3.1
+[1m[92m   Compiling[0m html5ever v0.39.0
+[1m[92m   Compiling[0m brotli-decompressor v6.0.1
+[1m[92m   Compiling[0m jsonptr v0.7.1
+[1m[92m   Compiling[0m cargo-platform v0.1.9
+[1m[92m   Compiling[0m quick-xml v0.42.0
+[1m[92m   Compiling[0m foldhash v0.2.0
+[1m[92m   Compiling[0m dyn-clone v1.0.20
+[1m[92m   Compiling[0m bytes v1.12.1
+[1m[92m   Compiling[0m tauri-utils v2.10.2
+[1m[92m   Compiling[0m base64 v0.21.7
+[1m[92m   Compiling[0m same-file v1.0.6
+[1m[92m   Compiling[0m dunce v1.0.5
+[1m[92m   Compiling[0m base64 v0.23.1
+[1m[92m   Compiling[0m walkdir v2.5.0
+[1m[92m   Compiling[0m http v1.5.0
+[1m[92m   Compiling[0m plist v1.10.1
+[1m[92m   Compiling[0m dom_query v0.28.0
+[1m[92m   Compiling[0m cargo_metadata v0.19.2
+[1m[92m   Compiling[0m brotli v9.0.0
+[1m[92m   Compiling[0m json-patch v4.2.0
+[1m[92m   Compiling[0m objc2-core-foundation v0.3.2
+[1m[92m   Compiling[0m serde-untagged v0.1.9
+[1m[92m   Compiling[0m urlpattern v0.6.0
+[1m[92m   Compiling[0m infer v0.22.0
+[1m[92m   Compiling[0m serde_with v3.24.0
+[1m[92m   Compiling[0m glob v0.3.4
+[1m[92m   Compiling[0m ctor v1.0.13
+[1m[92m   Compiling[0m version_check v0.9.5
+[1m[92m   Compiling[0m objc2-foundation v0.3.2
+[1m[92m   Compiling[0m crc32fast v1.5.2
+[1m[92m   Compiling[0m rustc_version v0.4.1
+[1m[92m   Compiling[0m option-ext v0.2.0
+[1m[92m   Compiling[0m dirs-sys v0.5.0
+[1m[92m   Compiling[0m embed-resource v3.0.12
+[1m[92m   Compiling[0m heck v0.5.0
+[1m[92m   Compiling[0m tauri-winres v0.3.6
+[1m[92m   Compiling[0m dirs v7.0.0
+[1m[92m   Compiling[0m objc2-core-graphics v0.3.2
+[1m[92m   Compiling[0m objc2-core-video v0.3.2
+[1m[92m   Compiling[0m objc2-core-text v0.3.2
+[1m[92m   Compiling[0m cargo_toml v1.0.1
+[1m[92m   Compiling[0m static_vcruntime v3.0.0
+[1m[92m   Compiling[0m simd-adler32 v0.3.10
+[1m[92m   Compiling[0m tauri-build v2.7.3
+[1m[92m   Compiling[0m tauri-plugin v2.7.2
+[1m[92m   Compiling[0m objc2-quartz-core v0.3.2
+[1m[92m   Compiling[0m objc2-core-data v0.3.2
+[1m[92m   Compiling[0m objc2-cloud-kit v0.3.2
+[1m[92m   Compiling[0m objc2-core-image v0.3.2
+[1m[92m   Compiling[0m generic-array v0.14.7
+[1m[92m   Compiling[0m objc2-app-kit v0.3.2
+[1m[92m   Compiling[0m adler2 v2.0.1
+[1m[92m   Compiling[0m time-macros v0.2.32
+[1m[92m   Compiling[0m typenum v1.20.1
+[1m[92m   Compiling[0m miniz_oxide v0.9.1
+[1m[92m   Compiling[0m tauri v2.12.4
+[1m[92m   Compiling[0m crossbeam-utils v0.8.23
+[1m[92m   Compiling[0m raw-window-handle v0.6.2
+[1m[92m   Compiling[0m flate2 v1.1.10
+[1m[92m   Compiling[0m miniz_oxide v0.8.9
+[1m[92m   Compiling[0m fdeflate v0.3.7
+[1m[92m   Compiling[0m dpi v0.1.2
+[1m[92m   Compiling[0m cookie v0.18.2
+[1m[92m   Compiling[0m core-foundation-sys v0.8.7
+[1m[92m   Compiling[0m core-foundation v0.10.1
+[1m[92m   Compiling[0m block-buffer v0.10.4
+[1m[92m   Compiling[0m crypto-common v0.1.7
+[1m[92m   Compiling[0m foreign-types-macros v0.2.4
+[1m[92m   Compiling[0m foreign-types-shared v0.3.1
+[1m[92m   Compiling[0m bitflags v1.3.2
+[1m[92m   Compiling[0m png v0.17.16
+[1m[92m   Compiling[0m foreign-types v0.5.0
+[1m[92m   Compiling[0m digest v0.10.7
+[1m[92m   Compiling[0m crossbeam-channel v0.5.17
+[1m[92m   Compiling[0m wry v0.57.0
+[1m[92m   Compiling[0m objc2-web-kit v0.3.2
+[1m[92m   Compiling[0m core-graphics-types v0.2.0
+[1m[92m   Compiling[0m cpufeatures v0.2.17
+[1m[92m   Compiling[0m once_cell v1.21.4
+[1m[92m   Compiling[0m tauri-runtime v2.12.2
+[1m[92m   Compiling[0m byteorder v1.5.0
+[1m[92m   Compiling[0m sha2 v0.10.9
+[1m[92m   Compiling[0m ico v0.5.0
+[1m[92m   Compiling[0m core-graphics v0.25.0
+[1m[92m   Compiling[0m png v0.18.1
+[1m[92m   Compiling[0m muda v0.20.0
+[1m[92m   Compiling[0m getrandom v0.3.4
+[1m[92m   Compiling[0m tauri-runtime-wry v2.12.2
+[1m[92m   Compiling[0m tauri-codegen v2.7.3
+[1m[92m   Compiling[0m tao v0.37.1
+[1m[92m   Compiling[0m keyboard-types v0.8.3
+[1m[92m   Compiling[0m serialize-to-javascript-impl v0.1.2
+[1m[92m   Compiling[0m pin-project-lite v0.2.17
+[1m[92m   Compiling[0m tokio v1.53.3
+[1m[92m   Compiling[0m serialize-to-javascript v0.1.2
+[1m[92m   Compiling[0m tauri-macros v2.7.3
+[1m[92m   Compiling[0m window-vibrancy v0.8.1
+[1m[92m   Compiling[0m tauri-plugin-fs v2.7.1
+[1m[92m   Compiling[0m serde_repr v0.1.21
+[1m[92m   Compiling[0m mime v0.3.17
+[1m[92m   Compiling[0m embed_plist v1.2.2
+[1m[92m   Compiling[0m tauri-plugin-sharekit v0.3.1 (/Users/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/plugins/sharekit)
+[1m[92m   Compiling[0m tauri-plugin-opener v2.7.2
+[1m[92m   Compiling[0m tauri-plugin-dialog v2.8.3
+[1m[92m   Compiling[0m rfd v0.16.0
+[1m[92m   Compiling[0m cowdrey-md v2.0.2 (/Users/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri)
+[1m[92m   Compiling[0m open v5.4.4
+[1m[92m   Compiling[0m base64 v0.22.1
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 4m 13s
+[1m[92m   Compiling[0m serde_core v1.0.229
+[1m[92m   Compiling[0m libc v0.2.191
+[1m[92m   Compiling[0m objc2-exception-helper v0.1.1
+[1m[92m   Compiling[0m objc2 v0.6.5
+[1m[92m   Compiling[0m objc2-encode v4.1.0
+[1m[92m   Compiling[0m zerofrom v0.1.8
+[1m[92m   Compiling[0m stable_deref_trait v1.2.1
+[1m[92m   Compiling[0m yoke v0.8.3
+[1m[92m   Compiling[0m zerovec v0.11.8
+[1m[92m   Compiling[0m block2 v0.6.2
+[1m[92m   Compiling[0m bitflags v2.13.2
+[1m[92m   Compiling[0m serde v1.0.229
+[1m[92m   Compiling[0m dispatch2 v0.3.1
+[1m[92m   Compiling[0m tinystr v0.8.4
+[1m[92m   Compiling[0m objc2-core-foundation v0.3.2
+[1m[92m   Compiling[0m litemap v0.8.3
+[1m[92m   Compiling[0m memchr v2.8.3
+[1m[92m   Compiling[0m writeable v0.6.4
+[1m[92m   Compiling[0m icu_locale_core v2.3.0
+[1m[92m   Compiling[0m potential_utf v0.1.6
+[1m[92m   Compiling[0m zerotrie v0.2.5
+[1m[92m   Compiling[0m utf8_iter v1.0.4
+[1m[92m   Compiling[0m objc2-foundation v0.3.2
+[1m[92m   Compiling[0m icu_collections v2.3.0
+[1m[92m   Compiling[0m icu_provider v2.3.1
+[1m[92m   Compiling[0m icu_properties_data v2.3.0
+[1m[92m   Compiling[0m icu_normalizer_data v2.3.0
+[1m[92m   Compiling[0m smallvec v1.16.3
+[1m[92m   Compiling[0m icu_properties v2.3.0
+[1m[92m   Compiling[0m icu_normalizer v2.3.0
+[1m[92m   Compiling[0m objc2-core-text v0.3.2
+[1m[92m   Compiling[0m objc2-core-graphics v0.3.2
+[1m[92m   Compiling[0m objc2-core-video v0.3.2
+[1m[92m   Compiling[0m itoa v1.0.18
+[1m[92m   Compiling[0m idna_adapter v1.2.2
+[1m[92m   Compiling[0m zmij v1.0.23
+[1m[92m   Compiling[0m percent-encoding v2.3.2
+[1m[92m   Compiling[0m serde_json v1.0.154
+[1m[92m   Compiling[0m form_urlencoded v1.2.2
+[1m[92m   Compiling[0m idna v1.1.0
+[1m[92m   Compiling[0m thiserror v2.0.21
+[1m[92m   Compiling[0m powerfmt v0.2.1
+[1m[92m   Compiling[0m num-conv v0.2.2
+[1m[92m   Compiling[0m deranged v0.5.9
+[1m[92m   Compiling[0m time-core v0.1.9
+[1m[92m   Compiling[0m time v0.3.55
+[1m[92m   Compiling[0m url v2.5.8
+[1m[92m   Compiling[0m aho-corasick v1.1.5
+[1m[92m   Compiling[0m typeid v1.0.3
+[1m[92m   Compiling[0m simd-adler32 v0.3.10
+[1m[92m   Compiling[0m raw-window-handle v0.6.2
+[1m[92m   Compiling[0m bytes v1.12.1
+[1m[92m   Compiling[0m regex-syntax v0.8.11
+[1m[92m   Compiling[0m alloc-no-stdlib v3.0.0
+[1m[92m   Compiling[0m alloc-stdlib v0.3.0
+[1m[92m   Compiling[0m regex-automata v0.4.18
+[1m[92m   Compiling[0m objc2-cloud-kit v0.3.2
+[1m[92m   Compiling[0m objc2-core-image v0.3.2
+[1m[92m   Compiling[0m objc2-quartz-core v0.3.2
+[1m[92m   Compiling[0m objc2-core-data v0.3.2
+[1m[92m   Compiling[0m objc2-app-kit v0.3.2
+[1m[92m   Compiling[0m crossbeam-utils v0.8.23
+[1m[92m   Compiling[0m tauri v2.12.4
+[1m[92m   Compiling[0m dpi v0.1.2
+[1m[92m   Compiling[0m uuid v1.28.0
+[1m[92m   Compiling[0m erased-serde v0.4.10
+[1m[92m   Compiling[0m core-foundation-sys v0.8.7
+[1m[92m   Compiling[0m hashbrown v0.17.1
+[1m[92m   Compiling[0m fnv v1.0.7
+[1m[92m   Compiling[0m adler2 v2.0.1
+[1m[92m   Compiling[0m siphasher v1.0.4
+[1m[92m   Compiling[0m equivalent v1.0.3
+[1m[92m   Compiling[0m winnow v1.0.4
+[1m[92m   Compiling[0m web-time v1.1.0
+[1m[92m   Compiling[0m log v0.4.34
+[1m[92m   Compiling[0m cfg-if v1.0.5
+[1m[92m   Compiling[0m toml_parser v1.1.5+spec-1.1.0
+[1m[92m   Compiling[0m cfb v0.14.0
+[1m[92m   Compiling[0m indexmap v2.14.2
+[1m[92m   Compiling[0m phf_shared v0.13.1
+[1m[92m   Compiling[0m core-foundation v0.10.1
+[1m[92m   Compiling[0m cookie v0.18.2
+[1m[92m   Compiling[0m regex v1.13.1
+[1m[92m   Compiling[0m brotli-decompressor v6.0.1
+[1m[92m   Compiling[0m http v1.5.0
+[1m[92m   Compiling[0m jsonptr v0.7.1
+[1m[92m   Compiling[0m quick-xml v0.42.0
+[1m[92m   Compiling[0m crc32fast v1.5.2
+[1m[92m   Compiling[0m serde_spanned v1.1.2
+[1m[92m   Compiling[0m toml_datetime v1.1.2+spec-1.1.0
+[1m[92m   Compiling[0m anyhow v1.0.104
+[1m[92m   Compiling[0m foreign-types-shared v0.3.1
+[1m[92m   Compiling[0m same-file v1.0.6
+[1m[92m   Compiling[0m toml_writer v1.1.3+spec-1.1.0
+[1m[92m   Compiling[0m option-ext v0.2.0
+[1m[92m   Compiling[0m base64 v0.23.1
+[1m[92m   Compiling[0m plist v1.10.1
+[1m[92m   Compiling[0m tauri-utils v2.10.2
+[1m[92m   Compiling[0m dirs-sys v0.5.0
+[1m[92m   Compiling[0m toml v1.1.8+spec-1.1.0
+[1m[92m   Compiling[0m walkdir v2.5.0
+[1m[92m   Compiling[0m foreign-types v0.5.0
+[1m[92m   Compiling[0m json-patch v4.2.0
+[1m[92m   Compiling[0m brotli v9.0.0
+[1m[92m   Compiling[0m urlpattern v0.6.0
+[1m[92m   Compiling[0m serde-untagged v0.1.9
+[1m[92m   Compiling[0m crossbeam-channel v0.5.17
+[1m[92m   Compiling[0m core-graphics-types v0.2.0
+[1m[92m   Compiling[0m phf v0.13.1
+[1m[92m   Compiling[0m infer v0.22.0
+[1m[92m   Compiling[0m miniz_oxide v0.9.1
+[1m[92m   Compiling[0m serde_with v3.24.0
+[1m[92m   Compiling[0m once_cell v1.21.4
+[1m[92m   Compiling[0m dunce v1.0.5
+[1m[92m   Compiling[0m semver v1.0.28
+[1m[92m   Compiling[0m ctor v1.0.13
+[1m[92m   Compiling[0m glob v0.3.4
+[1m[92m   Compiling[0m tauri-runtime v2.12.2
+[1m[92m   Compiling[0m flate2 v1.1.10
+[1m[92m   Compiling[0m core-graphics v0.25.0
+[1m[92m   Compiling[0m wry v0.57.0
+[1m[92m   Compiling[0m dirs v7.0.0
+[1m[92m   Compiling[0m miniz_oxide v0.8.9
+[1m[92m   Compiling[0m fdeflate v0.3.7
+[1m[92m   Compiling[0m objc2-web-kit v0.3.2
+[1m[92m   Compiling[0m getrandom v0.3.4
+[1m[92m   Compiling[0m muda v0.20.0
+[1m[92m   Compiling[0m tauri-runtime-wry v2.12.2
+[1m[92m   Compiling[0m tao v0.37.1
+[1m[92m   Compiling[0m png v0.18.1
+[1m[92m   Compiling[0m keyboard-types v0.8.3
+[1m[92m   Compiling[0m pin-project-lite v0.2.17
+[1m[92m   Compiling[0m tokio v1.53.3
+[1m[92m   Compiling[0m serialize-to-javascript v0.1.2
+[1m[92m   Compiling[0m window-vibrancy v0.8.1
+[1m[92m   Compiling[0m embed_plist v1.2.2
+[1m[92m   Compiling[0m mime v0.3.17
+[1m[92m   Compiling[0m heck v0.5.0
+[1m[92m   Compiling[0m tauri-plugin-fs v2.7.1
+[1m[92m   Compiling[0m rfd v0.16.0
+[1m[92m   Compiling[0m tauri-plugin-dialog v2.8.3
+[1m[92m   Compiling[0m tauri-plugin-opener v2.7.2
+[1m[92m   Compiling[0m tauri-plugin-sharekit v0.3.1 (/Users/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/plugins/sharekit)
+[1m[92m   Compiling[0m open v5.4.4
+[1m[92m   Compiling[0m cowdrey-md v2.0.2 (/Users/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri)
+[1m[92m   Compiling[0m base64 v0.22.1
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 3m 13s
+       Built application at: /Users/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/universal-apple-darwin/release/cowdrey-md
+    Bundling Cowdrey.MD.app (/Users/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/universal-apple-darwin/release/bundle/macos/Cowdrey.MD.app)
+    Finished 1 bundle at:
+        /Users/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/universal-apple-darwin/release/bundle/macos/Cowdrey.MD.app (12.14 MiB)
+
+desktop/src-tauri/target/universal-apple-darwin/release/bundle/macos/Cowdrey.MD.app: replacing existing signature
+desktop/src-tauri/target/universal-apple-darwin/release/bundle/macos/Cowdrey.MD.app: valid on disk
+desktop/src-tauri/target/universal-apple-darwin/release/bundle/macos/Cowdrey.MD.app: satisfies its Designated Requirement
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>com.apple.application-identifier</key>
+	<string>2XV97FZ86G.com.bradcowdrey.cowdreymd</string>
+	<key>com.apple.developer.team-identifier</key>
+	<string>2XV97FZ86G</string>
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+	<key>com.apple.security.files.bookmarks.app-scope</key>
+	<true/>
+	<key>com.apple.security.files.user-selected.read-write</key>
+	<true/>
+	<key>com.apple.security.network.client</key>
+	<true/>
+	<key>com.apple.security.print</key>
+	<true/>
+</dict>
+</plist>
+{
+  "CFBundleDevelopmentRegion" => "English"
+  "CFBundleDisplayName" => "Cowdrey.MD"
+  "CFBundleDocumentTypes" => [
+    0 => {
+      "CFBundleTypeExtensions" => [
+        0 => "md"
+        1 => "markdown"
+        2 => "mdown"
+        3 => "mkd"
+        4 => "mkdn"
+      ]
+      "CFBundleTypeName" => "Markdown document"
+      "CFBundleTypeRole" => "Editor"
+      "LSHandlerRank" => "Default"
+    }
+  ]
+  "CFBundleExecutable" => "cowdrey-md"
+  "CFBundleIconFile" => "icon.icns"
+  "CFBundleIdentifier" => "com.bradcowdrey.cowdreymd"
+  "CFBundleInfoDictionaryVersion" => "6.0"
+  "CFBundleName" => "Cowdrey.MD"
+  "CFBundlePackageType" => "APPL"
+  "CFBundleShortVersionString" => "2.0.2"
+  "CFBundleVersion" => "5.1"
+  "CSResourcesFileMapped" => true
+  "ITSAppUsesNonExemptEncryption" => false
+  "LSApplicationCategoryType" => "public.app-category.productivity"
+  "LSMinimumSystemVersion" => "10.15"
+  "LSRequiresCarbon" => true
+  "NSHighResolutionCapable" => true
+  "NSHumanReadableCopyright" => "© 2026 Bradley Cowdrey"
+}
+Architectures in the fat file: desktop/src-tauri/target/universal-apple-darwin/release/bundle/macos/Cowdrey.MD.app/Contents/MacOS/cowdrey-md are: x86_64 arm64 
+productbuild: Adding component at /Users/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/target/universal-apple-darwin/release/bundle/macos/Cowdrey.MD.app
+productbuild: Signing product with identity "3rd Party Mac Developer Installer: Bradley Cowdrey (2XV97FZ86G)" from keychain /Users/runner/work/_temp/mas.keychain-db
+productbuild: Adding certificate "Apple Worldwide Developer Relations Certification Authority"
+productbuild: Adding certificate "Apple Root CA"
+productbuild: Wrote product to /Users/runner/work/_temp/Cowdrey.MD.pkg
+productbuild: Supported OS versions: [Min: 10.15, Before: None]
+Package "Cowdrey.MD.pkg":
+   Status: signed by a developer certificate issued by Apple (Development)
+   Certificate Chain:
+    1. 3rd Party Mac Developer Installer: Bradley Cowdrey (2XV97FZ86G)
+       Expires: 2027-11-19 20:18:30 +0000
+       SHA256 Fingerprint:
+           5E DD 94 B2 46 59 EB 8C BE 05 2F 60 92 C9 C7 F4 89 C1 C0 47 34 84 
+           1C 17 9A B2 F3 E0 F0 19 FA 19
+       ------------------------------------------------------------------------
+    2. Apple Worldwide Developer Relations Certification Authority
+       Expires: 2030-02-20 00:00:00 +0000
+       SHA256 Fingerprint:
+           DC F2 18 78 C7 7F 41 98 E4 B4 61 4F 03 D6 96 D8 9C 66 C6 60 08 D4 
+           24 4E 1B 99 16 1A AC 91 60 1F
+       ------------------------------------------------------------------------
+    3. Apple Root CA
+       Expires: 2035-02-09 21:40:36 +0000
+       SHA256 Fingerprint:
+           B0 B1 73 0E CB C7 FF 45 05 14 2C 49 F1 29 5E 6E DA 6B CA ED 7E 2C 
+           68 C5 BE 91 B5 A1 10 01 F0 24
+
+Validating build 5.1 (version 2.0.2)
+Running altool at path '/Applications/Xcode_26.6.app/Contents/SharedFrameworks/ContentDelivery.framework/Resources/altool'...
+
+2026-11-19 20:37:31.696  INFO: [ContentDelivery.Uploader.7F8C48D80] 
+==========================================
+VERIFY SUCCEEDED with no errors
+==========================================
+No errors validating archive at '/Users/runner/work/_temp/Cowdrey.MD.pkg'.
+Uploading build 5.1 (version 2.0.2)
+Running altool at path '/Applications/Xcode_26.6.app/Contents/SharedFrameworks/ContentDelivery.framework/Resources/altool'...
+
+2026-11-19 20:38:40.008  INFO: [ContentDelivery.Uploader.C98C48D80] 
+==========================================
+UPLOAD SUCCEEDED with no errors
+Delivery UUID: ca9f1b52-2411-4747-9274-04f92cbe645c
+Transferred 8696306 bytes in 0.760 seconds (11.4MB/s, 91.586Mbps)
+==========================================
+No errors uploading archive at '/Users/runner/work/_temp/Cowdrey.MD.pkg'.
+macOS build 5.1 not listed yet (1/30)
+macOS build 5.1 not listed yet (2/30)
+App Store Connect lists macOS build 5.1: VALID (uploaded 2026-11-19T12:39:43-08:00)

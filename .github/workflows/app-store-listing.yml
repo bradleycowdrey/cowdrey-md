@@ -19,6 +19,11 @@ on:
 permissions:
   contents: write
 
+# One run at a time, so two runs never edit App Store Connect or the log branch at once.
+concurrency:
+  group: app-store-listing
+  cancel-in-progress: false
+
 jobs:
   listing:
     name: Fill in the App Store listing (submits only the version listing.json names)
@@ -51,8 +56,14 @@ jobs:
           [[ -f "$RUNNER_TEMP/listing.log" ]] || exit 0
           LOG=$(cat "$RUNNER_TEMP/listing.log")
           for S in "$APPLE_API_ISSUER" "$APPLE_API_KEY"; do if [[ -n "$S" ]]; then LOG=${LOG//"$S"/***}; fi; done
-          cd "$(mktemp -d)" && git init -q -b app-store-log && printf '%s\n' "$LOG" > listing.log
-          echo "${{ job.status }} · run ${{ github.run_number }} · ${{ github.sha }}" > status.txt
+          # A full listing run writes listing.log and status.txt. A run after a build (only attaches the build) writes
+          # build.log and build-status.txt, so it never hides the last full run's result; the other files are kept.
+          NAME=listing; [[ "${{ github.event_name }}" == workflow_run ]] && NAME=build
+          D=$(mktemp -d)
+          git fetch -q --depth 1 origin app-store-log 2>/dev/null && git archive FETCH_HEAD | tar -x -C "$D" || true
+          cd "$D" && git init -q -b app-store-log && printf '%s\n' "$LOG" > $NAME.log
+          STATUS=status.txt; [[ $NAME == build ]] && STATUS=build-status.txt
+          echo "${{ job.status }} · run ${{ github.run_number }} · ${{ github.event_name }}${{ github.event.workflow_run.name && format(' after {0}', github.event.workflow_run.name) || '' }} · ${{ github.sha }}" > $STATUS
           git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com add .
           git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -qm "App Store listing log, run ${{ github.run_number }}"
           git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" app-store-log

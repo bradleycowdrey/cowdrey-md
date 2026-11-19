@@ -34,7 +34,16 @@ jobs:
           git diff --exit-code index.html artifact.html
 
       - name: Run the tests
-        run: node tests/e2e.mjs
+        run: |
+          set -o pipefail
+          node tests/e2e.mjs 2>&1 | tee "$RUNNER_TEMP/tests.log"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tests-log
+          path: ${{ runner.temp }}/tests.log
+          if-no-files-found: ignore
 
   mac-app-code:
     name: Mac app compiles
@@ -64,3 +73,30 @@ jobs:
       - name: Check the Rust code
         working-directory: desktop/src-tauri
         run: cargo check --locked || cargo check
+
+  # The result goes on the tests-log branch, so it can be read without signing in to GitHub.
+  log:
+    name: Publish the result
+    needs: [e2e, mac-app-code]
+    if: always() && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: tests-log
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: tests-log
+          path: ${{ runner.temp }}/in
+
+      - run: |
+          cd "$(mktemp -d)" && git init -q -b tests-log
+          if [[ -f "$RUNNER_TEMP/in/tests.log" ]]; then tail -c 200000 "$RUNNER_TEMP/in/tests.log" > tests.log; else echo "(no log)" > tests.log; fi
+          printf 'End-to-end tests: %s\nMac app compiles: %s\n' "${{ needs.e2e.result }}" "${{ needs.mac-app-code.result }}" > results.txt
+          echo "e2e ${{ needs.e2e.result }}, mac-app-code ${{ needs.mac-app-code.result }} · run ${{ github.run_number }} · ${{ github.sha }}" > status.txt
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com add .
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -qm "Tests log, run ${{ github.run_number }}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" tests-log

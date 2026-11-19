@@ -6,9 +6,9 @@ name: Mac App Store
 # Nothing is submitted for review. The direct-download DMG (mac-app.yml) is unchanged.
 on:
   push:
-    # On main, only a version bump makes a new App Store build (checked in the first job, as a paths filter
-    # would apply to both branches). On mac-app-store, every push does, for iteration.
-    branches: [main, mac-app-store]
+    # Only a version bump on main makes a new App Store build (checked in the first job, so a merge or a
+    # change elsewhere never uploads one). Run it by hand (workflow_dispatch) to build the current version again.
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   gate:
-    name: On main, go on only for a version change
+    name: On a push, go on only for a version change
     runs-on: ubuntu-latest
     outputs:
       go: ${{ steps.gate.outputs.go }}

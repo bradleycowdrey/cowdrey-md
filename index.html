@@ -827,6 +827,8 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
 #sideToggle { display: none; }
 .app[data-overlay="on"] .sidebar { position: absolute; z-index: 15; top: 0; bottom: 0; left: 0; box-shadow: 0 10px 40px rgba(0,0,0,.25); }
 .app[data-overlay="on"] .workspace::after { content: ""; position: absolute; inset: 0; background: rgba(14, 20, 34, .32); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); z-index: 14; }
+/* On a tablet the sidebar slides over a page that stays readable, as in iPadOS: a light dim, no blur. */
+.app[data-overlay="on"]:not([data-mobile="on"]) .workspace::after { background: rgba(14, 20, 34, .16); -webkit-backdrop-filter: none; backdrop-filter: none; }
 .g-card .s { overflow: hidden; text-overflow: clip; max-width: 100%; }
 .sb-zoom { flex-shrink: 0; }
 @media (max-width: 990px) {
@@ -925,6 +927,8 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
 .preview .math-block { text-align: center; overflow-x: auto; overflow-y: hidden; padding: .3em 0; }
 .preview .mermaid-block { display: flex; justify-content: center; overflow-x: auto; }
 .preview .mermaid-block svg { max-width: 100%; height: auto; }
+/* Mermaid measures labels outside the page, at normal line height; draw them the same way so the text fits its box. */
+.preview .mermaid-block svg { line-height: normal; }
 .preview .render-error { font-family: var(--font-mono); font-size: .78em; color: var(--c-caution); border: 1px dashed currentColor; border-radius: 6px; padding: .6em .8em; white-space: pre-wrap; }
 .preview .front-matter { font-family: var(--font-ui); font-size: .72em; border: 0; border-bottom: 1px solid var(--paper-line); border-radius: 0; padding: 0 0 .8em; margin-bottom: 1.4em; letter-spacing: .01em; color: var(--paper-muted); display: grid; grid-template-columns: max-content 1fr; gap: .15em 1.2em; }
 .preview .front-matter b { font-weight: 600; text-transform: uppercase; letter-spacing: .07em; font-size: .9em; color: var(--paper-muted); }
@@ -1765,12 +1769,22 @@ function isDark() {
   return matchMedia('(prefers-color-scheme: dark)').matches;
 }
 let mermaidTheme = null;
+const MERMAID_FONT = 'Instrument Sans, system-ui, sans-serif';
+// Mermaid sizes each label by measuring it, so wait until the label font is ready before the first diagram.
+let mermaidFontsReady = null;
+const mermaidFonts = () => mermaidFontsReady || (mermaidFontsReady = (async () => {
+  try { if (document.fonts) { await document.fonts.load('16px "Instrument Sans"'); await document.fonts.ready; } } catch {}
+})());
 function renderMermaid() {
   const blocks = $$('.mermaid-block', preview);
   if (!blocks.length) return;
   if (!window.mermaid || typeof window.mermaid.render !== 'function') { blocks.forEach((b) => { b.innerHTML = '<div class="render-error">Loading diagram renderer…</div>'; }); return; }
   const theme = isDark() ? 'dark' : 'default';
-  if (mermaidTheme !== theme) { mermaid.initialize({ startOnLoad: false, theme, securityLevel: 'strict', fontFamily: 'Instrument Sans, system-ui, sans-serif' }); mermaidTheme = theme; }
+  if (mermaidTheme !== theme) {
+    // Labels are measured and drawn in the same font, so the boxes fit their text (descenders included).
+    mermaid.initialize({ startOnLoad: false, theme, securityLevel: 'strict', fontFamily: MERMAID_FONT, themeVariables: { fontFamily: MERMAID_FONT }, flowchart: { htmlLabels: true, padding: 12 } });
+    mermaidTheme = theme;
+  }
   const badge = $('#renderBadge');
   let pending = 0;
   for (const b of blocks) {
@@ -1779,7 +1793,7 @@ function renderMermaid() {
     if (mermaidCache.has(key)) { b.innerHTML = mermaidCache.get(key); continue; }
     pending++; badge.style.opacity = 1;
     const id = 'cowdrey-mmd-' + (++mermaidSeq);
-    Promise.resolve().then(() => mermaid.render(id, src)).then(({ svg }) => {
+    mermaidFonts().then(() => mermaid.render(id, src)).then(({ svg }) => {
       mermaidCache.set(key, svg);
       if (mermaidCache.size > 60) mermaidCache.delete(mermaidCache.keys().next().value);
       b.innerHTML = svg;

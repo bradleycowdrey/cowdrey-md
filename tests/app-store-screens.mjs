@@ -272,15 +272,15 @@ const STORIES = [
   { dev: 'ipad', file: 'ipad-1-split.png', head: 'Write Markdown.\nSee the page.', sub: 'Markdown and the printed page, side by side.', doc: 'garden', settings: { view: 'split', split: 0.46, outline: false, ribbonCollapsed: true, edSize: 16 } },
   { dev: 'ipad', file: 'ipad-2-styles.png', head: 'Make it look\nlike a book', sub: 'Five page styles, from clean to manuscript.', doc: 'chapter', settings: { view: 'split', split: 0.46, outline: false, ribbonTab: 'layout', pageStyle: 'manuscript', edSize: 16 } },
   { dev: 'ipad', file: 'ipad-3-math.png', head: 'Math and diagrams,\ndrawn for you', sub: 'LaTeX and Mermaid, right on the page.', doc: 'orbits', settings: { view: 'split', split: 0.46, outline: false, ribbonCollapsed: true, edSize: 16 } },
-  { dev: 'ipad', file: 'ipad-4-files.png', head: 'All your writing,\nin one place', sub: 'Folders, pins and search across everything.', doc: 'garden', settings: { view: 'split', split: 0.46 }, act: sideDocs },
-  { dev: 'ipad', file: 'ipad-5-page.png', head: 'A page you can print', sub: 'Letter or A4, five page styles, ready to share.', doc: 'lisbon', settings: { view: 'preview' } },
+  { dev: 'ipad', file: 'ipad-4-files.png', head: 'All your writing,\nin one place', sub: 'Folders, pins and search across everything.', doc: 'lisbon', settings: { view: 'split', split: 0.2 }, act: sideDocs },
+  { dev: 'ipad', file: 'ipad-5-page.png', head: 'A page you can print', sub: 'Letter or A4, ready to print or save as PDF.', doc: 'lisbon', settings: { view: 'preview' } },
   { dev: 'ipad', file: 'ipad-6-export.png', head: 'Share it as PDF\nor Word', sub: 'Export, print or copy with formatting.', doc: 'garden', settings: { view: 'split', split: 0.46 }, act: exportMenu },
   // Mac
   { dev: 'mac', file: 'mac-1-split.png', head: 'Write Markdown. See the page.', sub: 'Plain text on the left, a clean, printable page on the right.', doc: 'garden', settings: { ...MAC_BIG } },
   { dev: 'mac', file: 'mac-2-styles.png', head: 'Make it look like a book', sub: 'Five page styles, from clean to manuscript, on Letter or A4.', doc: 'chapter', settings: { ...MAC_BIG, ribbonTab: 'layout', pageStyle: 'manuscript' } },
   { dev: 'mac', file: 'mac-3-math.png', head: 'Math and diagrams, drawn for you', sub: 'LaTeX equations and Mermaid charts, right on the page.', doc: 'orbits', settings: { ...MAC_BIG } },
   { dev: 'mac', file: 'mac-4-files.png', head: 'All your writing, in one place', sub: 'Folders, pins and search across every document.', doc: 'lisbon', settings: { view: 'split', split: 0.5, outline: true, sideTab: 'docs' } },
-  { dev: 'mac', file: 'mac-5-page.png', head: 'A page you can print', sub: 'Letter or A4, five page styles, an outline to jump around.', doc: 'garden', settings: { view: 'preview', outline: true, sideTab: 'outline' } },
+  { dev: 'mac', file: 'mac-5-page.png', head: 'A page you can print', sub: 'Letter or A4, ready to print or save as PDF.', doc: 'garden', settings: { view: 'preview', outline: true, sideTab: 'outline' } },
   { dev: 'mac', file: 'mac-6-export.png', head: 'Share it as PDF or Word', sub: 'Export, print, or copy with formatting into Docs or Mail.', doc: 'garden', settings: { view: 'split', split: 0.44 }, act: exportMenu },
 ];
 
@@ -364,7 +364,7 @@ async function capture(story) {
   // the page instead of blurring it, so what is behind them stays readable in a small picture.
   await p.addInitScript(() => document.addEventListener('DOMContentLoaded', () => {
     const st = document.createElement('style');
-    st.textContent = 'dialog.dlg::backdrop, .m-scrim, .app[data-overlay="on"] .workspace::after { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: rgba(10, 16, 30, .55) !important; }';
+    st.textContent = 'dialog.dlg::backdrop, .m-scrim { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: rgba(10, 16, 30, .55) !important; }';
     document.head.appendChild(st);
   }));
   await p.goto('https://app.test/');

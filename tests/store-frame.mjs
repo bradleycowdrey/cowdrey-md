@@ -5,7 +5,10 @@
 // for its titles: weight 560, optical size 48, -0.012em), one sub-line in Instrument Sans 500 tinted with that hue,
 // and the real app in a neutral frame: an iPhone or iPad with a graphite band, or a plain Mac window with a shadow.
 // The copy starts at the same height on every picture of a device and the device sits at the same place, so the
-// sets of the two apps line up when they are seen side by side. Only the colours below differ between the apps.
+// sets of the two apps line up when they are seen side by side. On the iPhone the copy hangs from the device instead:
+// the sub-line's baseline sits a fixed 96 px above the phone, and the phone sits higher for a set whose headlines
+// are one line (story.lines, the same for every picture of a set), so a one-line set has no empty band above the
+// phone. Only the colours below differ between the apps.
 //
 //   frameHtml(kind, { head, sub, png, title }, theme, fonts) -> the HTML of one picture at its exact App Store size
 //   compose(browser, kind, story, theme, fonts)             -> that picture as an opaque RGB PNG (no alpha channel)
@@ -25,28 +28,38 @@ export const THEMES = {
 // Sizes in output pixels. The copy keeps room for two headline lines, or one headline line and a sub-line that
 // wraps once; the device's top edge is fixed.
 export const LAYOUT = {
-  iphone: { canvas: [1320, 2868], screen: [440, 956], top: 150, head: 118, sub: 54, gap: 30, side: 70, devTop: 560, s: 2.28, bezel: 16, band: 9, radius: 55 },
+  iphone: { canvas: [1320, 2868], screen: [440, 956], top: 150, head: 118, sub: 54, gap: 30, side: 70, devTop: 560, devTopOneLine: 460, baseline: 96, s: 2.28, bezel: 16, band: 9, radius: 55 },
   ipad: { canvas: [2064, 2752], screen: [1032, 1376], top: 150, head: 128, sub: 59, gap: 32, side: 150, devTop: 620, s: 1.42, bezel: 30, band: 8, radius: 18 },
   // The Mac window runs from x 300 to 2580: a 1180 x 700 point app at 1.93x, so the UI reads at thumbnail size.
   mac: { canvas: [2880, 1800], screen: [1180, 700], top: 112, head: 104, sub: 48, gap: 24, side: 300, devTop: 340, s: 2280 / 1180, titlebar: 28, radius: 12 },
 };
 
 const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+// Where the device's top edge sits for this picture: on the iPhone it depends on the set's headline lines.
+const devTop = (kind, story) => {
+  const L = LAYOUT[kind];
+  if (!L.devTopOneLine) return L.devTop;
+  const lines = story.lines || String(story.head).split('\n').length;
+  return lines === 1 ? L.devTopOneLine : L.devTop;
+};
 
 export function frameHtml(kind, story, theme, fonts) {
   const L = LAYOUT[kind], [W, H] = L.canvas;
   const img = `data:image/png;base64,${story.png.toString('base64')}`;
   const head = String(story.head).split('\n').map(esc).join('<br>');
+  const top = devTop(kind, story);
   let device;
   if (kind === 'mac') {
-    const { s } = L, sw = L.screen[0] * s, sh = L.screen[1] * s, bar = L.titlebar * s, r = L.radius * s;
+    // An app may draw its window at more points (story.screen), so a wider ribbon fits; the window stays 2280 px wide.
+    const scr = story.screen || L.screen, s = (W - 2 * L.side) / scr[0];
+    const sw = scr[0] * s, sh = scr[1] * s, bar = L.titlebar * s, r = L.radius * s;
     const x = (W - sw) / 2;
     const lights = ['#FF5F57', '#FEBC2E', '#28C840'].map((c, i) => `<i style="left:${(20 + 20 * i) * s}px;background:${c}"></i>`).join('');
     device = `<div class="dev win" style="left:${x}px;top:${L.devTop}px;width:${sw}px;height:${sh + bar}px;border-radius:${r}px">
       <div class="titlebar" style="height:${bar}px">${lights}<span>${esc(story.title)}</span></div><img src="${img}" style="width:${sw}px;height:${sh}px"></div>`;
   } else {
     const { s, bezel: bez, band } = L, sw = L.screen[0] * s, sh = L.screen[1] * s, r = L.radius * s;
-    const ow = sw + 2 * (bez + band), oh = sh + 2 * (bez + band), x = (W - ow) / 2, y = L.devTop;
+    const ow = sw + 2 * (bez + band), oh = sh + 2 * (bez + band), x = (W - ow) / 2, y = top;
     const buttons = kind === 'iphone'
       ? `<i class="btn" style="left:-5px;top:${0.2 * oh}px;height:${0.035 * oh}px"></i><i class="btn" style="left:-5px;top:${0.27 * oh}px;height:${0.07 * oh}px"></i>
          <i class="btn" style="left:-5px;top:${0.355 * oh}px;height:${0.07 * oh}px"></i><i class="btn" style="right:-5px;top:${0.3 * oh}px;height:${0.1 * oh}px"></i>`
@@ -69,6 +82,7 @@ body { position: relative; -webkit-font-smoothing: antialiased;
 .copy { position: absolute; left: ${L.side}px; right: ${L.side}px; top: ${L.top}px; text-align: center; }
 h1 { font: 560 ${L.head}px/1.04 'Fraunces', Georgia, serif; font-variation-settings: 'opsz' 48; letter-spacing: -.012em; color: ${T.ink}; text-wrap: balance; }
 p { margin-top: ${L.gap}px; font: 500 ${L.sub}px/1.25 'Instrument Sans', sans-serif; letter-spacing: -.005em; color: ${T.sub}; text-wrap: balance; }
+.base { display: inline-block; width: 0; height: 0; vertical-align: baseline; }
 .dev { position: absolute; }
 .dev img { display: block; width: 100%; height: 100%; }
 .hw { background: linear-gradient(135deg, #5B606B 0%, #2A2D33 18%, #3A3E46 50%, #24272C 82%, #4E535D 100%);
@@ -82,7 +96,10 @@ p { margin-top: ${L.gap}px; font: 500 ${L.sub}px/1.25 'Instrument Sans', sans-se
 .titlebar i { position: absolute; top: 50%; width: 20px; height: 20px; margin-top: -10px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.18); }
 .titlebar span { font: 600 22px 'Instrument Sans', sans-serif; color: #C9CED8; letter-spacing: .005em; }
 </style></head><body>
-<div class="copy"><h1>${head}</h1><p>${esc(story.sub)}</p></div>
+<div class="copy"><h1>${head}</h1><p>${esc(story.sub)}<i class="base"></i></p></div>${L.baseline ? `
+<script>document.fonts.ready.then(() => { // hang the copy from the device: the sub-line's baseline ${L.baseline} px above it
+  const c = document.querySelector('.copy'), b = document.querySelector('.base').getBoundingClientRect().bottom;
+  c.style.top = (${L.top} + ${top - L.baseline} - b) + 'px'; document.body.dataset.ready = '1'; });</script>` : ''}
 ${device}
 </body></html>`;
 }
@@ -93,10 +110,14 @@ export async function compose(browser, kind, story, theme, fonts) {
   const p = await ctx.newPage();
   await p.setContent(frameHtml(kind, story, theme, fonts), { waitUntil: 'load' });
   await p.evaluate(() => document.fonts.ready);
+  if (L.baseline) await p.waitForFunction(() => document.body.dataset.ready === '1');
   await p.waitForTimeout(200);
-  // The copy must stay clear of the device: at most two headline lines, or one and a sub-line that wraps once.
-  const bottom = await p.evaluate(() => document.querySelector('.copy').getBoundingClientRect().bottom);
-  if (bottom > L.devTop - 20) throw new Error(`${story.file || story.head}: the copy runs into the device (${Math.round(bottom)} > ${L.devTop - 20})`);
+  // The copy must stay clear of the device and of the top edge: at most two headline lines, or one and a
+  // sub-line that wraps once.
+  const top = devTop(kind, story);
+  const box = await p.evaluate(() => { const r = document.querySelector('.copy').getBoundingClientRect(); return { top: r.top, bottom: r.bottom }; });
+  if (box.bottom > top - 20) throw new Error(`${story.file || story.head}: the copy runs into the device (${Math.round(box.bottom)} > ${top - 20})`);
+  if (box.top < 90) throw new Error(`${story.file || story.head}: the copy runs off the top (${Math.round(box.top)} < 90)`);
   const out = rgbPng(await p.screenshot({ type: 'png' }), theme.base);
   await ctx.close();
   if (out.readUInt32BE(16) !== W || out.readUInt32BE(20) !== H || out[25] !== 2) throw new Error(`${story.file}: not a ${W}x${H} RGB PNG`);

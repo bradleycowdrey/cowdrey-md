@@ -35,7 +35,7 @@ terms_date = (re.search(r'Last updated:\s*([^·\n]+?)\s*(?:·|$)', terms, re.M) 
 # The app icon for the About box (made from icons/ios-source.png at 144 px), embedded.
 app_icon = 'data:image/png;base64,' + base64.b64encode((root / 'desktop/src-tauri/icons/about-icon.png').read_bytes()).decode()
 app_js = (root / 'src/app.js').read_text().replace('__TERMS_HASH__', terms_hash(terms)).replace('__TERMS_DATE__', terms_date).replace('__APP_ICON__', app_icon)
-html = html.replace('/*APP_JS*/', app_js)
+html = html.replace('__APP_ICON__', app_icon).replace('/*APP_JS*/', app_js)
 # artifact.html: the page body only (for hosts that add their own document wrapper)
 (root / 'artifact.html').write_text(html)
 # index.html: a complete standards-mode document (GitHub Pages, the Mac app, any web host)

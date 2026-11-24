@@ -1,6 +1,6 @@
 // App Store screenshots for iPhone (6.9", 1320x2868), iPad (13", 2064x2752) and Mac (2880x1800), dark mode.
 // Each one is the real app (desktop/dist, the offline bundle the apps ship) with a fictional document, framed in a
-// neutral device with a headline, on the template shared with Cowdrey.PDF.
+// neutral device with a headline, on the family template shared with Cowdrey.PDF (tests/store-frame.mjs).
 // Run: (cd desktop && npm ci && node build.mjs) && node tests/app-store-screens.mjs [out-dir] [name-filter]
 // Needs Playwright (npm install --no-save playwright) and Chromium. Writes opaque RGB PNGs to docs/app-store.
 // The headline font is Fraunces (SIL OFL, design/app-store/fonts); the sub-line is Instrument Sans, the app's own UI font.
@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
+import { compose as frame, THEMES } from './store-frame.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
@@ -22,8 +23,7 @@ const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const TERMS_HASH = /TERMS_BUILT = \{ hash: '([0-9a-f]{8})'/.exec(html)[1];
 const TYPES = { '.js': 'application/javascript', '.html': 'text/html', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml' };
 const b64 = (f) => fs.readFileSync(f).toString('base64');
-const FRAUNCES = b64(path.join(root, 'design/app-store/fonts/fraunces.woff2'));
-const INSTRUMENT = b64(path.join(root, 'fonts/instrument-sans-latin-wght-normal.woff2'));
+const FONTS = { fraunces: b64(path.join(root, 'design/app-store/fonts/fraunces.woff2')), instrument: b64(path.join(root, 'fonts/instrument-sans-latin-wght-normal.woff2')) };
 
 /* ---------------- devices ---------------- */
 // Screen sizes in points, the scale they are drawn at, and the safe areas the system keeps clear.
@@ -76,6 +76,31 @@ A long weekend in October, planned on the train home from work.
 3. ==Bifana== at the market, with a cold drink
 
 > "Lisbon is a city to walk slowly, uphill, with frequent stops."
+`;
+
+// The same trip, as it looks while you write it: prose, a checklist and a list (no table syntax in view).
+const LISBON_WRITE = `# Lisbon in four days
+
+A long weekend in October, planned on the train home from work. Buy a **Viva Viagem** card at the airport: one tap pays for the metro, the trams and the ferry.
+
+## Pack
+
+- [x] Passports and rail tickets
+- [x] Walking shoes, *really* comfortable ones
+- [ ] A light rain jacket
+- [ ] Phone charger and adapter
+
+## Eat
+
+1. Pastéis de nata at Manteigaria, still warm
+2. Grilled sardines in a side street in Alfama
+3. ==Bifana== at the market, with a cold drink
+
+> "Lisbon is a city to walk slowly, uphill, with frequent stops."
+
+## Getting there
+
+The early flight on Thursday, and the **Aerobus** into town. Back on Sunday evening.
 `;
 
 const GARDEN = `# Harbor Street Garden
@@ -235,9 +260,9 @@ const LIBRARY = [
 const STORIES = [
   // iPhone
   { dev: 'iphone', file: 'iphone-1-page.png', head: 'Write Markdown.\nRead a page.', sub: 'Plain text becomes a clean, printable page.', doc: 'lisbon' },
-  { dev: 'iphone', file: 'iphone-2-write.png', head: 'A formatting bar,\nlike Pages', sub: 'Styles, bold, lists and links in one tap.', doc: 'lisbon', act: phoneEdit(10) },
+  { dev: 'iphone', file: 'iphone-2-write.png', head: 'Format without\nthe code', sub: 'Styles, bold, lists and links in one tap.', doc: 'lisbon', content: LISBON_WRITE, act: phoneSelect(2, 'Viva Viagem') },
   { dev: 'iphone', file: 'iphone-3-math.png', head: 'Math and diagrams,\ndrawn for you', sub: 'LaTeX and Mermaid, right on the page.', doc: 'orbits', act: scrollPage('#preview h2:nth-of-type(2)') },
-  { dev: 'iphone', file: 'iphone-4-format.png', head: 'Styles in a tap', sub: 'Headings, quotes and code, like Word.', doc: 'garden', act: phoneSheet('format', 3) },
+  { dev: 'iphone', file: 'iphone-4-styles.png', head: 'Make it look\nlike a book', sub: 'Five page styles, from clean to manuscript.', doc: 'chapter', settings: { pageStyle: 'manuscript' } },
   { dev: 'iphone', file: 'iphone-5-files.png', head: 'All your writing,\nin one place', sub: 'Folders, pins and search across everything.', doc: 'lisbon', act: phoneDocs },
   { dev: 'iphone', file: 'iphone-6-export.png', head: 'Share it as PDF\nor Word', sub: 'Export, print or copy with formatting.', doc: 'garden', act: phoneSheet('share') },
   // iPad
@@ -249,10 +274,10 @@ const STORIES = [
   { dev: 'ipad', file: 'ipad-6-export.png', head: 'Share it as PDF\nor Word', sub: 'Export, print or copy with formatting.', doc: 'garden', settings: { view: 'split', split: 0.46 }, act: exportMenu },
   // Mac
   { dev: 'mac', file: 'mac-1-split.png', head: 'Write Markdown. See the page.', sub: 'Plain text on the left, a clean, printable page on the right.', doc: 'garden', settings: { view: 'split', split: 0.44 } },
-  { dev: 'mac', file: 'mac-2-math.png', head: 'Math and diagrams, drawn for you', sub: 'LaTeX equations and Mermaid charts, right on the page.', doc: 'orbits', settings: { view: 'split', split: 0.44 } },
-  { dev: 'mac', file: 'mac-3-files.png', head: 'All your writing, in one place', sub: 'Folders, pins and search across every document.', doc: 'lisbon', settings: { view: 'split', split: 0.5, outline: true, sideTab: 'docs' } },
-  { dev: 'mac', file: 'mac-4-page.png', head: 'A page you can print', sub: 'Letter or A4, five page styles, an outline to jump around.', doc: 'garden', settings: { view: 'preview', outline: true, sideTab: 'outline' } },
-  { dev: 'mac', file: 'mac-5-styles.png', head: 'Make it look like a book', sub: 'Five page styles, from clean to manuscript, on Letter or A4.', doc: 'chapter', settings: { view: 'split', split: 0.44, ribbonTab: 'layout', pageStyle: 'manuscript' } },
+  { dev: 'mac', file: 'mac-2-styles.png', head: 'Make it look like a book', sub: 'Five page styles, from clean to manuscript, on Letter or A4.', doc: 'chapter', settings: { view: 'split', split: 0.44, ribbonTab: 'layout', pageStyle: 'manuscript' } },
+  { dev: 'mac', file: 'mac-3-math.png', head: 'Math and diagrams, drawn for you', sub: 'LaTeX equations and Mermaid charts, right on the page.', doc: 'orbits', settings: { view: 'split', split: 0.44 } },
+  { dev: 'mac', file: 'mac-4-files.png', head: 'All your writing, in one place', sub: 'Folders, pins and search across every document.', doc: 'lisbon', settings: { view: 'split', split: 0.5, outline: true, sideTab: 'docs' } },
+  { dev: 'mac', file: 'mac-5-page.png', head: 'A page you can print', sub: 'Letter or A4, five page styles, an outline to jump around.', doc: 'garden', settings: { view: 'preview', outline: true, sideTab: 'outline' } },
   { dev: 'mac', file: 'mac-6-export.png', head: 'Share it as PDF or Word', sub: 'Export, print, or copy with formatting into Docs or Mail.', doc: 'garden', settings: { view: 'split', split: 0.44 }, act: exportMenu },
 ];
 
@@ -262,6 +287,14 @@ function phoneEdit(line) {
     await p.locator('#mEdit').click();
     await p.evaluate((line) => { const cm = document.querySelector('.CodeMirror').CodeMirror; cm.scrollTo(0, 0); cm.setCursor({ line, ch: cm.getLine(line).length }); }, line);
     await p.waitForTimeout(300);
+  };
+}
+// Edit mode with a word selected, so the formatting bar shows the style it has (Bold, here).
+function phoneSelect(line, word) {
+  return async (p) => {
+    await p.locator('#mEdit').click();
+    await p.evaluate(([line, word]) => { const cm = document.querySelector('.CodeMirror').CodeMirror; cm.scrollTo(0, 0); const ch = cm.getLine(line).indexOf(word); cm.setSelection({ line, ch }, { line, ch: ch + word.length }); cm.focus(); }, [line, word]);
+    await p.waitForTimeout(400);
   };
 }
 function phoneSheet(kind, line) {
@@ -300,7 +333,7 @@ async function capture(story) {
   // so the page behind stays readable in a small picture.
   await cdp.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-transparency', value: 'reduce' }, { name: 'prefers-color-scheme', value: 'dark' }] });
   const now = Date.now();
-  const library = LIBRARY.map(({ ago, ...d }) => ({ ...d, updated: now - ago }));
+  const library = LIBRARY.map(({ ago, ...d }) => ({ ...d, ...(d.id === story.doc && story.content ? { content: story.content } : {}), updated: now - ago }));
   await p.addInitScript(([hash, settings, library, current, D, mac]) => {
     Object.defineProperty(Navigator.prototype, 'platform', { get: () => D.platform });
     Object.defineProperty(Navigator.prototype, 'maxTouchPoints', { get: () => D.touch });
@@ -344,81 +377,8 @@ async function capture(story) {
 }
 
 /* ---------------- frame ---------------- */
-// One template for every device: a deep blue backdrop, the headline and sub-line, and a neutral device.
-function frameHtml(story, png) {
-  const D = DEVICES[story.dev];
-  const [W, H] = D.canvas;
-  const img = `data:image/png;base64,${png.toString('base64')}`;
-  const head = story.head.split('\n').map((l) => l.replace(/&/g, '&amp;').replace(/</g, '&lt;')).join('<br>');
-  let device = '', type;
-  if (story.dev === 'iphone') {
-    type = { top: 150, head: 118, sub: 50, gap: 34 };
-    const s = 2.28, sw = D.screen[0] * s, sh = D.screen[1] * s, bez = 16, band = 9, r = 55 * s;
-    const ow = sw + 2 * (bez + band), oh = sh + 2 * (bez + band), x = (W - ow) / 2, y = H - oh - 96;
-    device = `<div class="dev phone" style="left:${x}px;top:${y}px;width:${ow}px;height:${oh}px;border-radius:${r + bez + band}px;padding:${band}px">
-      <i class="btn" style="left:-5px;top:${0.2 * oh}px;height:${0.035 * oh}px"></i><i class="btn" style="left:-5px;top:${0.27 * oh}px;height:${0.07 * oh}px"></i>
-      <i class="btn" style="left:-5px;top:${0.355 * oh}px;height:${0.07 * oh}px"></i><i class="btn" style="right:-5px;top:${0.3 * oh}px;height:${0.1 * oh}px"></i>
-      <div class="bezel" style="border-radius:${r + bez}px;padding:${bez}px"><div class="scr" style="width:${sw}px;height:${sh}px;border-radius:${r}px">
-        <img src="${img}"><i class="island" style="top:${11 * s}px;width:${125 * s}px;height:${37 * s}px;margin-left:${-62.5 * s}px"></i></div></div></div>`;
-  } else if (story.dev === 'ipad') {
-    type = { top: 150, head: 128, sub: 54, gap: 36 };
-    const s = 1.42, sw = D.screen[0] * s, sh = D.screen[1] * s, bez = 30, band = 8, r = 18 * s;
-    const ow = sw + 2 * (bez + band), oh = sh + 2 * (bez + band), x = (W - ow) / 2, y = H - oh - 100;
-    device = `<div class="dev tablet" style="left:${x}px;top:${y}px;width:${ow}px;height:${oh}px;border-radius:${r + bez + band}px;padding:${band}px">
-      <i class="btn" style="right:-5px;top:${0.1 * oh}px;height:${0.05 * oh}px"></i><i class="btn" style="right:-5px;top:${0.17 * oh}px;height:${0.05 * oh}px"></i>
-      <div class="bezel" style="border-radius:${r + bez}px;padding:${bez}px"><div class="scr" style="width:${sw}px;height:${sh}px;border-radius:${r}px"><img src="${img}"></div></div></div>`;
-  } else {
-    type = { top: 112, head: 104, sub: 46, gap: 26 };
-    const s = 1.66, sw = D.screen[0] * s, sh = D.screen[1] * s, bar = 28 * s, r = 12 * s;
-    const ow = sw, oh = sh + bar, x = (W - ow) / 2, y = H - oh - 90;
-    const lights = ['#FF5F57', '#FEBC2E', '#28C840'].map((c, i) => `<i style="left:${(20 + 20 * i) * s}px;background:${c}"></i>`).join('');
-    device = `<div class="dev win" style="left:${x}px;top:${y}px;width:${ow}px;height:${oh}px;border-radius:${r}px">
-      <div class="titlebar" style="height:${bar}px">${lights}<span>Cowdrey.MD</span></div><img src="${img}" style="width:${sw}px;height:${sh}px"></div>`;
-  }
-  return `<!doctype html><html><head><meta charset="utf-8"><style>
-@font-face { font-family: 'Fraunces'; src: url(data:font/woff2;base64,${FRAUNCES}) format('woff2'); font-weight: 100 900; }
-@font-face { font-family: 'Instrument Sans'; src: url(data:font/woff2;base64,${INSTRUMENT}) format('woff2'); font-weight: 400 700; }
-* { margin: 0; box-sizing: border-box; }
-html, body { width: ${W}px; height: ${H}px; overflow: hidden; background: #070C1D; }
-body { position: relative; font-family: 'Instrument Sans', sans-serif; -webkit-font-smoothing: antialiased;
-  background:
-    radial-gradient(ellipse ${W * 0.9}px ${H * 0.42}px at 50% ${H * 0.16}px, rgba(74, 116, 242, .24), transparent 70%),
-    radial-gradient(ellipse ${W * 0.7}px ${H * 0.35}px at 50% ${H * 0.98}px, rgba(28, 61, 174, .28), transparent 70%),
-    linear-gradient(180deg, #101C45 0%, #0A1230 45%, #050917 100%); }
-.copy { position: absolute; left: 0; right: 0; top: ${type.top}px; text-align: center; padding: 0 60px; }
-h1 { font: 560 ${type.head}px/1.04 'Fraunces', serif; font-variation-settings: 'opsz' 48; letter-spacing: -.012em; color: #F6F7FB; }
-p { margin-top: ${type.gap}px; font: 500 ${type.sub}px/1.25 'Instrument Sans', sans-serif; letter-spacing: -.005em; color: #AEBBDD; }
-.dev { position: absolute; }
-.dev img { display: block; width: 100%; height: 100%; }
-.phone, .tablet { background: linear-gradient(135deg, #5B606B 0%, #2A2D33 18%, #3A3E46 50%, #24272C 82%, #4E535D 100%);
-  box-shadow: 0 0 0 1.5px rgba(255,255,255,.10), 0 70px 140px rgba(0,0,0,.55), 0 20px 50px rgba(0,0,0,.35); }
-.bezel { width: 100%; height: 100%; background: #050506; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.06); }
-.scr { position: relative; overflow: hidden; background: #000; }
-.island { position: absolute; left: 50%; background: #000; border-radius: 999px; }
-.btn { position: absolute; width: 6px; border-radius: 3px; background: linear-gradient(90deg, #2A2D33, #565B65, #2A2D33); }
-.win { overflow: hidden; background: #1D2027; box-shadow: 0 0 0 1.5px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.12), 0 60px 130px rgba(0,0,0,.6), 0 18px 44px rgba(0,0,0,.4); }
-.titlebar { position: relative; background: #24272E; border-bottom: 1.5px solid #0B0D11; display: flex; align-items: center; justify-content: center; }
-.titlebar i { position: absolute; top: 50%; width: 20px; height: 20px; margin-top: -10px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.18); }
-.titlebar span { font: 600 22px 'Instrument Sans', sans-serif; color: #C9CED8; letter-spacing: .005em; }
-</style></head><body>
-<div class="copy"><h1>${head}</h1><p>${story.sub}</p></div>
-${device}
-</body></html>`;
-}
-
-async function compose(story, png) {
-  const [W, H] = DEVICES[story.dev].canvas;
-  const ctx = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
-  const p = await ctx.newPage();
-  await p.setContent(frameHtml(story, png), { waitUntil: 'load' });
-  await p.evaluate(() => document.fonts.ready);
-  await p.waitForTimeout(200);
-  const out = await p.screenshot({ type: 'png' });
-  await ctx.close();
-  // App Store Connect refuses screenshots with an alpha channel: check the PNG is plain RGB (colour type 2).
-  if (out.readUInt32BE(16) !== W || out.readUInt32BE(20) !== H || out[25] !== 2) throw new Error(`${story.file}: not a ${W}x${H} RGB PNG`);
-  return out;
-}
+// The family template (tests/store-frame.mjs, the same file in Cowdrey.PDF) in Cowdrey.MD's blue.
+const compose = (story, png) => frame(browser, story.dev, { ...story, png, title: 'Cowdrey.MD' }, THEMES.md, FONTS);
 
 fs.mkdirSync(OUT, { recursive: true });
 for (const story of STORIES) {

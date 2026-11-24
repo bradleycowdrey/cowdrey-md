@@ -23,7 +23,7 @@
       "iphone-1-page.png",
       "iphone-2-write.png",
       "iphone-3-math.png",
-      "iphone-4-format.png",
+      "iphone-4-styles.png",
       "iphone-5-files.png",
       "iphone-6-export.png"
     ],
@@ -46,10 +46,10 @@
     "screenshots": {
       "APP_DESKTOP": [
         "mac-1-split.png",
-        "mac-2-math.png",
-        "mac-3-files.png",
-        "mac-4-page.png",
-        "mac-5-styles.png",
+        "mac-2-styles.png",
+        "mac-3-math.png",
+        "mac-4-files.png",
+        "mac-5-page.png",
         "mac-6-export.png"
       ]
     }

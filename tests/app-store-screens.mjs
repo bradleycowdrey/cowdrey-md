@@ -38,8 +38,8 @@ const DEVICES = {
     ua: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
     platform: 'MacIntel', touch: 5, mobile: true,
   },
-  mac: { // a 1280x800 point window; the native title bar is drawn by the frame
-    canvas: [2880, 1800], screen: [1280, 772], scale: 2, inset: null,
+  mac: { // a 1180x728 point window; the native title bar is drawn by the frame
+    canvas: [2880, 1800], screen: [1180, 700], scale: 2, inset: null,
     ua: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
     platform: 'MacIntel', touch: 0, mobile: false,
   },
@@ -256,26 +256,29 @@ const LIBRARY = [
 ];
 
 /* ---------------- the stories ---------------- */
+// The Mac's first three: the outline folded away and the page given most of the window, so the page and the Markdown read in a small picture.
+const MAC_BIG = { view: 'split', split: 0.36, outline: false, zoom: 'fit', edSize: 15 };
 // head: the headline (Fraunces); sub: one line of plain words. Each opens one document, in one state of the app.
 const STORIES = [
   // iPhone
-  { dev: 'iphone', file: 'iphone-1-page.png', head: 'Write Markdown.\nRead a page.', sub: 'Plain text becomes a clean, printable page.', doc: 'lisbon' },
-  { dev: 'iphone', file: 'iphone-2-write.png', head: 'Format without\nthe code', sub: 'Styles, bold, lists and links in one tap.', doc: 'lisbon', content: LISBON_WRITE, act: phoneSelect(2, 'Viva Viagem') },
+  { dev: 'iphone', file: 'iphone-1-page.png', head: 'Write Markdown.\nSee the page.', sub: 'Plain text becomes a clean, printable page.', doc: 'lisbon' },
+  { dev: 'iphone', file: 'iphone-2-write.png', head: 'Format in\none tap', sub: 'Styles, bold, lists and links from the bar.', doc: 'lisbon', content: LISBON_WRITE, act: phoneSelect(2, 'Viva Viagem') },
   { dev: 'iphone', file: 'iphone-3-math.png', head: 'Math and diagrams,\ndrawn for you', sub: 'LaTeX and Mermaid, right on the page.', doc: 'orbits', act: scrollPage('#preview h2:nth-of-type(2)') },
   { dev: 'iphone', file: 'iphone-4-styles.png', head: 'Make it look\nlike a book', sub: 'Five page styles, from clean to manuscript.', doc: 'chapter', settings: { pageStyle: 'manuscript' } },
   { dev: 'iphone', file: 'iphone-5-files.png', head: 'All your writing,\nin one place', sub: 'Folders, pins and search across everything.', doc: 'lisbon', act: phoneDocs },
   { dev: 'iphone', file: 'iphone-6-export.png', head: 'Share it as PDF\nor Word', sub: 'Export, print or copy with formatting.', doc: 'garden', act: phoneSheet('share') },
   // iPad
-  { dev: 'ipad', file: 'ipad-1-split.png', head: 'Write on the left.\nSee the page on the right.', sub: 'Markdown and the printed page, side by side.', doc: 'garden', settings: { view: 'split', split: 0.46 } },
-  { dev: 'ipad', file: 'ipad-2-math.png', head: 'Math and diagrams,\ndrawn for you', sub: 'LaTeX and Mermaid, right on the page.', doc: 'orbits', settings: { view: 'split', split: 0.46 } },
-  { dev: 'ipad', file: 'ipad-3-page.png', head: 'A page you can print', sub: 'Letter or A4, five page styles, ready to share.', doc: 'lisbon', settings: { view: 'preview' } },
+  // (the first three with larger text: the ribbon folded away and the editor at 16 px, as you might set it on a tablet)
+  { dev: 'ipad', file: 'ipad-1-split.png', head: 'Write Markdown.\nSee the page.', sub: 'Markdown and the printed page, side by side.', doc: 'garden', settings: { view: 'split', split: 0.46, outline: false, ribbonCollapsed: true, edSize: 16 } },
+  { dev: 'ipad', file: 'ipad-2-styles.png', head: 'Make it look\nlike a book', sub: 'Five page styles, from clean to manuscript.', doc: 'chapter', settings: { view: 'split', split: 0.46, outline: false, ribbonTab: 'layout', pageStyle: 'manuscript', edSize: 16 } },
+  { dev: 'ipad', file: 'ipad-3-math.png', head: 'Math and diagrams,\ndrawn for you', sub: 'LaTeX and Mermaid, right on the page.', doc: 'orbits', settings: { view: 'split', split: 0.46, outline: false, ribbonCollapsed: true, edSize: 16 } },
   { dev: 'ipad', file: 'ipad-4-files.png', head: 'All your writing,\nin one place', sub: 'Folders, pins and search across everything.', doc: 'garden', settings: { view: 'split', split: 0.46 }, act: sideDocs },
-  { dev: 'ipad', file: 'ipad-5-styles.png', head: 'Make it look\nlike a book', sub: 'Five page styles, from clean to manuscript.', doc: 'chapter', settings: { view: 'split', split: 0.46, ribbonTab: 'layout', pageStyle: 'manuscript' } },
+  { dev: 'ipad', file: 'ipad-5-page.png', head: 'A page you can print', sub: 'Letter or A4, five page styles, ready to share.', doc: 'lisbon', settings: { view: 'preview' } },
   { dev: 'ipad', file: 'ipad-6-export.png', head: 'Share it as PDF\nor Word', sub: 'Export, print or copy with formatting.', doc: 'garden', settings: { view: 'split', split: 0.46 }, act: exportMenu },
   // Mac
-  { dev: 'mac', file: 'mac-1-split.png', head: 'Write Markdown. See the page.', sub: 'Plain text on the left, a clean, printable page on the right.', doc: 'garden', settings: { view: 'split', split: 0.44 } },
-  { dev: 'mac', file: 'mac-2-styles.png', head: 'Make it look like a book', sub: 'Five page styles, from clean to manuscript, on Letter or A4.', doc: 'chapter', settings: { view: 'split', split: 0.44, ribbonTab: 'layout', pageStyle: 'manuscript' } },
-  { dev: 'mac', file: 'mac-3-math.png', head: 'Math and diagrams, drawn for you', sub: 'LaTeX equations and Mermaid charts, right on the page.', doc: 'orbits', settings: { view: 'split', split: 0.44 } },
+  { dev: 'mac', file: 'mac-1-split.png', head: 'Write Markdown. See the page.', sub: 'Plain text on the left, a clean, printable page on the right.', doc: 'garden', settings: { ...MAC_BIG } },
+  { dev: 'mac', file: 'mac-2-styles.png', head: 'Make it look like a book', sub: 'Five page styles, from clean to manuscript, on Letter or A4.', doc: 'chapter', settings: { ...MAC_BIG, ribbonTab: 'layout', pageStyle: 'manuscript' } },
+  { dev: 'mac', file: 'mac-3-math.png', head: 'Math and diagrams, drawn for you', sub: 'LaTeX equations and Mermaid charts, right on the page.', doc: 'orbits', settings: { ...MAC_BIG } },
   { dev: 'mac', file: 'mac-4-files.png', head: 'All your writing, in one place', sub: 'Folders, pins and search across every document.', doc: 'lisbon', settings: { view: 'split', split: 0.5, outline: true, sideTab: 'docs' } },
   { dev: 'mac', file: 'mac-5-page.png', head: 'A page you can print', sub: 'Letter or A4, five page styles, an outline to jump around.', doc: 'garden', settings: { view: 'preview', outline: true, sideTab: 'outline' } },
   { dev: 'mac', file: 'mac-6-export.png', head: 'Share it as PDF or Word', sub: 'Export, print, or copy with formatting into Docs or Mail.', doc: 'garden', settings: { view: 'split', split: 0.44 }, act: exportMenu },

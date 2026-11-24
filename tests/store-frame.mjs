@@ -27,7 +27,8 @@ export const THEMES = {
 export const LAYOUT = {
   iphone: { canvas: [1320, 2868], screen: [440, 956], top: 150, head: 118, sub: 54, gap: 30, side: 70, devTop: 560, s: 2.28, bezel: 16, band: 9, radius: 55 },
   ipad: { canvas: [2064, 2752], screen: [1032, 1376], top: 150, head: 128, sub: 59, gap: 32, side: 150, devTop: 620, s: 1.42, bezel: 30, band: 8, radius: 18 },
-  mac: { canvas: [2880, 1800], screen: [1280, 772], top: 112, head: 104, sub: 48, gap: 24, side: 300, devTop: 380, s: 2120 / 1280, titlebar: 28, radius: 12 },
+  // The Mac window runs from x 300 to 2580: a 1180 x 700 point app at 1.93x, so the UI reads at thumbnail size.
+  mac: { canvas: [2880, 1800], screen: [1180, 700], top: 112, head: 104, sub: 48, gap: 24, side: 300, devTop: 340, s: 2280 / 1180, titlebar: 28, radius: 12 },
 };
 
 const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');

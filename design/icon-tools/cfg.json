@@ -3,9 +3,9 @@
   "id": "cowdrey-md",
   "name": "Cowdrey.MD",
   "text": "MD",
-  "size": 220,
-  "track": 8,
-  "cx": 450,
+  "size": 210,
+  "track": 10,
+  "cx": 620,
   "bold": 8,
   "grad": [
    "#4A74F2",
@@ -13,18 +13,20 @@
   ],
   "variants": {
    "32": {
-    "size": 236,
-    "track": 14,
-    "cx": 452,
+    "size": 212,
+    "track": 16,
+    "cx": 626,
     "bold": 22,
     "sw": 116,
-    "scale": 1.08
+    "scale": 0.97
    },
    "16": {
     "letters": false,
     "sw": 150,
     "scale": 1.08
    }
-  }
+  },
+  "open": true,
+  "scale": 0.86
  }
 ]

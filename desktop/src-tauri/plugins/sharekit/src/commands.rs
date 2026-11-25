@@ -54,6 +54,7 @@ const NATIVE_METHODS: &[&str] = &[
     "shareLink", "printPage", "exportPdf",
     "pickFiles", "saveAsFile", "readFile", "writeFile",
     "pickFolder", "listFolder", "readInFolder", "writeInFolder", "deleteInFolder",
+    "installSource", // Android only: which app store installed the app
 ];
 
 #[command]

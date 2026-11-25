@@ -62,6 +62,20 @@ class SharePlugin(private val activity: Activity) : Plugin(activity) {
         }.start()
     }
 
+    // ---- where the app came from ----
+
+    /** The app store that installed Cowdrey.MD ("com.android.vending" for Google Play), or "" for an APK installed by hand. */
+    @Suppress("DEPRECATION") // getInstallSourceInfo needs Android 11; this works on every version the app supports
+    @Command
+    fun installSource(invoke: Invoke) {
+        val installer = try {
+            activity.packageManager.getInstallerPackageName(activity.packageName)
+        } catch (e: Exception) {
+            null
+        }
+        invoke.resolve(JSObject().apply { put("installer", installer ?: "") })
+    }
+
     // ---- share ----
 
     @Command

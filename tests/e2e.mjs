@@ -1269,6 +1269,23 @@ await test('Android app: opens and saves through the system file picker; Back cl
   eq(T.url(), 'https://app.test/', 'still in the app');
   eq(T.errors, []); await T.ctx.close();
 });
+await test('Android app from Google Play: no Check for updates, and never offers the APK', async () => {
+  const T = await newPage({ width: 412, height: 915, userAgent: 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Mobile Safari/537.36', init: () => {
+    localStorage.setItem('cowdrey.md:updateChecked', '0'); // due for the daily check
+    window.__TAURI__ = {
+      core: { invoke: async (c, a) => (c === 'take_opened_files' ? [] : c === 'plugin:sharekit|native' && a.method === 'installSource' ? { installer: 'com.android.vending' } : null) },
+      app: { getVersion: async () => '1.0.20' }, event: { listen: async () => {} }, dialog: {}, opener: { openUrl: async () => {} },
+    };
+  } });
+  let asked = 0;
+  await T.ctx.route('https://api.github.com/**', (r) => { asked++; r.fulfill({ contentType: 'application/json', body: JSON.stringify({ tag_name: 'v1.0.99', assets: [{ name: 'Cowdrey.MD.apk', browser_download_url: 'https://dl/Cowdrey.MD.apk' }] }) }); });
+  await T.click('#mBar [data-m="more"]'); await settle(T, 300);
+  ok(!(await T.$('#mSheet [data-cmd="checkUpdates"]')), 'More has no Check for updates');
+  await T.goBack().catch(() => {}); await settle(T, 200);
+  await settle(T, 9000); // the launch check would have run by now
+  eq([asked, await T.evaluate(() => document.querySelector('#dialog').open)], [0, false], 'GitHub not asked, nothing offered');
+  eq(T.errors, []); await T.ctx.close();
+});
 await test('status bar: nothing in the title bar sits under it (Android 15 and iPad draw behind it)', async () => {
   for (const [w, h] of [[800, 1280], [412, 915]]) {
     const Q = await newPage({ width: w, height: h });

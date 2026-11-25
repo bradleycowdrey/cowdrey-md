@@ -27,8 +27,32 @@ jobs:
       KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
       KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
       KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      # Google Play service account key (docs/play/README.md). Without it, nothing is sent to Google Play.
+      HAS_PLAY: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON != '' }}
     steps:
       - uses: actions/checkout@v4
+
+      # Google Play gets release builds only: a run started by hand, or a push that changes the version number
+      # (which is how a new version is released). Other pushes rebuild the same version for the GitHub APK and
+      # the emulator test. Tauri sets the version code from the version (2.0.2 is 2000002), so each new version
+      # has a higher code, and Play skips a version code it already has.
+      - name: Is this a release build for Google Play?
+        id: play
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          V=$(jq -r .version desktop/src-tauri/tauri.conf.json)
+          if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
+            RELEASE=true; WHY="started by hand"
+          else
+            OLD=""
+            if [[ -n "$BEFORE" && ! "$BEFORE" =~ ^0+$ ]] && git fetch -q --depth=1 origin "$BEFORE" 2>/dev/null; then
+              OLD=$(git show "$BEFORE:desktop/src-tauri/tauri.conf.json" | jq -r .version || true)
+            fi
+            if [[ "$OLD" != "$V" ]]; then RELEASE=true; WHY="version ${OLD:-?} -> $V"; else RELEASE=false; WHY="version unchanged ($V)"; fi
+          fi
+          echo "release=$RELEASE" >> "$GITHUB_OUTPUT"
+          echo "Google Play: release build $RELEASE ($WHY)" | tee -a "$RUNNER_TEMP/android-build.log"
 
       - uses: actions/setup-java@v4
         with:
@@ -142,6 +166,50 @@ jobs:
             ${{ runner.temp }}/Cowdrey.MD.apk
             ${{ runner.temp }}/Cowdrey.MD.aab
           if-no-files-found: ignore
+
+      # The release's version name and "What's new" (this version's CHANGELOG entry, without the lines that are only
+      # about the Mac, iPhone or iPad, as plain text within Play's 500 characters).
+      - name: Prepare the Google Play release
+        id: release
+        if: env.HAS_PLAY == 'true' && env.KEYSTORE != '' && steps.play.outputs.release == 'true'
+        run: |
+          V=$(jq -r .version desktop/src-tauri/tauri.conf.json)
+          CODE=$(sed -n 's/^tauri.android.versionCode=//p' desktop/src-tauri/gen/android/app/tauri.properties 2>/dev/null || true)
+          [[ -n "$CODE" ]] || CODE=$(echo "$V" | awk -F. '{ print $1 * 1000000 + $2 * 1000 + $3 }')
+          echo "name=$V ($CODE)" >> "$GITHUB_OUTPUT"
+          {
+            echo 'notes<<NOTES_EOF'
+            python3 - "$V" <<'PY'
+          import re, sys
+          text = open('CHANGELOG.md', encoding='utf-8').read()
+          m = re.search(r'^## ' + re.escape(sys.argv[1]) + r'\s*$(.*?)(?=^## |\Z)', text, re.M | re.S)
+          lines = [l.strip() for l in (m.group(1) if m else '').splitlines() if l.strip()]
+          lines = [l for l in lines if 'Android' in l or not re.search(r'Mac|iPhone|iPad|TestFlight|App Store', l)]
+          out = ''
+          for l in lines:
+              l = re.sub(r'\*\*|`', '', l)
+              l = '• ' + l[2:] if l.startswith('- ') else l
+              if len(out) + len(l) > 500:
+                  break
+              out += l + '\n'
+          print(out.strip())
+          PY
+            echo 'NOTES_EOF'
+          } >> "$GITHUB_OUTPUT"
+          echo "Google Play release: $V (version code $CODE)" | tee -a "$RUNNER_TEMP/android-build.log"
+
+      # The App Bundle signed with the upload key goes to the closed test (docs/play/README.md).
+      - name: Google Play closed test
+        if: env.HAS_PLAY == 'true' && env.KEYSTORE != '' && steps.play.outputs.release == 'true'
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          PLAY_PACKAGE: com.bradcowdrey.cowdreymd
+          PLAY_AAB: ${{ runner.temp }}/Cowdrey.MD.aab
+          PLAY_RELEASE_NAME: ${{ steps.release.outputs.name }}
+          PLAY_RELEASE_NOTES: ${{ steps.release.outputs.notes }}
+        run: |
+          pip install --quiet pyjwt cryptography
+          python3 .github/scripts/play_publish.py
 
       # The log and emulator screenshots go on the android-build-log branch, readable without signing in.
       - name: Publish the build log and screenshots

@@ -1,0 +1,42 @@
+name: Google Play listing
+
+on:
+  push:
+    branches: [main]
+    # Update the store listing when its text or pictures change. New builds go up from the Android app workflow.
+    paths:
+      - docs/play/**
+      - .github/scripts/play_publish.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One run at a time, so two runs never edit the Play listing at once.
+concurrency:
+  group: play-listing
+  cancel-in-progress: false
+
+jobs:
+  listing:
+    name: Update the Google Play store listing
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Google Play service account key (docs/play/README.md). Without it, nothing is sent to Google Play.
+      HAS_PLAY: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Google Play store listing
+        if: env.HAS_PLAY == 'true'
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          PLAY_PACKAGE: com.bradcowdrey.cowdreymd
+        run: |
+          pip install --quiet pyjwt cryptography
+          python3 .github/scripts/play_publish.py
+
+      - name: No Google Play key
+        if: env.HAS_PLAY != 'true'
+        run: echo "No PLAY_SERVICE_ACCOUNT_JSON secret, so nothing was sent to Google Play (see docs/play/README.md)."

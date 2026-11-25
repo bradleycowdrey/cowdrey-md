@@ -10,7 +10,7 @@ It combines MacDown's side-by-side writing, a Docs-style title bar, menus and pa
 
 **Free. Forever.**
 - **Mac:** a `.dmg` for Apple silicon and Intel Macs. Open it and drag Cowdrey.MD into Applications. It's signed with an Apple Developer ID and notarized by Apple, so it opens with a double-click, and it keeps itself up to date. A Mac App Store version is in Apple's App Review; until it's out, the `.dmg` is the way to get the Mac app.
-- **Android 8.0 or later:** an `.apk` signed with the Cowdrey.MD upload key. Open it on your phone and tap Install; later versions come from ··· → Check for updates.
+- **Android 8.0 or later:** an `.apk` signed with the Cowdrey.MD upload key. Open it on your phone and tap Install; later versions come from ··· → Check for updates. Google Play: a closed test is coming soon.
 - **iPhone and iPad (iOS 15 or later):** get it free on the [App Store](https://apps.apple.com/app/id6826704085), and it updates like any other app. To try new versions before they reach the App Store, join the beta with Apple's TestFlight: [testflight.apple.com/join/bDgfhxge](https://testflight.apple.com/join/bDgfhxge).
 - **Any browser:** [bradcowdrey.com/cowdrey-md/app](https://bradcowdrey.com/cowdrey-md/app).
 

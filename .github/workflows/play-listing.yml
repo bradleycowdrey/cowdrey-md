@@ -3,9 +3,11 @@ name: Google Play listing
 on:
   push:
     branches: [main]
-    # Update the store listing when its text or pictures change. New builds go up from the Android app workflow.
+    # Update the store listing when its text or pictures change (not for README edits). New builds go up from the
+    # Android app workflow.
     paths:
       - docs/play/**
+      - '!docs/play/README.md'
       - .github/scripts/play_publish.py
   workflow_dispatch:
 

@@ -1,11 +1,14 @@
-// The Cowdrey family's App Store screenshot template, shared word for word by Cowdrey.MD and Cowdrey.PDF
-// (tests/store-frame.mjs in both repos: change it in one, copy it to the other, so the two sets never drift).
+// The Cowdrey family's App Store screenshot template: every app's App Store pictures are made with this one file, so
+// every set has the same type, sizes and device placement. The master copy is design/app-store/store-frame.mjs in
+// bradleycowdrey/cowdrey-one; each app keeps a word-for-word copy (change it here, then copy it to every app, so the
+// sets never drift). The fonts are Cowdrey One's: Fraunces (web/fonts/fraunces.woff2 here) and Instrument Sans
+// (design/app-store/instrument-sans.woff2); see design/app-store/README.md for the standard.
 //
 // One look on every device: a dark ground in the app's own hue, a Fraunces headline (the cut Cowdrey One uses
 // for its titles: weight 560, optical size 48, -0.012em), one sub-line in Instrument Sans 500 tinted with that hue,
 // and the real app in a neutral frame: an iPhone or iPad with a graphite band, or a plain Mac window with a shadow.
 // The copy starts at the same height on every picture of a device and the device sits at the same place, so the
-// sets of the two apps line up when they are seen side by side. On the iPhone the copy hangs from the device instead:
+// sets of every app line up when they are seen side by side. On the iPhone the copy hangs from the device instead:
 // the sub-line's baseline sits a fixed 96 px above the phone, and the phone sits higher for a set whose headlines
 // are one line (story.lines, the same for every picture of a set), so a one-line set has no empty band above the
 // phone. Only the colours below differ between the apps.
@@ -22,6 +25,26 @@ export const THEMES = {
   pdf: { // Cowdrey.PDF raspberry
     ground: ['#3E0C20', '#220812', '#12060B'], glow: 'rgba(198, 31, 82, .26)', floor: 'rgba(150, 18, 60, .30)',
     ink: '#FFF7F8', sub: '#EBC3D0', base: '#12060B',
+  },
+  meridian: { // Meridian steel blue
+    ground: ['#0F2136', '#0A1626', '#050B14'], glow: 'rgba(74, 125, 184, .26)', floor: 'rgba(30, 64, 110, .32)',
+    ink: '#F5F8FC', sub: '#C3D3E7', base: '#050B14',
+  },
+  twodegrees: { // Two Degrees sky blue
+    ground: ['#0C2A4E', '#081C37', '#040E1E'], glow: 'rgba(114, 170, 233, .26)', floor: 'rgba(32, 66, 148, .34)',
+    ink: '#F5F9FF', sub: '#C6DBF5', base: '#040E1E',
+  },
+  bearings: { // Bearings compass blue
+    ground: ['#0D2442', '#08182E', '#040B17'], glow: 'rgba(61, 116, 176, .28)', floor: 'rgba(20, 52, 96, .34)',
+    ink: '#F5F8FC', sub: '#C2D4EA', base: '#040B17',
+  },
+  goldenhour: { // Golden Hour dusk
+    ground: ['#261C47', '#170F2E', '#0B0717'], glow: 'rgba(255, 170, 96, .22)', floor: 'rgba(194, 112, 90, .30)',
+    ink: '#FFF8F1', sub: '#F0CFB8', base: '#0B0717',
+  },
+  one: { // Cowdrey One clay
+    ground: ['#3A2015', '#24140C', '#130A06'], glow: 'rgba(201, 131, 91, .26)', floor: 'rgba(147, 81, 47, .32)',
+    ink: '#FFF8F3', sub: '#EED3C2', base: '#130A06',
   },
 };
 

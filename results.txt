@@ -1,0 +1,2 @@
+End-to-end tests: success
+Mac app compiles: success

@@ -1,5 +1,7 @@
 // Mac App Store screenshots (2880x1800, RGB PNG) of the real app, as the Mac App Store build runs it.
 // Run: (cd desktop && npm ci && node build.mjs) && node tests/mac-screenshots.mjs [out-dir]
+// These are the raw captures (docs/app-store/raw). scripts/store-frames turns them into the framed screenshots
+// in docs/app-store that the App Store listing workflow uploads.
 // The page is desktop/dist (the offline bundle the Mac app ships), at 1440x900 points and 2x pixels, with the
 // Mac app's native bridge stood in for, so it shows what the Mac app shows. Documents are the app's own sample
 // and fictional text written here.
@@ -14,7 +16,7 @@ let playwright;
 try { playwright = require('playwright'); } catch { playwright = require('/opt/node22/lib/node_modules/playwright'); }
 const exe = fs.existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : undefined;
 const DIST = path.join(root, 'desktop/dist');
-const OUT = path.resolve(process.argv[2] || path.join(root, 'docs/app-store'));
+const OUT = path.resolve(process.argv[2] || path.join(root, 'docs/app-store/raw'));
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const TERMS_HASH = /TERMS_BUILT = \{ hash: '([0-9a-f]{8})'/.exec(html)[1];
 const TYPES = { '.js': 'application/javascript', '.html': 'text/html', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml' };

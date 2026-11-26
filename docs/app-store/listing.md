@@ -113,9 +113,24 @@ Already answered in the build (ITSAppUsesNonExemptEncryption = NO), so App Store
 
 ## Screenshots
 
-Upload from `docs/app-store/` in this repository:
+Upload from `docs/app-store/` in this repository. These are framed in the Cowdrey family's App Store standard
+(`scripts/store-frames/STANDARD.md`): the app's blue sky, an eyebrow, a headline and a subhead above the app in a
+drawn iPhone, iPad or Mac window, with a drawn 9:41 status bar on iPhone and iPad. The raw captures are in
+`docs/app-store/raw/` (the Mac ones come from `tests/mac-screenshots.mjs`). To make the frames again:
+
+```
+npm install --no-save playwright@1.56.1
+node scripts/store-frames/store-frames.js --config scripts/store-frames/cowdrey-md.json
+```
+
+The words for each frame are in `scripts/store-frames/cowdrey-md.json`. The compositor measures every frame
+(`docs/app-store/measure.json`) and stops if the type or the device is not where the standard puts it. The App
+Store listing workflow frames the raw captures again before it uploads, and the Tests workflow keeps the frames
+as an artifact to review.
+
 
 - **iPhone 6.9" display** (1320 × 2868): `iphone-1-write.png`, `iphone-2-page.png`, `iphone-3-math-dark.png`, `iphone-4-format.png`, `iphone-5-insert.png`
 - **iPad 13" display** (2064 × 2752): `ipad-1-split.png`, `ipad-2-math-dark.png`, `ipad-3-page.png`
+- **Mac** (2880 × 1800): `mac-1-split.png`, `mac-2-plan.png`, `mac-3-math.png`, `mac-4-page.png`, `mac-5-insert-light.png`
 
 Apple scales these down for smaller iPhones and iPads.

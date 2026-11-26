@@ -1,0 +1,48 @@
+{
+ "app": "Cowdrey.MD",
+ "slug": "cowdrey-md",
+ "sky": ["#4B70E6", "#1E3BA6"],
+ "captures": "../../docs/app-store/raw",
+ "out": "../../docs/app-store",
+ "statusBar": { "iphone": "light", "ipad": "light" },
+ "iphone": [
+  { "id": "write", "eyebrow": "Write", "headline": ["Write in", "Markdown."],
+    "subhead": "Headings, lists and tables as you type.", "capture": "iphone-1-write.png",
+    "pin": [[0, 0.9445, 1, 0.0555]] },
+  { "id": "page", "eyebrow": "Read", "headline": ["Read it as", "a page."],
+    "subhead": "A clean, printable page. Tap Edit to write.", "capture": "iphone-2-page.png",
+    "pin": [[0.7591, 0.9268, 0.2030, 0.0540, 0.0587]] },
+  { "id": "math-dark", "eyebrow": "Math & diagrams", "headline": ["Math and", "diagrams."],
+    "subhead": "Equations and charts, right on the page.", "capture": "iphone-3-math-dark.png",
+    "pin": [[0.7591, 0.9268, 0.2030, 0.0540, 0.0587]] },
+  { "id": "format", "eyebrow": "Format", "headline": ["Format with", "a tap."],
+    "subhead": "Format panels slide up from the bottom.", "capture": "iphone-4-format.png",
+    "pin": [[0, 0.4533, 1, 0.5467]] },
+  { "id": "insert", "eyebrow": "Insert", "headline": ["Insert", "anything."],
+    "subhead": "Tables, pictures, callouts and more.", "capture": "iphone-5-insert.png",
+    "pin": [[0, 0.5021, 1, 0.4979]] }
+ ],
+ "ipad": [
+  { "id": "split", "eyebrow": "Side by side", "headline": ["Write and see", "the page."],
+    "subhead": "Markdown on the left, the page on the right.", "capture": "ipad-1-split.png",
+    "pin": [[0, 0.9771, 1, 0.0229]] },
+  { "id": "math-dark", "eyebrow": "Math & diagrams", "headline": ["Math and", "diagrams."],
+    "subhead": "Equations and charts, right on the page.", "capture": "ipad-2-math-dark.png",
+    "pin": [[0, 0.9771, 1, 0.0229]] },
+  { "id": "page", "eyebrow": "Read", "headline": ["Read it as", "a page."],
+    "subhead": "A clean, printable page of what you write.", "capture": "ipad-3-page.png",
+    "pin": [[0, 0.9771, 1, 0.0229]] }
+ ],
+ "mac": [
+  { "id": "split", "eyebrow": "Side by side", "headline": ["Write and see", "the page."],
+    "subhead": "Markdown on the left, the page on the right.", "capture": "mac-1-split.png", "title": "Cowdrey.MD" },
+  { "id": "plan", "eyebrow": "Tables & tasks", "headline": ["Plan it in", "plain text."],
+    "subhead": "Tables, tasks and notes as you type.", "capture": "mac-2-plan.png", "title": "Cowdrey.MD" },
+  { "id": "math", "eyebrow": "Math & diagrams", "headline": ["Math and", "diagrams."],
+    "subhead": "Equations drawn right on the page.", "capture": "mac-3-math.png", "title": "Cowdrey.MD" },
+  { "id": "page", "eyebrow": "Read", "headline": ["Read it as", "a page."],
+    "subhead": "A clean, printable page of what you write.", "capture": "mac-4-page.png", "title": "Cowdrey.MD" },
+  { "id": "insert-light", "eyebrow": "Insert", "headline": ["Insert", "anything."],
+    "subhead": "Tables, pictures, callouts and more.", "capture": "mac-5-insert-light.png", "title": "Cowdrey.MD" }
+ ]
+}

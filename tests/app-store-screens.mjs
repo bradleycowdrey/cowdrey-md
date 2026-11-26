@@ -148,6 +148,9 @@ flowchart LR
 | Seedlings | Priya | April |
 `;
 
+// The Garden plan on one sheet (the Mac's whole-page picture): the same plan without its chart and its last table.
+const GARDEN_PAGE = GARDEN.replace(/\n```mermaid[\s\S]*$/, '');
+
 const ORBITS = `# Orbits, in three equations
 
 Notes for a short talk on why the planets move the way they do.
@@ -236,6 +239,42 @@ Serves four, in thirty minutes.
 Simmer the lentils in a litre of water until soft. Fry the rest in butter, stir it through, and finish with lime.
 `;
 
+// Only in the Mac library (the iPhone and iPad pictures keep the library they had): a small business's season,
+// the kind of page that goes out as a PDF or a Word file.
+const BAKERY = `# Autumn report
+
+Hartley's Bakery, September to November, for the partners' meeting on 4 December.
+
+## The season in numbers
+
+| Month | Loaves | Pastries | Takings |
+|:------|-------:|---------:|--------:|
+| September | 3,120 | 4,480 | $21,950 |
+| October | 3,410 | 5,020 | $24,300 |
+| November | 3,780 | 5,610 | $26,840 |
+| **Total** | **10,310** | **15,110** | **$73,090** |
+
+> [!TIP]
+> The Saturday market stall paid for itself in its third week.
+
+## What went well
+
+- The ==sourdough subscription== reached 140 households
+- Wholesale orders from two new cafés on Mill Lane
+- No wasted bread on 61 of 78 trading days
+
+## For the winter
+
+1. Hire a second baker for the early shift
+2. Add rye and spelt to the subscription
+3. Repair the deck oven *before* the Christmas rush
+
+\`\`\`mermaid
+flowchart LR
+  A[Dough at 4 am] --> B[Shop at 7] --> C[Market at 9] --> D[Cafés by noon]
+\`\`\`
+`;
+
 const READING = `# Reading list
 
 - [x] *The Overstory*, Richard Powers
@@ -255,6 +294,10 @@ const LIBRARY = [
   { id: 'thesis', title: 'Thesis outline', content: THESIS, folder: 'School', ago: 2 * day },
   { id: 'dal', title: 'Weeknight dal', content: DAL, folder: 'Personal', ago: 4 * day },
   { id: 'reading', title: 'Reading list', content: READING, folder: 'Personal', ago: 9 * day },
+];
+const MAC_LIBRARY = [
+  { id: 'bakery', title: "Hartley's Bakery: autumn report", content: BAKERY, folder: 'Work', ago: 20 * min },
+  ...LIBRARY,
 ];
 
 /* ---------------- the stories ---------------- */
@@ -278,17 +321,23 @@ const STORIES = [
   { dev: 'ipad', file: 'ipad-5-page.png', head: 'A page you can print', sub: 'Letter or A4, ready to print or save as PDF.', doc: 'lisbon', settings: { view: 'preview' } },
   { dev: 'ipad', file: 'ipad-6-export.png', head: 'Share it as PDF\nor Word', sub: 'Export, print or copy with formatting.', doc: 'garden', settings: { view: 'split', split: 0.46 }, act: exportMenu },
   // Mac
-  // (each Mac picture opens its own document, so the set never repeats itself; the Garden plan opens twice, the second
-  // time behind the Export menu)
-  { dev: 'mac', file: 'mac-1-split.png', head: 'Write Markdown. See the page.', sub: 'Plain text on the left, a clean, printable page on the right.', doc: 'garden', settings: { ...MAC_BIG } },
-  { dev: 'mac', file: 'mac-2-styles.png', head: 'Make it look like a book', sub: 'Five page styles, from clean to manuscript, on Letter or A4.', doc: 'chapter', settings: { ...MAC_BIG, ribbonTab: 'layout', pageStyle: 'manuscript' } },
+  // Six documents in six different states of the app, so each picture reads as its own at thumbnail size: the
+  // Markdown beside its page, a book page on its own, math and a chart, the library, a whole printable page with its
+  // outline, and the Export menu over a page in the Solarized style.
+  // The trip as it looks while you write it (the iPhone's second picture, to the quote that closes it): prose, a checklist and a list, which read
+  // the same on both sides of the window, with the ribbon folded away so the page shows down to its last list.
+  { dev: 'mac', file: 'mac-1-split.png', head: 'Write Markdown. See the page.', sub: 'Plain text on the left, a clean, printable page on the right.', doc: 'lisbon', content: LISBON_WRITE.replace(/\n## Getting there[\s\S]*$/, ''), settings: { ...MAC_BIG, ribbonCollapsed: true } },
+  // The page alone, in the Manuscript style, with the Layout tab's page styles above it.
+  { dev: 'mac', file: 'mac-2-styles.png', head: 'Make it look like a book', sub: 'Five page styles, from clean to manuscript, on Letter or A4.', doc: 'chapter', settings: { view: 'preview', outline: false, ribbonTab: 'layout', pageStyle: 'manuscript', zoom: 'fit' } },
   // Scrolled to the last equation, so the page shows math and the Mermaid chart together, and the Markdown the
   // same lines. (On the Mac, Sync scrolling is off, so each pane keeps the place it is scrolled to: see cleanEdges.)
-  { dev: 'mac', file: 'mac-3-math.png', head: 'Math and diagrams, drawn for you', sub: 'LaTeX equations and Mermaid charts, right on the page.', doc: 'orbits', settings: { ...MAC_BIG }, act: scrollBoth('## Energy of an orbit', '#preview h2:nth-of-type(3)') },
+  // The ribbon on its Insert tab, where Math and Diagram are.
+  { dev: 'mac', file: 'mac-3-math.png', head: 'Math and diagrams, drawn for you', sub: 'LaTeX equations and Mermaid charts, right on the page.', doc: 'orbits', settings: { ...MAC_BIG, ribbonTab: 'insert' }, act: scrollBoth('## Energy of an orbit', '#preview h2:nth-of-type(3)') },
   // The sidebar docked beside a short document (the week's meeting notes), so nothing is covered or cut.
   { dev: 'mac', file: 'mac-4-files.png', head: 'All your writing, in one place', sub: 'Folders, pins and search across every document.', doc: 'meeting', settings: { view: 'split', split: 0.5, outline: true, sideTab: 'docs' } },
-  { dev: 'mac', file: 'mac-5-page.png', head: 'A page you can print', sub: 'Letter or A4, ready to print or save as PDF.', doc: 'lisbon', settings: { view: 'preview', outline: true, sideTab: 'outline' } },
-  { dev: 'mac', file: 'mac-6-export.png', head: 'Share it as PDF or Word', sub: 'Export, print, or copy with formatting into Docs or Mail.', doc: 'garden', settings: { view: 'split', split: 0.44, outline: false }, act: exportMenu },
+  // A whole Letter page, edge to edge, at a zoom where it fits the window, beside the outline of its sections.
+  { dev: 'mac', file: 'mac-5-page.png', head: 'A page you can print', sub: 'Letter or A4, ready to print or save as PDF.', doc: 'garden', content: GARDEN_PAGE, settings: { view: 'preview', outline: true, sideTab: 'outline', ribbonCollapsed: true, margins: 'narrow', zoom: 50 } },
+  { dev: 'mac', file: 'mac-6-export.png', head: 'Share it as PDF or Word', sub: 'Export, print, or copy with formatting into Docs or Mail.', doc: 'bakery', settings: { view: 'split', split: 0.4, outline: false, pageStyle: 'solarized' }, act: exportMenu },
 ];
 
 /* ---------------- actions ---------------- */
@@ -350,7 +399,11 @@ async function cleanEdges(p) {
       }
       // A heading in full view stays in view: the picture keeps the section it was scrolled to.
       const keep = [...el.querySelectorAll('h1, h2, h3, h4')].map((h) => h.getBoundingClientRect()).filter((q) => q.height && q.top >= vt && q.bottom <= vb);
-      const cut = (set, d) => keep.some((q) => q.top - d < vt || q.bottom - d > vb) || set.some(([t, bt]) => (t - d < vt && bt - d > vt) || (t - d < vb && bt - d > vb));
+      // Nor may a pane end on a heading with nothing of its section below it.
+      const heads = [...el.querySelectorAll(isCm ? '.CodeMirror-line' : 'h1, h2, h3, h4')].filter((h) => !isCm || h.querySelector('.cm-header'))
+        .map((h) => h.getBoundingClientRect()).filter((q) => q.height);
+      const lone = (d) => heads.some((q) => q.top - d < vb && q.bottom - d > vb - Math.max(48, q.height * 2.2));
+      const cut = (set, d) => lone(d) || keep.some((q) => q.top - d < vt || q.bottom - d > vb) || set.some(([t, bt]) => (t - d < vt && bt - d > vt) || (t - d < vb && bt - d > vb));
       const down = Math.min(64, el.scrollHeight - el.clientHeight - el.scrollTop), up = Math.min(64, el.scrollTop);
       const steps = [0]; for (let i = 1; i <= 64; i++) { if (i <= down) steps.push(i); if (i <= up) steps.push(-i); }
       let best = null;
@@ -387,7 +440,7 @@ async function capture(story) {
   // so the page behind stays readable in a small picture.
   await cdp.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-transparency', value: 'reduce' }, { name: 'prefers-color-scheme', value: 'dark' }] });
   const now = Date.now();
-  const library = LIBRARY.map(({ ago, ...d }) => ({ ...d, ...(d.id === story.doc && story.content ? { content: story.content } : {}), updated: now - ago }));
+  const library = (story.dev === 'mac' ? MAC_LIBRARY : LIBRARY).map(({ ago, ...d }) => ({ ...d, ...(d.id === story.doc && story.content ? { content: story.content } : {}), updated: now - ago }));
   await p.addInitScript(([hash, settings, library, current, D, mac]) => {
     Object.defineProperty(Navigator.prototype, 'platform', { get: () => D.platform });
     Object.defineProperty(Navigator.prototype, 'maxTouchPoints', { get: () => D.touch });

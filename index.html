@@ -2463,10 +2463,35 @@ function syllables(w) {
   w = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '').replace(/^y/, '');
   const m = w.match(/[aeiouy]{1,2}/g); return m ? m.length : 1;
 }
+// The words of a rendered page, as the status bar and Word count show them: without code labels, front matter,
+// footnotes, diagrams or equations (typeset or not yet typeset).
+const UNCOUNTED = '.code-head, .code-lines, .front-matter, .footnotes, mjx-container, .math-inline, .math-display, .math-block, .mermaid-block, .toc, style, script';
+function countedText(root) {
+  const clone = root.cloneNode(true);
+  clone.querySelectorAll(UNCOUNTED).forEach((n) => n.remove());
+  return clone.textContent;
+}
+// A document's word count without opening it (the Documents list, version history): its Markdown rendered the way
+// the page renders it, into an inert template, and counted like the status bar, so both show the same number.
+const docWordCache = new Map();
+function docWords(content) {
+  content = String(content || '');
+  if (docWordCache.has(content)) return docWordCache.get(content);
+  if (!md) buildMd();
+  let n;
+  try {
+    if (!md) throw new Error('no renderer');
+    const f = extractFrontMatter(content);
+    const t = document.createElement('template');
+    t.innerHTML = md.render(f.body, {});
+    n = countWords(countedText(t.content)).count;
+  } catch { n = countWords(content).count; }
+  docWordCache.set(content, n);
+  if (docWordCache.size > 300) docWordCache.delete(docWordCache.keys().next().value);
+  return n;
+}
 function updateStats() {
-  const clone = preview.cloneNode(true);
-  clone.querySelectorAll('.code-head, .code-lines, .front-matter, .footnotes, mjx-container, .mermaid-block, .toc').forEach((n) => n.remove());
-  const text = clone.textContent;
+  const text = countedText(preview);
   const { count, words } = countWords(text);
   const sentences = Math.max(1, (text.match(/[^.!?\n]+[.!?]+(\s|$)/g) || []).length);
   const syl = words.reduce((s, w) => s + syllables(w), 0);
@@ -2654,7 +2679,7 @@ async function showHistory() {
   await versions.save(d, 'auto', true);
   let rows = [];
   try { rows = await versions.list(d.id); } catch { toast('Version history is not available here.'); return; }
-  const words = (t) => nf.format(countWords(t).count);
+  const words = (t) => nf.format(docWords(t));
   const when = (t) => new Date(t).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
   let sel = rows.findIndex((r) => r.content !== d.content); if (sel < 0) sel = 0;
   openDialog({
@@ -2965,7 +2990,7 @@ const SORTS = { updated: ['Last edited', (a, b) => b.updated - a.updated], title
 function docRow(d, extra = '') {
   const where = [d.folder && !S.docFolder ? d.folder : '', d.path ? baseName(d.path) : d.linkName || ''].filter(Boolean).map(esc).join(' · ');
   return `<div class="doc-item${d.id === currentId ? ' current' : ''}" data-id="${d.id}" role="listitem">
-      <button type="button" class="doc-open"${d.id === currentId ? ' aria-current="page"' : ''}>${ic(d.pinned ? 'pin' : 'file-text')}<span style="min-width:0"><span class="t">${esc(d.title)}</span>${extra || `<span class="m">${rel(d.updated)} · ${nf.format(countWords(d.content).count)} words${where ? ' · ' + where : ''}</span>`}</span></button>
+      <button type="button" class="doc-open"${d.id === currentId ? ' aria-current="page"' : ''}>${ic(d.pinned ? 'pin' : 'file-text')}<span style="min-width:0"><span class="t">${esc(d.title)}</span>${extra || `<span class="m">${rel(d.updated)} · ${nf.format(docWords(d.content))} words${where ? ' · ' + where : ''}</span>`}</span></button>
       <button class="more" type="button" data-more="${d.id}" title="More" aria-label="More for ${esc(d.title)}" aria-haspopup="menu">${ic('ellipsis')}</button>
       <button class="del" type="button" data-del="${d.id}" title="Delete document" aria-label="Delete ${esc(d.title)}">${ic('trash-2')}</button>
     </div>${confirmDelete === d.id ? `<div class="confirm-row">Delete for good?<button class="mini-btn danger" type="button" data-yes="${d.id}">Delete</button><button class="mini-btn" type="button" data-no>Keep</button></div>` : ''}`;
@@ -3918,9 +3943,9 @@ cmd('saveAll', { label: 'Save all', icon: 'save-all', key: 'Mod-Alt-Shift-s', gl
 cmd('saveNow', { label: 'Save', icon: 'save', key: 'Mod-s', global: true, run: () => { markDirty(); if (TAURI) return saveToDisk(false); if (persist()) toast(MOBILE_APP ? 'Saved on this device' : 'Saved to this browser'); } });
 cmd('saveAs', { label: TAURI ? 'Save as…' : ANDROID_APP ? 'Save as a file…' : 'Save to Files…', icon: 'save', key: 'Mod-Shift-s', global: true, hidden: () => !TAURI && !MOBILE_APP, run: () => TAURI ? saveToDisk(true) : saveLinkedAs() });
 cmd('syncFolder', { label: 'Sync folder…', icon: 'folder-sync', hidden: () => !LIB_KIND, run: showSyncFolder });
-cmd('saveMd', { label: 'Download Markdown (.md)', icon: 'file-down', run: () => saveFile(slugFile(cur().title) + '.md', cm.getValue(), 'text/markdown') });
-cmd('exportDocx', { label: 'Download Word document (.docx)', icon: 'file-type-2', run: exportDocx });
-cmd('exportHtml', { label: 'Download web page (.html)', icon: 'file-code-2', run: exportHtml });
+cmd('saveMd', { label: MOBILE_APP ? 'Share Markdown (.md)…' : 'Download Markdown (.md)', icon: 'file-down', run: () => saveFile(slugFile(cur().title) + '.md', cm.getValue(), 'text/markdown') });
+cmd('exportDocx', { label: MOBILE_APP ? 'Share Word document (.docx)…' : 'Download Word document (.docx)', icon: 'file-type-2', run: exportDocx });
+cmd('exportHtml', { label: MOBILE_APP ? 'Share web page (.html)…' : 'Download web page (.html)', icon: 'file-code-2', run: exportHtml });
 cmd('copyRich', { label: 'Copy for Docs or Word', icon: 'clipboard-copy', key: 'Mod-Alt-Shift-c', global: true, run: copyRich });
 cmd('copyHtml', { label: 'Copy HTML source', icon: 'code', run: () => copyText(cleanPreview().innerHTML, 'HTML copied') });
 cmd('copyMd', { label: 'Copy Markdown', icon: 'copy', run: () => copyText(cm.getValue(), 'Markdown copied') });
@@ -5059,7 +5084,7 @@ const SHEETS = {
   },
   share: {
     title: 'Share and export',
-    body: () => mGroup('Send a copy', [mRow('saveMd', { label: MOBILE_APP ? 'Share Markdown (.md)…' : 'Download Markdown (.md)' }), mRow('exportDocx', { label: MOBILE_APP ? 'Share Word document (.docx)…' : 'Download Word document (.docx)' }), mRow('exportHtml', { label: MOBILE_APP ? 'Share web page (.html)…' : 'Download web page (.html)' }), mRow('print'), mRow('exportPdf')])
+    body: () => mGroup('Send a copy', [mRow('saveMd'), mRow('exportDocx'), mRow('exportHtml'), mRow('print'), mRow('exportPdf')])
       + mGroup('Copy', [mRow('copyRich'), mRow('copyMd'), mRow('copyHtml')])
       + mGroup('', [mAct('shareApp', 'heart', 'Share Cowdrey.MD with a friend')]),
   },

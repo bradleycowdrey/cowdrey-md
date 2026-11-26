@@ -19,7 +19,7 @@ The **App Store listing** workflow (`.github/workflows/app-store-listing.yml`) f
 
 ## Promotional text (170)
 
-Cowdrey.MD 2.0: edit files where they live, sync a folder across devices, search every document, and export to Word or PDF. Free, private, no account.
+Cowdrey.MD 2.1 has a new icon. Write Markdown and see a clean, printable page, edit files where they live, and export to Word or PDF. Free, private, no account.
 
 ## Description (4000)
 
@@ -74,16 +74,20 @@ markdown,editor,md,notes,writing,text,latex,math,mermaid,docs,preview,pdf,word,e
 
 ## What's New in This Version
 
-Cowdrey.MD 2.0 is a big step up:
+Cowdrey.MD 2.1:
 
-• Your files, where they live: open a file from Files or iCloud Drive and your changes save back to it
-• Sync folder: keep your documents in a folder such as iCloud Drive, and see them on iPhone, iPad and Mac
-• Search every document, with folders, pins and sorting
-• Version history: restore any version from the last 90 days
-• Export to PDF and Word, and print
-• Stay in the same place when you switch between writing and reading
-• Editor and code line numbers, and a blurred background behind panels
-• Clearer Terms of Use and Privacy
+• A new app icon in the Cowdrey family style, with MD set in the opening of the C
+• The new icon in the app's title bar too
+• Diagram labels now fit their boxes, with nothing cut off
+• On iPad, the sidebar dims the page lightly instead of blurring it, so you can still read what's behind
+
+**Mac** (What's New for the macOS version):
+
+Cowdrey.MD 2.1:
+
+• A new app icon in the Cowdrey family style, with MD set in the opening of the C
+• The new icon in the app's title bar too
+• Diagram labels now fit their boxes, with nothing cut off
 
 ## App Review Information
 
@@ -91,7 +95,7 @@ Cowdrey.MD 2.0 is a big step up:
 - Contact: Bradley Cowdrey, legal@bradcowdrey.com (add a phone number in App Store Connect)
 - Notes (also sent to App Review in answer to their Guideline 2.1 information request):
 
-  Guideline 2.3.10: the description no longer mentions other platforms. This submission is version 2.0.2 (build 32).
+  This submission is version 2.1.0: a new app icon, the icon in the app's title bar, and diagram labels that fit their boxes.
 
   Cowdrey.MD is a free Markdown editor for writers, students and professionals who write notes, documents and reports in plain text. It shows a clean, printable page of what you write, with tables, task lists, math and diagrams. On iPhone it works like Pages and Word: read the document as a page, tap Edit to write, with a formatting bar above the keyboard. Documents are stored on the device, with no account needed.
 

@@ -4,6 +4,19 @@ iPhone and iPad builds go to TestFlight (beta) and the [App Store](https://apps.
 
 Versions follow [Semantic Versioning](https://semver.org) from 2.0.0: **major** (3.0.0) for a big change in how the app works or stores documents, **minor** (2.1.0) for new features, **patch** (2.0.1) for fixes and polish. Every platform shares one version number.
 
+## 2.1.0
+
+A new look in the Cowdrey family style, and Cowdrey.MD on its way to Google Play.
+
+- **A new app icon.** Built like the other Cowdrey apps' icons: the letters MD sit in the opening of the C, on every platform (Mac, iPhone, iPad, Android and the web app's icon).
+- **The logo in the app.** The title bar shows the new app icon.
+- **Diagrams.** Mermaid labels are measured and drawn in the same font, so they fit their boxes and are never cut off.
+- **iPad sidebar.** The sidebar slides over a lightly dimmed page instead of a blurred one, so the page behind stays readable.
+- **Word counts agree.** The Documents list and version history count a document's words the way the status bar does (equations, diagrams, code labels and footnotes left out), so a document shows one number everywhere.
+- **iPad Export menu.** Markdown, Word and web page copies say Share…, as on the iPhone, since they go through the share sheet.
+- **New App Store screenshots** for iPhone, iPad and Mac, on the Cowdrey family template: dark mode, with the Mac pictures on a MacBook, and realistic business documents (a project plan, unit economics, a report).
+- **Android and Google Play.** A Google Play closed test with its store listing and pictures; the copy installed from Google Play leaves updates to Play (no Check for updates, and it never offers the APK from GitHub), while the APK from GitHub updates itself as before.
+
 ## 2.0.2
 
 Android and the Mac now work like the iPhone app.

@@ -18,6 +18,7 @@ It combines MacDown's side-by-side writing, a Docs-style title bar, menus and pa
 
 ## What's new
 
+- **2.1.0: a new look.** A new app icon in the Cowdrey family style, shown in the app's title bar too; diagram labels that always fit; new App Store screenshots; and a Google Play closed test, whose copy is updated by Play.
 - **2.0.2: Android and the Mac work like the iPhone.** The Android share sheet for Markdown, Word, web pages and PDF; a Mac share menu; the Mac picks up files changed in other apps; Appearance in the Mac View menu.
 - **2.0.1: Polish.** About thirty small fixes to spacing, alignment, dark mode, focus rings, task lists and printing, on every platform.
 - **2.0.0: Cowdrey.MD 2.0.** Everything since 1.0 in one release: native apps for Mac, iPhone, iPad and Android; files opened and saved in place; a sync folder; search, folders, pins and version history; PDF and Word export; and keeping your place between writing and reading. From 2.0, versions follow Semantic Versioning (major.minor.patch). See the [changelog](CHANGELOG.md).

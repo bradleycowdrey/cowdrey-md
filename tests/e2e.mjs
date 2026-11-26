@@ -632,7 +632,7 @@ await test('Mac app: like the iPhone, picks up a file changed elsewhere, shares 
         if (c === 'write_share_file') return '/tmp/' + a.name;
         return null;
       } },
-      app: { getVersion: async () => '2.0.2' }, dialog: {}, event: { listen: async () => {} }, opener: { openUrl: async () => {} },
+      app: { getVersion: async () => '2.1.0' }, dialog: {}, event: { listen: async () => {} }, opener: { openUrl: async () => {} },
     };
   } });
   await settle(Q, 400);

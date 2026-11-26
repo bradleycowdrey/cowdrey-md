@@ -22,7 +22,7 @@ Both need the repository secret **`PLAY_SERVICE_ACCOUNT_JSON`**; without it they
 
 **Updates.** Google Play updates the copy it installs. That copy hides Check for updates and never offers the APK from GitHub: Play's rules don't allow an app to update itself any other way, and Play signs its copy with Google's app signing key, so the APK (signed with the upload key) can't install over it. Switching between the Play copy and the GitHub APK means uninstalling the other first (export or sync your documents before). The APK on GitHub still checks for updates as before.
 
-The screenshots are the app's own interface at a Pixel 7's width (412 dp), taken from the offline bundle the Android app ships (`desktop/dist`), with the fictional documents from the App Store screenshots. In `phone-3.png` the diagram's labels are drawn with the label fix from the `design-refresh` branch (one CSS rule), which isn't on `main` yet.
+The screenshots are the app's own interface at a Pixel 7's width (412 dp), taken from the offline bundle the Android app ships (`desktop/dist`), with the fictional business documents from the App Store screenshots. `node tests/app-store-screens.mjs "" phone-` makes them again (the `android` stories in that file).
 
 ## One-time setup in Play Console
 

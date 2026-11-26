@@ -1,14 +1,18 @@
 // App Store screenshots for iPhone (6.9", 1320x2868), iPad (13", 2064x2752) and Mac (2880x1800), dark mode.
 // Each one is the real app (desktop/dist, the offline bundle the apps ship) with a fictional document, framed in a
-// neutral device with a headline, on the family template shared with Cowdrey.PDF (tests/store-frame.mjs).
+// neutral device with a headline, on the Cowdrey family template (tests/store-frame.mjs, a word-for-word copy of the
+// family master in Cowdrey One, design/app-store/store-frame.mjs; Cowdrey.PDF has the same copy). On the Mac the app's
+// window sits at its real point size on the family's MacBook desktop.
 // Run: (cd desktop && npm ci && node build.mjs) && node tests/app-store-screens.mjs [out-dir] [name-filter]
-// Needs Playwright (npm install --no-save playwright) and Chromium. Writes opaque RGB PNGs to docs/app-store.
+// Needs Playwright (npm install --no-save playwright@1.56.1) and Chromium. Writes opaque RGB PNGs to docs/app-store.
+// The app's clock is fixed at the family's MAC_CLOCK time (Wed Nov 25 2026, 9:41 AM), so the documents' "edited"
+// times are the same on every run and agree with the Mac's menu bar.
 // The headline font is Fraunces (SIL OFL, design/app-store/fonts); the sub-line is Instrument Sans, the app's own UI font.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
-import { compose as frame, THEMES } from './store-frame.mjs';
+import { compose as frame, desktop, THEMES } from './store-frame.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
@@ -38,250 +42,277 @@ const DEVICES = {
     ua: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
     platform: 'MacIntel', touch: 5, mobile: true,
   },
-  mac: { // a 1180x728 point window; the native title bar is drawn by the frame
-    canvas: [2880, 1800], screen: [1180, 700], scale: 2, inset: null,
+  // Google Play's phone pictures (docs/play/phone-N.png): the Android app at a Pixel 7's width (412 x 824 dp), saved
+  // unframed at 1080 x 2160.
+  android: {
+    canvas: [1080, 2160], screen: [412, 824], scale: 1080 / 412, inset: null,
+    ua: 'Mozilla/5.0 (Linux; Android 15; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36',
+    platform: 'Linux armv8l', touch: 5, mobile: true,
+  },
+  // The Mac window: the app's default size (desktop/src-tauri/tauri.conf.json, 1360 x 880 points of content) under
+  // the 28-point macOS title bar the template draws (the app's capture has no title bar of its own: Tauri's native one
+  // is outside the page), 1360 x 908 in all. It sits on the MacBook's 1512 x 982 pt desktop at its real size, as
+  // Cowdrey.PDF's does.
+  mac: {
+    canvas: [2880, 1800], screen: [1360, 880], scale: 2, inset: null, titlebar: 28,
     ua: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
     platform: 'MacIntel', touch: 0, mobile: false,
   },
 };
 
 /* ---------------- documents (fictional) ---------------- */
-const LISBON = `# Lisbon in four days
+// Business documents of the kind people write in Markdown: a project plan, meeting notes, unit economics, a report,
+// a client proposal, release notes. The company, the people and the figures are made up. Every date fits the Mac's menu-bar
+// clock (MAC_CLOCK, Wed Nov 25 2026, 9:41 AM), which is also the app's clock while it is captured (NOW below):
+// nothing was written after it, and what is still to come is planned for later.
+const BRIEF = `# Checkout redesign
 
-A long weekend in October, planned on the train home from work.
-
-> [!TIP]
-> Buy a **Viva Viagem** card at the airport. One tap pays for the metro, the trams and the ferry.
-
-## The plan
-
-| Day | Morning | Evening |
-|:----|:--------|:--------|
-| Thu | Alfama and the castle | Fado in Mouraria |
-| Fri | Belém and the tower | Mercado da Ribeira |
-| Sat | Day trip to Sintra | Sunset at the *miradouro* |
-| Sun | LX Factory | Train home at 18:40 |
-
-## Pack
-
-- [x] Passports and rail tickets
-- [x] Walking shoes, *really* comfortable ones
-- [ ] A light rain jacket
-- [ ] Phone charger and adapter
-
-## Eat
-
-1. Pastéis de nata at Manteigaria, still warm
-2. Grilled sardines in a side street in Alfama
-3. ==Bifana== at the market, with a cold drink
-
-> "Lisbon is a city to walk slowly, uphill, with frequent stops."
-`;
-
-// The same trip, as it looks while you write it: prose, a checklist and a list (no table syntax in view).
-const LISBON_WRITE = `# Lisbon in four days
-
-A long weekend in October, planned on the train home from work. Buy a **Viva Viagem** card at the airport: one tap pays for the metro, the trams and the ferry.
-
-## Pack
-
-- [x] Passports and rail tickets
-- [x] Walking shoes, *really* comfortable ones
-- [ ] A light rain jacket
-- [ ] Phone charger and adapter
-
-## Eat
-
-1. Pastéis de nata at Manteigaria, still warm
-2. Grilled sardines in a side street in Alfama
-3. ==Bifana== at the market, with a cold drink
-
-> "Lisbon is a city to walk slowly, uphill, with frequent stops."
-
-## Getting there
-
-The early flight on Thursday, and the **Aerobus** into town. Back on Sunday evening.
-`;
-
-const GARDEN = `# Harbor Street Garden
-
-A community garden on the empty lot at Harbor Street, planned with the neighbours over the winter.
-
-## Goals
-
-- Twenty raised beds, four of them at wheelchair height
-- A tool shed, and a rain barrel for every four beds
-- Open to everyone from **April to October**
+**Owner:** Maya Chen · **Status:** In progress · **Updated:** 25 November 2026
 
 > [!NOTE]
-> The city lends us the lot for three years, free of charge.
+> Goal: bring mobile checkout abandonment down from **38%** to under 30% by the end of March 2027.
 
-## Budget
+## Milestones
 
-| Item | Count | Cost |
-|:-----|------:|-----:|
-| Raised beds | 20 | $2,400 |
-| Rain barrels | 5 | $450 |
-| Tool shed | 1 | $1,200 |
-| **Total** | | **$4,050** |
+| Milestone | Owner | Due |
+|:----------|:------|:----|
+| Design sign-off | Maya | 2 Dec |
+| Payment API update | Theo | 11 Dec |
+| Beta for 10% of users | Priya | 13 Jan |
+| Full launch | Sam | 3 Feb |
 
-## Next steps
+## Scope
 
-- [x] Survey the neighbours
-- [x] Draw the site plan
-- [ ] Order the timber
-- [ ] Build day on ==March 14==
+- [x] Guest checkout, no account needed
+- [x] Apple Pay and Google Pay
+- [ ] Address lookup by postcode
+- [ ] Saved cards for returning customers
+
+## Out of scope
+
+1. Prices and shipping rates
+2. The desktop cart page
+3. ==Loyalty points==, planned for Q2
+
+## Flow
 
 \`\`\`mermaid
 flowchart LR
-  A[Survey] --> B[Site plan] --> C[Build day] --> D[First harvest]
+  A[Cart] --> B[Details] --> C[Payment] --> D[Confirmation]
 \`\`\`
 
-## Who does what
+## Risks
 
-| Team | Lead | When |
+| Risk | Likelihood | Plan |
 |:--|:--|:--|
-| Timber and beds | Maya | February |
-| Water | Theo | March |
-| Seedlings | Priya | April |
+| Payment provider delay | Medium | Keep the current form as a fallback |
+| Holiday code freeze | High | Ship the API change by 11 Dec |
 `;
 
-const ORBITS = `# Orbits, in three equations
+// The same brief while it is written: prose, the scope and a goal (no table syntax in view).
+const BRIEF_WRITE = `# Checkout redesign
 
-Notes for a short talk on why the planets move the way they do.
+Mobile shoppers leave checkout more often than anyone else. This project rebuilds the **mobile checkout** as three short steps, with guest checkout and wallet payments from day one.
 
-## Kepler's third law
+## Scope
 
-The square of a planet's period grows with the cube of its distance from the Sun:
+- [x] Guest checkout, no account needed
+- [x] Apple Pay and Google Pay
+- [ ] Address lookup by postcode
+- [ ] Saved cards for returning customers
 
-$$T^2 = \\frac{4\\pi^2}{G M} \\, a^3$$
+## Out of scope
 
-## Escape velocity
+1. Prices and shipping rates
+2. The desktop cart page
+3. ==Loyalty points==, planned for Q2
 
-To leave a planet of mass $M$ and radius $r$ for good, a rocket needs at least
+## Success measure
 
-$$v_e = \\sqrt{\\frac{2 G M}{r}}$$
+Mobile abandonment below *30%* for four weeks running, from the weekly funnel report.
+`;
 
-## Energy of an orbit
+const UNIT = `# Unit economics, Q4 2026
 
-$$E = -\\frac{G M m}{2a}$$
+For the pricing review on 2 December. Figures are the twelve months to 31 October 2026.
 
-The energy depends only on the orbit's size $a$, never on its shape.
+## Gross margin
+
+$$\\text{Gross margin} = \\frac{\\text{Revenue} - \\text{COGS}}{\\text{Revenue}}$$
+
+On revenue of $4.8M and cost of goods of $1.3M, the gross margin is **73%**.
+
+## CAC payback
+
+The months it takes a new customer's gross profit to repay what it cost to win them:
+
+$$\\text{Payback} = \\frac{\\text{CAC}}{\\text{ARPA} \\times \\text{Gross margin}}$$
+
+At a CAC of $1,450 and $180 a month per account, payback is about **11 months**.
+
+## Revenue growth
+
+Compound monthly growth $g$ from today's run rate $R_0$, over $n$ months:
+
+$$R_n = R_0 \\, (1 + g)^n$$
 
 \`\`\`mermaid
 flowchart LR
-  A[Gravity pulls in] --> C((Orbit))
-  B[Speed carries on] --> C
+  A[Lead] --> B[Trial] --> C[Paid] --> D[Renewal]
 \`\`\`
 
-| Planet | $a$ (AU) | $T$ (years) |
+| Plan | Price / month | Gross margin | Payback |
+|:--|--:|--:|--:|
+| Starter | $49 | 68% | 14 mo |
+| Team | $180 | 73% | 11 mo |
+| Business | $490 | 79% | 8 mo |
+
+**Recommendation:** lead with the Team plan, and raise Starter to $59 from 1 February 2027.
+
+Next review: March 2027, with the first quarter's figures.
+`;
+
+const PROPOSAL = `# Proposal: support desk migration
+
+**Prepared for:** Northwind Retail · **Date:** 20 November 2026
+
+## Summary
+
+Move 40 support agents to the new help desk in eight weeks, with no downtime.
+
+## Fees
+
+| Phase | Weeks | Fee |
 |:--|--:|--:|
-| Mercury | 0.39 | 0.24 |
-| Earth | 1.00 | 1.00 |
-| Jupiter | 5.20 | 11.86 |
+| Discovery | 2 | $12,000 |
+| Migration | 4 | $36,000 |
+| Training | 2 | $9,000 |
 `;
 
-const CHAPTER = `# The Lighthouse Keeper
+const REPORT = `# Hybrid work pilot
 
-## Chapter three
+## Final report, November 2026
 
-The storm came in sideways, the way the old keeper had said it would. Ada climbed the ninety-one steps with the lamp oil in both hands, counting them under her breath so she wouldn't count the waves.
+From May to October, sixty people in two offices tried a hybrid schedule: three set days in the office and two at home. This report sets out what we measured, what we heard, and what we recommend.
 
-At the top, the glass was already weeping. She trimmed the wick, struck the match, and watched the light swing out over the water, *once, twice*, the way it had every night for a hundred years.
+The headline is simple. Output held steady, and people were happier. Tickets closed per person rose by 4 percent over the six months, against a flat trend in the teams that kept their old schedule. In the closing survey, 82 percent said they would choose the hybrid schedule again.
 
-Somewhere past the point, a ship answered. Three short blasts, then a long one, the old signal for *I see you*. Ada pressed her palm flat against the cold brass rail and let out a breath she had been holding since noon.
+The shared office days mattered more than we expected. Teams that agreed on the same three days reported fewer meetings at awkward hours and quicker decisions. Teams that let everyone choose their own days saw little of the benefit, and several asked to change halfway through.
 
-She thought of her brother, who had laughed when she took the post. *Nobody keeps lighthouses any more,* he had said. *The ships have satellites.* But satellites did not climb ninety-one steps in the rain, and they did not wait up.
+Not everything worked. New starters found the home days lonely in their first month, and two managers said regular one-to-ones were harder to keep. We recommend that new starters spend their first four weeks in the office, each with a named buddy.
 
-By two in the morning the wind had dropped to a mutter. She wrote in the log, in the same careful hand as the keepers before her: *Gale from the south-west. Light kept. One vessel, safe.*
+We recommend offering the schedule to every office from 1 February 2027, with each team choosing its own fixed days, and reviewing it again after six months.
 `;
 
-const MEETING = `# Design review, 14 November
+const MEETING = `# Product sync, 24 November
 
-**Present:** Maya, Theo, Priya, Sam
+**Attendees:** Maya, Theo, Priya, Sam
 
 ## Decisions
 
-- Ship the new onboarding on **2 December**
+- The checkout beta starts on **13 January**
 - Keep the free plan exactly as it is
 
 ## Actions
 
-- [ ] Maya: final copy for the welcome screen
-- [ ] Theo: test on the smallest phone we support
-- [x] Priya: book the room for the launch call
+- [ ] Maya: final copy for the payment step, by Friday
+- [ ] Theo: load test with the new payment API
+- [x] Priya: invite the beta customers
+
+## Next meeting
+
+Tuesday 1 December, 10:00.
 `;
 
-const THESIS = `# Thesis outline
+const RELEASE = `# Release notes 4.2
 
-## 1. Introduction
+Released on 19 November 2026.
 
-Why coastal towns lose their young people, and what brings some of them back.
+## New
 
-## 2. Method
+- Export invoices as CSV
+- Two-factor sign-in with an authenticator app
 
-Thirty interviews in four towns, and the census from 2001 to 2021.
+## Fixed
+
+- Search finds names with accents
+- Reports load faster on large accounts
 `;
 
-const DAL = `# Weeknight dal
+const ONBOARDING = `# New starter checklist
 
-Serves four, in thirty minutes.
+## Before day one
 
-- 250 g red lentils, rinsed
-- 1 onion, 3 cloves garlic, a thumb of ginger
-- 1 tsp each of cumin, turmeric and chilli
+- [x] Laptop ordered and set up
+- [x] Accounts: email, chat, the wiki
 
-Simmer the lentils in a litre of water until soft. Fry the rest in butter, stir it through, and finish with lime.
+## First week
+
+- [ ] Meet the team and your buddy
+- [ ] Read the product handbook
+- [ ] Ship one small change
 `;
 
-const READING = `# Reading list
+const OKRS = `# 2027 planning: draft OKRs
 
-- [x] *The Overstory*, Richard Powers
-- [x] *Piranesi*, Susanna Clarke
-- [ ] *The Remains of the Day*, Kazuo Ishiguro
-- [ ] *Braiding Sweetgrass*, Robin Wall Kimmerer
+## Objective: a faster checkout
+
+- **KR1:** mobile abandonment under 30%
+- **KR2:** median checkout time under 60 seconds
+
+## Objective: fewer support tickets
+
+- **KR1:** 20% fewer "where is my order" tickets
 `;
 
 const min = 60e3, hour = 60 * min, day = 24 * hour;
-// The library shown in the Documents views: folders, pins and recent edits.
+// The library shown in the Documents views: folders, pins and recent edits, timed back from NOW.
 const LIBRARY = [
-  { id: 'lisbon', title: 'Lisbon in four days', content: LISBON, folder: 'Personal', pinned: true, ago: 2 * min },
-  { id: 'garden', title: 'Harbor Street Garden', content: GARDEN, folder: 'Work', pinned: true, ago: 40 * min },
-  { id: 'orbits', title: 'Orbits, in three equations', content: ORBITS, folder: 'School', ago: 3 * hour },
-  { id: 'meeting', title: 'Design review, 14 November', content: MEETING, folder: 'Work', ago: 5 * hour },
-  { id: 'chapter', title: 'The Lighthouse Keeper', content: CHAPTER, folder: 'Writing', ago: 1 * day },
-  { id: 'thesis', title: 'Thesis outline', content: THESIS, folder: 'School', ago: 2 * day },
-  { id: 'dal', title: 'Weeknight dal', content: DAL, folder: 'Personal', ago: 4 * day },
-  { id: 'reading', title: 'Reading list', content: READING, folder: 'Personal', ago: 9 * day },
+  { id: 'brief', title: 'Checkout redesign', content: BRIEF, folder: 'Projects', pinned: true, ago: 4 * min },
+  { id: 'meeting', title: 'Product sync, 24 November', content: MEETING, folder: 'Meetings', pinned: true, ago: 18 * hour },
+  { id: 'unit', title: 'Unit economics, Q4 2026', content: UNIT, folder: 'Finance', ago: 2 * hour },
+  { id: 'proposal', title: 'Proposal: support desk migration', content: PROPOSAL, folder: 'Clients', ago: 5 * day },
+  { id: 'report', title: 'Hybrid work pilot', content: REPORT, folder: 'Reports', ago: 1 * day },
+  { id: 'release', title: 'Release notes 4.2', content: RELEASE, folder: 'Engineering', ago: 6 * day },
+  { id: 'okrs', title: '2027 planning: draft OKRs', content: OKRS, folder: 'Projects', ago: 8 * day },
+  { id: 'onboarding', title: 'New starter checklist', content: ONBOARDING, folder: 'Team', ago: 15 * day },
 ];
 
 /* ---------------- the stories ---------------- */
 // The Mac's first three: the outline folded away and the page given most of the window, so the page and the Markdown read in a small picture.
 const MAC_BIG = { view: 'split', split: 0.36, outline: false, zoom: 'fit', edSize: 15 };
-// head: the headline (Fraunces); sub: one line of plain words. Each opens one document, in one state of the app.
+// head: the headline (Fraunces), two lines on iPhone and iPad (one on the Mac, where the two run as one line);
+// sub: one line of plain words. Each opens one document, in one state of the app.
 const STORIES = [
   // iPhone
-  { dev: 'iphone', file: 'iphone-1-page.png', head: 'Write Markdown.\nSee the page.', sub: 'Plain text becomes a clean, printable page.', doc: 'lisbon' },
-  { dev: 'iphone', file: 'iphone-2-write.png', head: 'Format in\none tap', sub: 'Styles, bold, lists and links from the bar.', doc: 'lisbon', content: LISBON_WRITE, act: phoneSelect(2, 'Viva Viagem') },
-  { dev: 'iphone', file: 'iphone-3-math.png', head: 'Math and diagrams,\ndrawn for you', sub: 'LaTeX and Mermaid, right on the page.', doc: 'orbits', act: scrollPage('#preview h2:nth-of-type(2)') },
-  { dev: 'iphone', file: 'iphone-4-styles.png', head: 'Make it look\nlike a book', sub: 'Five page styles, from clean to manuscript.', doc: 'chapter', settings: { pageStyle: 'manuscript' } },
-  { dev: 'iphone', file: 'iphone-5-files.png', head: 'All your writing,\nin one place', sub: 'Folders, pins and search across everything.', doc: 'lisbon', act: phoneDocs },
-  { dev: 'iphone', file: 'iphone-6-export.png', head: 'Share it as PDF\nor Word', sub: 'Export, print or copy with formatting.', doc: 'garden', act: phoneSheet('share') },
+  { dev: 'iphone', file: 'iphone-1-page.png', head: 'Write Markdown.\nSee the page.', sub: 'Plain text becomes a clean, printable page.', doc: 'brief' },
+  { dev: 'iphone', file: 'iphone-2-write.png', head: 'Format in\none tap', sub: 'Styles, bold, lists and links from the bar.', doc: 'brief', content: BRIEF_WRITE, act: phoneSelect(2, 'mobile checkout') },
+  { dev: 'iphone', file: 'iphone-3-math.png', head: 'Math and diagrams,\ndrawn for you', sub: 'LaTeX and Mermaid, right on the page.', doc: 'unit', act: scrollPage('#preview p:has(+ h2:nth-of-type(3))') },
+  { dev: 'iphone', file: 'iphone-4-styles.png', head: 'Style the page\nyour way', sub: 'Five page styles, from clean to manuscript.', doc: 'report', settings: { pageStyle: 'manuscript' } },
+  { dev: 'iphone', file: 'iphone-5-files.png', head: 'All your writing,\nin one place', sub: 'Folders, pins and search across everything.', doc: 'brief', act: phoneDocs },
+  { dev: 'iphone', file: 'iphone-6-export.png', head: 'Share it as PDF\nor Word', sub: 'Export, print or copy with formatting.', doc: 'brief', act: phoneSheet('share') },
   // iPad
   // (the first three with larger text: the ribbon folded away and the editor at 16 px, as you might set it on a tablet)
-  { dev: 'ipad', file: 'ipad-1-split.png', head: 'Write Markdown.\nSee the page.', sub: 'Markdown and the printed page, side by side.', doc: 'garden', settings: { view: 'split', split: 0.46, outline: false, ribbonCollapsed: true, edSize: 16 } },
-  { dev: 'ipad', file: 'ipad-2-styles.png', head: 'Make it look\nlike a book', sub: 'Five page styles, from clean to manuscript.', doc: 'chapter', settings: { view: 'split', split: 0.46, outline: false, ribbonTab: 'layout', pageStyle: 'manuscript', edSize: 16 } },
-  { dev: 'ipad', file: 'ipad-3-math.png', head: 'Math and diagrams,\ndrawn for you', sub: 'LaTeX and Mermaid, right on the page.', doc: 'orbits', settings: { view: 'split', split: 0.46, outline: false, ribbonCollapsed: true, edSize: 16 } },
-  { dev: 'ipad', file: 'ipad-4-files.png', head: 'All your writing,\nin one place', sub: 'Folders, pins and search across everything.', doc: 'lisbon', settings: { view: 'split', split: 0.2 }, act: sideDocs },
-  { dev: 'ipad', file: 'ipad-5-page.png', head: 'A page you can print', sub: 'Letter or A4, ready to print or save as PDF.', doc: 'lisbon', settings: { view: 'preview' } },
-  { dev: 'ipad', file: 'ipad-6-export.png', head: 'Share it as PDF\nor Word', sub: 'Export, print or copy with formatting.', doc: 'garden', settings: { view: 'split', split: 0.46 }, act: exportMenu },
+  { dev: 'ipad', file: 'ipad-1-split.png', head: 'Write Markdown.\nSee the page.', sub: 'Markdown and the printed page, side by side.', doc: 'brief', settings: { view: 'split', split: 0.46, outline: false, ribbonCollapsed: true, edSize: 16 } },
+  { dev: 'ipad', file: 'ipad-2-styles.png', head: 'Style the page\nyour way', sub: 'Five page styles, from clean to manuscript.', doc: 'report', settings: { view: 'split', split: 0.46, outline: false, ribbonTab: 'layout', pageStyle: 'manuscript', edSize: 16 } },
+  { dev: 'ipad', file: 'ipad-3-math.png', head: 'Math and diagrams,\ndrawn for you', sub: 'LaTeX and Mermaid, right on the page.', doc: 'unit', settings: { view: 'split', split: 0.46, outline: false, ribbonCollapsed: true, edSize: 16 } },
+  { dev: 'ipad', file: 'ipad-4-files.png', head: 'All your writing,\nin one place', sub: 'Folders, pins and search across everything.', doc: 'brief', settings: { view: 'split', split: 0.2 }, act: sideDocs },
+  { dev: 'ipad', file: 'ipad-5-page.png', head: 'A clean page,\nready to print', sub: 'Letter or A4, printed or saved as PDF.', doc: 'brief', settings: { view: 'preview' } },
+  { dev: 'ipad', file: 'ipad-6-export.png', head: 'Share it as PDF\nor Word', sub: 'Export, print or copy with formatting.', doc: 'brief', settings: { view: 'split', split: 0.46 }, act: exportMenu },
   // Mac
-  { dev: 'mac', file: 'mac-1-split.png', head: 'Write Markdown. See the page.', sub: 'Plain text on the left, a clean, printable page on the right.', doc: 'garden', settings: { ...MAC_BIG } },
-  { dev: 'mac', file: 'mac-2-styles.png', head: 'Make it look like a book', sub: 'Five page styles, from clean to manuscript, on Letter or A4.', doc: 'chapter', settings: { ...MAC_BIG, ribbonTab: 'layout', pageStyle: 'manuscript' } },
-  { dev: 'mac', file: 'mac-3-math.png', head: 'Math and diagrams, drawn for you', sub: 'LaTeX equations and Mermaid charts, right on the page.', doc: 'orbits', settings: { ...MAC_BIG } },
-  { dev: 'mac', file: 'mac-4-files.png', head: 'All your writing, in one place', sub: 'Folders, pins and search across every document.', doc: 'lisbon', settings: { view: 'split', split: 0.5, outline: true, sideTab: 'docs' } },
-  { dev: 'mac', file: 'mac-5-page.png', head: 'A page you can print', sub: 'Letter or A4, ready to print or save as PDF.', doc: 'garden', settings: { view: 'preview', outline: true, sideTab: 'outline' } },
-  { dev: 'mac', file: 'mac-6-export.png', head: 'Share it as PDF or Word', sub: 'Export, print, or copy with formatting into Docs or Mail.', doc: 'garden', settings: { view: 'split', split: 0.44 }, act: exportMenu },
+  { dev: 'mac', file: 'mac-1-split.png', head: 'Write Markdown. See the page.', sub: 'Plain text on the left, a clean, printable page on the right.', doc: 'brief', settings: { ...MAC_BIG } },
+  { dev: 'mac', file: 'mac-2-styles.png', head: 'Style the page your way', sub: 'Five page styles, from clean to manuscript, on Letter or A4.', doc: 'report', settings: { ...MAC_BIG, ribbonTab: 'layout', pageStyle: 'manuscript' } },
+  { dev: 'mac', file: 'mac-3-math.png', head: 'Math and diagrams, drawn for you', sub: 'LaTeX equations and Mermaid charts, right on the page.', doc: 'unit', settings: { ...MAC_BIG } },
+  { dev: 'mac', file: 'mac-4-files.png', head: 'All your writing, in one place', sub: 'Folders, pins and search across every document.', doc: 'brief', settings: { view: 'split', split: 0.5, outline: true, sideTab: 'docs' } },
+  { dev: 'mac', file: 'mac-5-page.png', head: 'A clean page, ready to print', sub: 'Letter or A4, printed or saved as PDF.', doc: 'brief', settings: { view: 'preview', outline: true, sideTab: 'outline' } },
+  { dev: 'mac', file: 'mac-6-export.png', head: 'Share it as PDF or Word', sub: 'Export, print, or copy with formatting into Docs or Mail.', doc: 'brief', settings: { view: 'split', split: 0.44 }, act: exportMenu },
+  // Google Play (Android phone, unframed): the same stories as the iPhone's.
+  { dev: 'android', out: 'play', file: 'phone-1.png', doc: 'brief' },
+  { dev: 'android', out: 'play', file: 'phone-2.png', doc: 'brief', content: BRIEF_WRITE, act: phoneSelect(2, 'mobile checkout') },
+  { dev: 'android', out: 'play', file: 'phone-3.png', doc: 'unit', act: scrollPage('#preview p:has(+ h2:nth-of-type(3))') },
+  { dev: 'android', out: 'play', file: 'phone-4.png', doc: 'report', settings: { pageStyle: 'manuscript' } },
+  { dev: 'android', out: 'play', file: 'phone-5.png', doc: 'brief', act: phoneDocs },
+  { dev: 'android', out: 'play', file: 'phone-6.png', doc: 'brief', act: phoneSheet('share') },
 ];
 
 /* ---------------- actions ---------------- */
@@ -321,13 +352,17 @@ async function sideDocs(p) { await p.locator('.rail-btn[data-rail="docs"]').clic
 async function exportMenu(p) { await p.locator('#exportBtn').click(); await p.waitForTimeout(500); }
 
 /* ---------------- capture ---------------- */
+// The app's clock: the family's MAC_CLOCK time ('Wed Nov 25  9:41 AM', 2026), so "edited 4 minutes ago" and every
+// other time the app shows are the same on each run, and the Mac's menu bar agrees with them.
+const NOW = { time: '2026-11-25T09:41:00-08:00', zone: 'America/Los_Angeles', locale: 'en-US' };
+const VERSION = JSON.parse(fs.readFileSync(path.join(root, 'desktop/src-tauri/tauri.conf.json'), 'utf8')).version;
 const browser = await playwright.chromium.launch({ executablePath: exe });
 
 async function capture(story) {
   const D = DEVICES[story.dev];
   const ctx = await browser.newContext({
-    viewport: { width: D.screen[0], height: D.screen[1] }, deviceScaleFactor: D.scale, colorScheme: 'dark',
-    userAgent: D.ua, isMobile: story.dev === 'iphone', hasTouch: D.touch > 0, reducedMotion: 'reduce',
+    viewport: { width: D.screen[0], height: D.screen[1] }, deviceScaleFactor: D.scale, colorScheme: 'dark', locale: NOW.locale, timezoneId: NOW.zone,
+    userAgent: D.ua, isMobile: story.dev === 'iphone' || story.dev === 'android', hasTouch: D.touch > 0, reducedMotion: 'reduce',
   });
   const p = await ctx.newPage();
   const cdp = await ctx.newCDPSession(p);
@@ -335,9 +370,10 @@ async function capture(story) {
   // Reduce Transparency (an iOS and macOS accessibility setting): sheets dim the page instead of blurring it,
   // so the page behind stays readable in a small picture.
   await cdp.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-transparency', value: 'reduce' }, { name: 'prefers-color-scheme', value: 'dark' }] });
-  const now = Date.now();
+  await ctx.clock.setSystemTime(new Date(NOW.time));
+  const now = new Date(NOW.time).getTime();
   const library = LIBRARY.map(({ ago, ...d }) => ({ ...d, ...(d.id === story.doc && story.content ? { content: story.content } : {}), updated: now - ago }));
-  await p.addInitScript(([hash, settings, library, current, D, mac]) => {
+  await p.addInitScript(([hash, settings, library, current, D, mac, VERSION]) => {
     Object.defineProperty(Navigator.prototype, 'platform', { get: () => D.platform });
     Object.defineProperty(Navigator.prototype, 'maxTouchPoints', { get: () => D.touch });
     localStorage.setItem('cowdrey.md:terms', JSON.stringify(hash));
@@ -350,9 +386,9 @@ async function capture(story) {
     if (mac) Object.defineProperty(window, '__COWDREY_APP_STORE__', { value: true });
     window.__TAURI__ = {
       core: { invoke: async (c) => (c === 'take_opened_files' ? [] : null) },
-      app: { getVersion: async () => '2.0.2' }, dialog: {}, event: { listen: async () => {} }, opener: { openUrl: async () => {} },
+      app: { getVersion: async () => VERSION }, dialog: {}, event: { listen: async () => {} }, opener: { openUrl: async () => {} },
     };
-  }, [TERMS_HASH, { appTheme: 'dark', openTabs: [story.doc], ...story.settings }, library, story.doc, D, story.dev === 'mac']);
+  }, [TERMS_HASH, { appTheme: 'dark', openTabs: [story.doc], ...story.settings }, library, story.doc, D, story.dev === 'mac', VERSION]);
   await ctx.route('**/*', (route) => {
     const u = new URL(route.request().url());
     if (u.host !== 'app.test') return route.abort();
@@ -381,13 +417,24 @@ async function capture(story) {
 
 /* ---------------- frame ---------------- */
 // The family template (tests/store-frame.mjs, the same file in Cowdrey.PDF) in Cowdrey.MD's blue.
-const compose = (story, png) => frame(browser, story.dev, { ...story, png, title: 'Cowdrey.MD' }, THEMES.md, FONTS);
+// iPhone and iPad: every headline in the set is two lines (lines: 2, so the iPhone sits at the two-line height).
+// The Mac: one headline line; the window at its real point size on the family desktop (the menu bar with the app's
+// name and MAC_CLOCK, the Dock hidden) with the template's title bar, and that desktop on the MacBook.
+async function compose(story, png) {
+  if (story.dev === 'android') return png; // Google Play's pictures are the bare screen
+  if (story.dev !== 'mac') return frame(browser, story.dev, { ...story, png, title: 'Cowdrey.MD', lines: 2 }, THEMES.md, FONTS);
+  const D = DEVICES.mac;
+  const screen = await desktop(browser, { theme: THEMES.md, app: 'Cowdrey.MD', fonts: FONTS,
+    windows: [{ png, w: D.screen[0], h: D.screen[1] + D.titlebar, chrome: 'window' }] });
+  return frame(browser, 'mac', { head: story.head.replace(/\n/g, ' '), sub: story.sub, device: 'macbook', png: screen, file: story.file }, THEMES.md, FONTS);
+}
 
 fs.mkdirSync(OUT, { recursive: true });
 for (const story of STORIES) {
   if (ONLY && !ONLY.test(story.file)) continue;
   const png = await capture(story);
-  fs.writeFileSync(path.join(OUT, story.file), await compose(story, png));
-  console.log('wrote', path.join(OUT, story.file));
+  const out = story.out === 'play' ? (process.argv[2] ? OUT : path.join(root, 'docs/play')) : OUT;
+  fs.writeFileSync(path.join(out, story.file), await compose(story, png));
+  console.log('wrote', path.join(out, story.file));
 }
 await browser.close();

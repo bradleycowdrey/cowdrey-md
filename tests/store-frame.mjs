@@ -227,7 +227,9 @@ export async function compose(browser, kind, story, theme, fonts) {
 //   extras: [{ png, x, y, w, h, radius }] widgets on the desktop under the windows (radius in points, default 22).
 //   menuExtra: { text, icon } the app's menu-bar item, e.g. { text: '55° · 13°', icon: 'sun' }; icon is 'sun',
 //     an <svg> string drawn in white (currentColor) or a PNG Buffer.
-//   clock: MAC_CLOCK by default, the same on every app; apps do not pass their own.
+//   clock: MAC_CLOCK by default, the same on every app; apps do not pass their own, with one exception: an app
+//     whose captured window itself shows the current time passes that same time, formatted like MAC_CLOCK
+//     (e.g. 'Wed Nov 25  8:36 PM'), so the menu bar never contradicts the app.
 //   dock: false (default; the Dock hidden) or { icon: png } for a Dock holding the app's icon with its running dot.
 //   fonts: { instrument } (base64 of instrument-sans.woff2); left out, it is read from beside this file if there.
 const APPLE = `<svg viewBox="0 0 100 100"><defs><mask id="bite"><rect width="100" height="100" fill="#fff"/>
@@ -246,7 +248,7 @@ const ICONS = {
     <rect x="1" y="9.1" width="16" height="5.4" rx="2.7"/><circle cx="5.2" cy="4.2" r="1.7" fill="currentColor" stroke="none"/><circle cx="12.8" cy="11.8" r="1.7" fill="currentColor" stroke="none"/></svg>`,
 };
 
-// The one menu-bar clock of the family: every app's desktop shows this time.
+// The one menu-bar clock of the family: every app's desktop shows this time (save an app whose window shows the time).
 export const MAC_CLOCK = 'Wed Nov 25  9:41 AM';
 
 // The wallpaper: theme.desk [top, middle, bottom] with a soft light at the top right and the bottom colour glowing

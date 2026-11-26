@@ -39,8 +39,9 @@ const DEVICES = {
     ua: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
     platform: 'MacIntel', touch: 5, mobile: true,
   },
-  mac: { // a 1120x700 point window (the native 28 pt title bar is drawn by desktop()), about 74% of the MacBook's screen
-    canvas: [2880, 1800], screen: [1120, 672], scale: 2, inset: null,
+  mac: { // a 1280x812 point window (the native 28 pt title bar is drawn by desktop()): wide enough that the sidebar
+    // docks beside the document (the app overlays it at 1180 pt and below), about 85% of the MacBook's screen
+    canvas: [2880, 1800], screen: [1280, 784], scale: 2, inset: null,
     ua: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
     platform: 'MacIntel', touch: 0, mobile: false,
   },
@@ -277,12 +278,17 @@ const STORIES = [
   { dev: 'ipad', file: 'ipad-5-page.png', head: 'A page you can print', sub: 'Letter or A4, ready to print or save as PDF.', doc: 'lisbon', settings: { view: 'preview' } },
   { dev: 'ipad', file: 'ipad-6-export.png', head: 'Share it as PDF\nor Word', sub: 'Export, print or copy with formatting.', doc: 'garden', settings: { view: 'split', split: 0.46 }, act: exportMenu },
   // Mac
+  // (each Mac picture opens its own document, so the set never repeats itself; the Garden plan opens twice, the second
+  // time behind the Export menu)
   { dev: 'mac', file: 'mac-1-split.png', head: 'Write Markdown. See the page.', sub: 'Plain text on the left, a clean, printable page on the right.', doc: 'garden', settings: { ...MAC_BIG } },
   { dev: 'mac', file: 'mac-2-styles.png', head: 'Make it look like a book', sub: 'Five page styles, from clean to manuscript, on Letter or A4.', doc: 'chapter', settings: { ...MAC_BIG, ribbonTab: 'layout', pageStyle: 'manuscript' } },
-  { dev: 'mac', file: 'mac-3-math.png', head: 'Math and diagrams, drawn for you', sub: 'LaTeX equations and Mermaid charts, right on the page.', doc: 'orbits', settings: { ...MAC_BIG } },
-  { dev: 'mac', file: 'mac-4-files.png', head: 'All your writing, in one place', sub: 'Folders, pins and search across every document.', doc: 'lisbon', settings: { view: 'split', split: 0.5, outline: true, sideTab: 'docs' }, act: sideDocs },
-  { dev: 'mac', file: 'mac-5-page.png', head: 'A page you can print', sub: 'Letter or A4, ready to print or save as PDF.', doc: 'garden', settings: { view: 'preview', outline: true, sideTab: 'outline' } },
-  { dev: 'mac', file: 'mac-6-export.png', head: 'Share it as PDF or Word', sub: 'Export, print, or copy with formatting into Docs or Mail.', doc: 'garden', settings: { view: 'split', split: 0.44 }, act: exportMenu },
+  // Scrolled to the last equation, so the page shows math and the Mermaid chart together, and the Markdown the
+  // same lines. (On the Mac, Sync scrolling is off, so each pane keeps the place it is scrolled to: see cleanEdges.)
+  { dev: 'mac', file: 'mac-3-math.png', head: 'Math and diagrams, drawn for you', sub: 'LaTeX equations and Mermaid charts, right on the page.', doc: 'orbits', settings: { ...MAC_BIG }, act: scrollBoth('## Energy of an orbit', '#preview h2:nth-of-type(3)') },
+  // The sidebar docked beside a short document (the week's meeting notes), so nothing is covered or cut.
+  { dev: 'mac', file: 'mac-4-files.png', head: 'All your writing, in one place', sub: 'Folders, pins and search across every document.', doc: 'meeting', settings: { view: 'split', split: 0.5, outline: true, sideTab: 'docs' } },
+  { dev: 'mac', file: 'mac-5-page.png', head: 'A page you can print', sub: 'Letter or A4, ready to print or save as PDF.', doc: 'lisbon', settings: { view: 'preview', outline: true, sideTab: 'outline' } },
+  { dev: 'mac', file: 'mac-6-export.png', head: 'Share it as PDF or Word', sub: 'Export, print, or copy with formatting into Docs or Mail.', doc: 'garden', settings: { view: 'split', split: 0.44, outline: false }, act: exportMenu },
 ];
 
 /* ---------------- actions ---------------- */
@@ -316,6 +322,50 @@ function phoneSheet(kind, line) {
 }
 function scrollPage(sel) {
   return async (p) => { await p.evaluate((sel) => { const el = document.querySelector(sel); const c = document.querySelector('#canvas'); if (el && c) c.scrollTop = el.getBoundingClientRect().top - c.getBoundingClientRect().top - 12; }, sel); await p.waitForTimeout(300); };
+}
+// The editor scrolled to the line holding \`text\`, and the page to the element \`sel\` (for split view with sync off).
+function scrollBoth(text, sel) {
+  return async (p) => {
+    await p.evaluate((text) => { const cm = document.querySelector('.CodeMirror').CodeMirror; let l = 0; while (l < cm.lineCount() && !cm.getLine(l).includes(text)) l++; cm.scrollTo(null, cm.heightAtLine(l, 'local') - 12); }, text);
+    await scrollPage(sel)(p);
+  };
+}
+// Ends every scrolling pane at a clean break: each pane (the Markdown, the page, the sidebar) is scrolled up or down by
+// the least amount (64 px at most) that leaves no line of text, and where possible no box (a callout, a table row, a
+// list entry, a chart), cut by its top or bottom edge. Returns the panes it could not clear.
+async function cleanEdges(p) {
+  const left = await p.evaluate(() => {
+    const panes = [document.querySelector('.CodeMirror-scroll'), document.querySelector('#canvas'), ...document.querySelectorAll('.side-body')]
+      .filter((el) => el && el.offsetParent && el.clientHeight > 40);
+    const bad = [];
+    for (const el of panes) {
+      const isCm = el.classList.contains('CodeMirror-scroll'); // its box runs past the editor's (CodeMirror's padding trick)
+      const r = (isCm ? el.closest('.CodeMirror') : el).getBoundingClientRect(), vt = r.top + (isCm ? 0 : el.clientTop), vb = isCm ? r.bottom : vt + el.clientHeight;
+      const lines = [], boxes = [];
+      const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, { acceptNode: (n) => (n.textContent.trim() ? 1 : 2) });
+      const rg = document.createRange();
+      for (let n; (n = walk.nextNode());) { rg.selectNodeContents(n); for (const q of rg.getClientRects()) if (q.height > 2) lines.push([q.top + 2, q.bottom - 2]); }
+      for (const b of el.querySelectorAll('svg, img, .katex-display, .katex, tr, blockquote, .callout, .markdown-alert, pre, li, [class*="doc-item"], [class*="doc-row"], .side-doc, hr')) {
+        const q = b.getBoundingClientRect(); if (q.height > 2 && q.height < el.clientHeight * 0.4) boxes.push([q.top, q.bottom]);
+      }
+      // A heading in full view stays in view: the picture keeps the section it was scrolled to.
+      const keep = [...el.querySelectorAll('h1, h2, h3, h4')].map((h) => h.getBoundingClientRect()).filter((q) => q.height && q.top >= vt && q.bottom <= vb);
+      const cut = (set, d) => keep.some((q) => q.top - d < vt || q.bottom - d > vb) || set.some(([t, bt]) => (t - d < vt && bt - d > vt) || (t - d < vb && bt - d > vb));
+      const down = Math.min(64, el.scrollHeight - el.clientHeight - el.scrollTop), up = Math.min(64, el.scrollTop);
+      const steps = [0]; for (let i = 1; i <= 64; i++) { if (i <= down) steps.push(i); if (i <= up) steps.push(-i); }
+      let best = null;
+      for (const set of [[...lines, ...boxes], lines]) {
+        best = steps.find((d) => !cut(set, d)) ?? null;
+        if (best !== null) break;
+      }
+      if (best === null) { bad.push(el.id || el.className); continue; }
+      if (isCm) { const cm = el.closest('.CodeMirror').CodeMirror; cm.scrollTo(null, el.scrollTop + best); }
+      else el.scrollTop += best;
+    }
+    return bad;
+  });
+  await p.waitForTimeout(300);
+  return left;
 }
 async function phoneDocs(p) { await p.locator('#mBar [data-m="docs"]').click(); await p.waitForTimeout(500); }
 async function sideDocs(p) { await p.locator('.rail-btn[data-rail="docs"]').click(); await p.waitForTimeout(500); }
@@ -353,7 +403,7 @@ async function capture(story) {
       core: { invoke: async (c) => (c === 'take_opened_files' ? [] : null) },
       app: { getVersion: async () => '2.0.2' }, dialog: {}, event: { listen: async () => {} }, opener: { openUrl: async () => {} },
     };
-  }, [TERMS_HASH, { appTheme: 'dark', openTabs: [story.doc], ...story.settings }, library, story.doc, D, story.dev === 'mac']);
+  }, [TERMS_HASH, { appTheme: 'dark', openTabs: [story.doc], ...(story.dev === 'mac' ? { sync: false } : {}), ...story.settings }, library, story.doc, D, story.dev === 'mac']);
   await ctx.route('**/*', (route) => {
     const u = new URL(route.request().url());
     if (u.host !== 'app.test') return route.abort();
@@ -372,6 +422,11 @@ async function capture(story) {
   await p.waitForFunction(() => document.querySelector('.CodeMirror') && document.querySelector('#page'), null, { timeout: 20000 });
   await p.waitForTimeout(2500); // math, diagrams and fonts
   if (story.act) await story.act(p);
+  if (story.dev === 'mac') { // twice: CodeMirror draws the lines it scrolls into view
+    await cleanEdges(p);
+    const left = await cleanEdges(p);
+    if (left.length) console.warn(story.file, 'cut at the edge of', left.join(', '));
+  }
   if (!D.mobile) await p.mouse.move(D.screen[0] - 1, D.screen[1] - 1);
   await p.waitForTimeout(400);
   const png = await p.screenshot();

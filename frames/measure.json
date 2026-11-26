@@ -1,0 +1,306 @@
+[
+ {
+  "app": "Cowdrey.MD",
+  "kind": "iphone",
+  "file": "iphone-1-write.png",
+  "eyebrow": {
+   "fontFamily": "Inter Store",
+   "fontSize": 39,
+   "fontWeight": "600",
+   "letterSpacing": "0.78px",
+   "lineHeight": "39px",
+   "color": "rgba(255, 255, 255, 0.78)",
+   "top": 150,
+   "bottom": 189
+  },
+  "headline": {
+   "fontFamily": "Fraunces",
+   "fontSize": 108,
+   "fontWeight": "560",
+   "letterSpacing": "-1.62px",
+   "lineHeight": "113.4px",
+   "color": "rgb(255, 255, 255)",
+   "top": 213,
+   "bottom": 440,
+   "lines": 2
+  },
+  "subhead": {
+   "fontFamily": "Inter Store",
+   "fontSize": 51,
+   "fontWeight": "600",
+   "letterSpacing": "-0.51px",
+   "lineHeight": "61.2px",
+   "color": "rgba(255, 255, 255, 0.92)",
+   "top": 470,
+   "bottom": 531
+  },
+  "eyebrowBaseline": 184,
+  "deviceTop": 640
+ },
+ {
+  "app": "Cowdrey.MD",
+  "kind": "iphone",
+  "file": "iphone-2-page.png",
+  "eyebrow": {
+   "fontFamily": "Inter Store",
+   "fontSize": 39,
+   "fontWeight": "600",
+   "letterSpacing": "0.78px",
+   "lineHeight": "39px",
+   "color": "rgba(255, 255, 255, 0.78)",
+   "top": 150,
+   "bottom": 189
+  },
+  "headline": {
+   "fontFamily": "Fraunces",
+   "fontSize": 108,
+   "fontWeight": "560",
+   "letterSpacing": "-1.62px",
+   "lineHeight": "113.4px",
+   "color": "rgb(255, 255, 255)",
+   "top": 213,
+   "bottom": 440,
+   "lines": 2
+  },
+  "subhead": {
+   "fontFamily": "Inter Store",
+   "fontSize": 51,
+   "fontWeight": "600",
+   "letterSpacing": "-0.51px",
+   "lineHeight": "61.2px",
+   "color": "rgba(255, 255, 255, 0.92)",
+   "top": 470,
+   "bottom": 531
+  },
+  "eyebrowBaseline": 184,
+  "deviceTop": 640
+ },
+ {
+  "app": "Cowdrey.MD",
+  "kind": "iphone",
+  "file": "iphone-3-math-dark.png",
+  "eyebrow": {
+   "fontFamily": "Inter Store",
+   "fontSize": 39,
+   "fontWeight": "600",
+   "letterSpacing": "0.78px",
+   "lineHeight": "39px",
+   "color": "rgba(255, 255, 255, 0.78)",
+   "top": 150,
+   "bottom": 189
+  },
+  "headline": {
+   "fontFamily": "Fraunces",
+   "fontSize": 108,
+   "fontWeight": "560",
+   "letterSpacing": "-1.62px",
+   "lineHeight": "113.4px",
+   "color": "rgb(255, 255, 255)",
+   "top": 213,
+   "bottom": 440,
+   "lines": 2
+  },
+  "subhead": {
+   "fontFamily": "Inter Store",
+   "fontSize": 51,
+   "fontWeight": "600",
+   "letterSpacing": "-0.51px",
+   "lineHeight": "61.2px",
+   "color": "rgba(255, 255, 255, 0.92)",
+   "top": 470,
+   "bottom": 531
+  },
+  "eyebrowBaseline": 184,
+  "deviceTop": 640
+ },
+ {
+  "app": "Cowdrey.MD",
+  "kind": "iphone",
+  "file": "iphone-4-format.png",
+  "eyebrow": {
+   "fontFamily": "Inter Store",
+   "fontSize": 39,
+   "fontWeight": "600",
+   "letterSpacing": "0.78px",
+   "lineHeight": "39px",
+   "color": "rgba(255, 255, 255, 0.78)",
+   "top": 150,
+   "bottom": 189
+  },
+  "headline": {
+   "fontFamily": "Fraunces",
+   "fontSize": 108,
+   "fontWeight": "560",
+   "letterSpacing": "-1.62px",
+   "lineHeight": "113.4px",
+   "color": "rgb(255, 255, 255)",
+   "top": 213,
+   "bottom": 440,
+   "lines": 2
+  },
+  "subhead": {
+   "fontFamily": "Inter Store",
+   "fontSize": 51,
+   "fontWeight": "600",
+   "letterSpacing": "-0.51px",
+   "lineHeight": "61.2px",
+   "color": "rgba(255, 255, 255, 0.92)",
+   "top": 470,
+   "bottom": 531
+  },
+  "eyebrowBaseline": 184,
+  "deviceTop": 640
+ },
+ {
+  "app": "Cowdrey.MD",
+  "kind": "iphone",
+  "file": "iphone-5-insert.png",
+  "eyebrow": {
+   "fontFamily": "Inter Store",
+   "fontSize": 39,
+   "fontWeight": "600",
+   "letterSpacing": "0.78px",
+   "lineHeight": "39px",
+   "color": "rgba(255, 255, 255, 0.78)",
+   "top": 150,
+   "bottom": 189
+  },
+  "headline": {
+   "fontFamily": "Fraunces",
+   "fontSize": 108,
+   "fontWeight": "560",
+   "letterSpacing": "-1.62px",
+   "lineHeight": "113.4px",
+   "color": "rgb(255, 255, 255)",
+   "top": 213,
+   "bottom": 440,
+   "lines": 2
+  },
+  "subhead": {
+   "fontFamily": "Inter Store",
+   "fontSize": 51,
+   "fontWeight": "600",
+   "letterSpacing": "-0.51px",
+   "lineHeight": "61.2px",
+   "color": "rgba(255, 255, 255, 0.92)",
+   "top": 470,
+   "bottom": 531
+  },
+  "eyebrowBaseline": 184,
+  "deviceTop": 640
+ },
+ {
+  "app": "Cowdrey.MD",
+  "kind": "ipad",
+  "file": "ipad-1-split.png",
+  "eyebrow": {
+   "fontFamily": "Inter Store",
+   "fontSize": 52,
+   "fontWeight": "600",
+   "letterSpacing": "1.04px",
+   "lineHeight": "52px",
+   "color": "rgba(255, 255, 255, 0.78)",
+   "top": 160,
+   "bottom": 212
+  },
+  "headline": {
+   "fontFamily": "Fraunces",
+   "fontSize": 144,
+   "fontWeight": "560",
+   "letterSpacing": "-2.16px",
+   "lineHeight": "151.2px",
+   "color": "rgb(255, 255, 255)",
+   "top": 244,
+   "bottom": 395,
+   "lines": 1
+  },
+  "subhead": {
+   "fontFamily": "Inter Store",
+   "fontSize": 68,
+   "fontWeight": "600",
+   "letterSpacing": "-0.68px",
+   "lineHeight": "81.6px",
+   "color": "rgba(255, 255, 255, 0.92)",
+   "top": 431,
+   "bottom": 513
+  },
+  "eyebrowBaseline": 204,
+  "deviceTop": 600
+ },
+ {
+  "app": "Cowdrey.MD",
+  "kind": "ipad",
+  "file": "ipad-2-math-dark.png",
+  "eyebrow": {
+   "fontFamily": "Inter Store",
+   "fontSize": 52,
+   "fontWeight": "600",
+   "letterSpacing": "1.04px",
+   "lineHeight": "52px",
+   "color": "rgba(255, 255, 255, 0.78)",
+   "top": 160,
+   "bottom": 212
+  },
+  "headline": {
+   "fontFamily": "Fraunces",
+   "fontSize": 144,
+   "fontWeight": "560",
+   "letterSpacing": "-2.16px",
+   "lineHeight": "151.2px",
+   "color": "rgb(255, 255, 255)",
+   "top": 244,
+   "bottom": 395,
+   "lines": 1
+  },
+  "subhead": {
+   "fontFamily": "Inter Store",
+   "fontSize": 68,
+   "fontWeight": "600",
+   "letterSpacing": "-0.68px",
+   "lineHeight": "81.6px",
+   "color": "rgba(255, 255, 255, 0.92)",
+   "top": 431,
+   "bottom": 513
+  },
+  "eyebrowBaseline": 204,
+  "deviceTop": 600
+ },
+ {
+  "app": "Cowdrey.MD",
+  "kind": "ipad",
+  "file": "ipad-3-page.png",
+  "eyebrow": {
+   "fontFamily": "Inter Store",
+   "fontSize": 52,
+   "fontWeight": "600",
+   "letterSpacing": "1.04px",
+   "lineHeight": "52px",
+   "color": "rgba(255, 255, 255, 0.78)",
+   "top": 160,
+   "bottom": 212
+  },
+  "headline": {
+   "fontFamily": "Fraunces",
+   "fontSize": 144,
+   "fontWeight": "560",
+   "letterSpacing": "-2.16px",
+   "lineHeight": "151.2px",
+   "color": "rgb(255, 255, 255)",
+   "top": 244,
+   "bottom": 395,
+   "lines": 1
+  },
+  "subhead": {
+   "fontFamily": "Inter Store",
+   "fontSize": 68,
+   "fontWeight": "600",
+   "letterSpacing": "-0.68px",
+   "lineHeight": "81.6px",
+   "color": "rgba(255, 255, 255, 0.92)",
+   "top": 431,
+   "bottom": 513
+  },
+  "eyebrowBaseline": 204,
+  "deviceTop": 600
+ }
+]

@@ -1,0 +1,68 @@
+Using /Applications/Xcode_26.6.0.app
+Xcode 26.6
+Build version 17F113
+⚙️  Generating project...
+⚙️  Writing project...
+Created project at /Users/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/apple/cowdrey-md.xcodeproj
+victory: Project generated successfully!
+    Make cool apps! 🌻 🐕 🎉
+{ platform:iOS Simulator, arch:arm64, id:2C358D2A-D903-489E-9517-1EE4B2273E04, OS:26.5, name:iPad (A16) }
+{ platform:iOS Simulator, arch:arm64, id:ABF743D3-A9E9-4317-BB4C-DDCFB58C38DE, OS:26.2, name:iPad Air 11-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:0BA81479-0013-4163-9C1B-8657B690465D, OS:26.4.1, name:iPad Air 11-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:B93AC885-30EF-40D3-911E-AFBFE471286C, OS:26.5, name:iPad Air 11-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:2DA453A7-F093-478D-A736-C479712036A4, OS:26.2, name:iPad Air 13-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:D443F0B4-5BAC-4C52-B5C9-C4150281B9AF, OS:26.4.1, name:iPad Air 13-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:A3140D84-3F55-44CB-A4E0-BB0E256CBD79, OS:26.5, name:iPad Air 13-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:EEF7FA09-1BF7-4CA0-A381-5F0A883FF632, OS:26.2, name:iPad Pro 11-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:01CB0E86-839C-47B2-B57E-9431B8B2C21C, OS:26.4.1, name:iPad Pro 11-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:E6D22F64-35F4-4792-92E9-462C0B7C23BA, OS:26.5, name:iPad Pro 11-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:70A7952C-F289-459B-8875-D154D551E8CB, OS:26.2, name:iPad Pro 13-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:2239CD22-6BE3-4D11-B927-9245F8915748, OS:26.4.1, name:iPad Pro 13-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:2A020491-3EBC-4783-8622-F8314CC00294, OS:26.5, name:iPad Pro 13-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:706151BA-6C80-4F5B-97B9-6326F6122EB2, OS:26.2, name:iPad mini (A17 Pro) }
+{ platform:iOS Simulator, arch:arm64, id:518E4C9C-4259-4885-AA50-B803C3DE2D05, OS:26.4.1, name:iPad mini (A17 Pro) }
+{ platform:iOS Simulator, arch:arm64, id:BB3AAE9A-1B8F-4B6F-B536-0744287562C8, OS:26.5, name:iPad mini (A17 Pro) }
+{ platform:iOS Simulator, arch:arm64, id:16AFAE62-8F15-4D89-8041-9A6510AE4913, OS:26.2, name:iPhone 16e }
+{ platform:iOS Simulator, arch:arm64, id:44BD2F18-416F-4F70-B2C2-BE4EBA0C2F50, OS:26.2, name:iPhone 17 }
+{ platform:iOS Simulator, arch:arm64, id:AC5CE080-DB21-4BF7-9D4E-7C217DE28A05, OS:26.4.1, name:iPhone 17 }
+{ platform:iOS Simulator, arch:arm64, id:8EBAA496-5654-45BF-897F-3C4FD73935F1, OS:26.5, name:iPhone 17 }
+{ platform:iOS Simulator, arch:arm64, id:EED6FB0A-E273-43C6-B5DE-3DF739543042, OS:26.2, name:iPhone 17 Pro }
+{ platform:iOS Simulator, arch:arm64, id:27012C89-9706-4CDE-88BB-4B380B6C743A, OS:26.4.1, name:iPhone 17 Pro }
+{ platform:iOS Simulator, arch:arm64, id:6478AFFB-AE17-412A-A1E5-51BCFFD300B6, OS:26.5, name:iPhone 17 Pro }
+{ platform:iOS Simulator, arch:arm64, id:0BF273CD-70D1-4646-BE79-A0E7EF224D18, OS:26.2, name:iPhone 17 Pro Max }
+{ platform:iOS Simulator, arch:arm64, id:1F8E0003-51CF-4174-9E6D-318240CEC150, OS:26.4.1, name:iPhone 17 Pro Max }
+{ platform:iOS Simulator, arch:arm64, id:F90353E4-F95D-488C-9F4E-B43F74E385F2, OS:26.5, name:iPhone 17 Pro Max }
+{ platform:iOS Simulator, arch:arm64, id:43DAE57B-B4CA-4DCA-A549-1B77CCB00A5C, OS:26.4.1, name:iPhone 17e }
+{ platform:iOS Simulator, arch:arm64, id:229240FC-DED4-405A-8908-553295E30D59, OS:26.5, name:iPhone 17e }
+{ platform:iOS Simulator, arch:arm64, id:80B56851-B786-47DE-8EE4-83ACFC3CD092, OS:26.2, name:iPhone Air }
+{ platform:iOS Simulator, arch:arm64, id:0D8D9D1E-9F70-4295-B4D0-A00F03A97002, OS:26.4.1, name:iPhone Air }
+{ platform:iOS Simulator, arch:arm64, id:CE12A219-9F8C-4450-97EA-8C58715BECFC, OS:26.5, name:iPhone Air }
+{ platform:visionOS Simulator, arch:arm64, variant:Designed for [iPad,iPhone], id:9C68DD66-0BB9-4C08-B7BF-9A91F7FA547B, OS:26.2, name:Apple Vision Pro }
+{ platform:visionOS Simulator, arch:arm64, variant:Designed for [iPad,iPhone], id:3D06C66B-45C9-4FD2-B9AF-D85A173707A6, OS:26.4.1, name:Apple Vision Pro }
+{ platform:visionOS Simulator, arch:arm64, variant:Designed for [iPad,iPhone], id:6023AC0F-9C55-4618-95B5-F1C3C17A5E60, OS:26.5, name:Apple Vision Pro }
+{ platform:macOS, arch:arm64, variant:Designed for [iPad,iPhone], id:26a236b294edc35503d5c1d4a1bb59cceed559c9, name:My Mac }
+        Info connection; remote_addr=127.0.0.1:49229 conn_id=1
+warning: The application supports opening files, but doesn't declare whether it supports opening them in place. You can add an LSSupportsOpeningDocumentsInPlace entry or an UISupportsDocumentBrowser entry to your Info.plist to declare support. (in target 'cowdrey-md_iOS' from project 'cowdrey-md')
+note: Run script build phase 'Build Rust Code' will be run during every build because the option to run the script phase "Based on dependency analysis" is unchecked. (in target 'cowdrey-md_iOS' from project 'cowdrey-md')
+failed to rename app /Users/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/apple/build/cowdrey-md_iOS.xcarchive/Products/Applications/Cowdrey.app: No such file or directory (os error 2)
+       Error failed to rename app /Users/runner/work/cowdrey-md/cowdrey-md/desktop/src-tauri/gen/apple/build/cowdrey-md_iOS.xcarchive/Products/Applications/Cowdrey.app: No such file or directory (os error 2)
+App: src-tauri/gen/apple/build/cowdrey-md_iOS.xcarchive/Products/Applications/Cowdrey.MD.app
+iphone: iPhone 17 Pro Max, iOS 26.5
+iphone-1-write.png 1320 2868
+iphone-2-page.png 1320 2868
+iphone-3-math-dark.png 1320 2868
+iphone-4-format.png 1320 2868
+iphone-5-insert.png 1320 2868
+ipad: iPad Pro 13-inch (M5) (16GB), iOS 26.5
+ipad-1-split.png 2064 2752
+ipad-2-math-dark.png 2064 2752
+ipad-3-page.png 2064 2752
+wrote /Users/runner/work/_temp/frames/iphone-1-write.png
+wrote /Users/runner/work/_temp/frames/iphone-2-page.png
+wrote /Users/runner/work/_temp/frames/iphone-3-math-dark.png
+wrote /Users/runner/work/_temp/frames/iphone-4-format.png
+wrote /Users/runner/work/_temp/frames/iphone-5-insert.png
+wrote /Users/runner/work/_temp/frames/ipad-1-split.png
+wrote /Users/runner/work/_temp/frames/ipad-2-math-dark.png
+wrote /Users/runner/work/_temp/frames/ipad-3-page.png
+8 frames measured: sizes and positions match the standard

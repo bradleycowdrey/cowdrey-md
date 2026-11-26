@@ -61,15 +61,16 @@ const CANVAS = {
   mac: { W: 2880, H: 1800, scale: 3, side: 200, top: 110, gapEH: 24, gapHS: 26, lines: 1,
     device: { kind: 'window', bodyW: 1840, top: 470, titlebar: 56, radius: 22, screen: [2880, 1800] } },
 };
-// What every frame must measure (STANDARD.md, section 3): type sizes, eyebrow baseline, headline top, device top.
+// What every frame must measure (STANDARD.md, section 3): type sizes, eyebrow baseline, headline top, subhead bottom,
+// device top.
 const EXPECT = {
-  iphone: { eyebrow: 39, headline: 108, subhead: 51, eyebrowBaseline: 184, headlineTop: 213, deviceTop: 640, lines: 2 },
-  ipad: { eyebrow: 52, headline: 144, subhead: 68, eyebrowBaseline: 204, headlineTop: 244, deviceTop: 600, lines: 1 },
-  mac: { eyebrow: 39, headline: 108, subhead: 51, eyebrowBaseline: 144, headlineTop: 173, deviceTop: 470, lines: 1 },
+  iphone: { eyebrow: 39, headline: 108, subhead: 51, eyebrowBaseline: 184, headlineTop: 213, subheadBottom: 531, deviceTop: 640, lines: 2 },
+  ipad: { eyebrow: 52, headline: 144, subhead: 68, eyebrowBaseline: 204, headlineTop: 244, subheadBottom: 513, deviceTop: 600, lines: 1 },
+  mac: { eyebrow: 39, headline: 108, subhead: 51, eyebrowBaseline: 144, headlineTop: 173, subheadBottom: 374, deviceTop: 470, lines: 1 },
 };
 function check(m) {
   const e = EXPECT[m.kind], got = { eyebrow: m.eyebrow.fontSize, headline: m.headline.fontSize, subhead: m.subhead.fontSize,
-    eyebrowBaseline: m.eyebrowBaseline, headlineTop: m.headline.top, deviceTop: m.deviceTop, lines: m.headline.lines };
+    eyebrowBaseline: m.eyebrowBaseline, headlineTop: m.headline.top, subheadBottom: m.subhead.bottom, deviceTop: m.deviceTop, lines: m.headline.lines };
   return Object.keys(e).filter((k) => got[k] !== e[k]).map((k) => `${m.file}: ${k} is ${got[k]}, the standard is ${e[k]}`);
 }
 

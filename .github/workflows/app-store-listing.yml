@@ -28,7 +28,8 @@ concurrency:
 jobs:
   listing:
     name: Fill in the App Store listing (submits only the version listing.json names)
-    runs-on: ubuntu-latest
+    # Ubuntu 24.04: Playwright 1.56 (which frames the screenshots) can't install Chromium on ubuntu-latest (26.04).
+    runs-on: ubuntu-24.04
     # Only from main: a run started by hand on another branch never touches App Store Connect.
     if: github.ref == 'refs/heads/main' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     timeout-minutes: 60

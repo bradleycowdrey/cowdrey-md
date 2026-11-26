@@ -115,7 +115,8 @@ Already answered in the build (ITSAppUsesNonExemptEncryption = NO), so App Store
 
 Upload from `docs/app-store/` in this repository:
 
-- **iPhone 6.9" display** (1320 × 2868): `iphone-1-write.png`, `iphone-2-page.png`, `iphone-3-math-dark.png`, `iphone-4-format.png`, `iphone-5-insert.png`
-- **iPad 13" display** (2064 × 2752): `ipad-1-split.png`, `ipad-2-math-dark.png`, `ipad-3-page.png`
+- **iPhone 6.9" display** (1320 × 2868): `iphone-1-page.png`, `iphone-2-write.png`, `iphone-3-math.png`, `iphone-4-styles.png`, `iphone-5-files.png`, `iphone-6-export.png`
+- **iPad 13" display** (2064 × 2752): `ipad-1-split.png`, `ipad-2-styles.png`, `ipad-3-math.png`, `ipad-4-files.png`, `ipad-5-page.png`, `ipad-6-export.png`
+- **Mac** (2880 × 1800): `mac-1-split.png`, `mac-2-styles.png`, `mac-3-math.png`, `mac-4-files.png`, `mac-5-page.png`, `mac-6-export.png`
 
-Apple scales these down for smaller iPhones and iPads.
+Apple scales these down for smaller iPhones and iPads. All are dark mode, made from the real app by `node tests/app-store-screens.mjs` (see the top of that file).

@@ -20,16 +20,20 @@
   },
   "screenshots": {
     "APP_IPHONE_67": [
-      "iphone-1-write.png",
-      "iphone-2-page.png",
-      "iphone-3-math-dark.png",
-      "iphone-4-format.png",
-      "iphone-5-insert.png"
+      "iphone-1-page.png",
+      "iphone-2-write.png",
+      "iphone-3-math.png",
+      "iphone-4-styles.png",
+      "iphone-5-files.png",
+      "iphone-6-export.png"
     ],
     "APP_IPAD_PRO_3GEN_129": [
       "ipad-1-split.png",
-      "ipad-2-math-dark.png",
-      "ipad-3-page.png"
+      "ipad-2-styles.png",
+      "ipad-3-math.png",
+      "ipad-4-files.png",
+      "ipad-5-page.png",
+      "ipad-6-export.png"
     ]
   },
   "whatsNew": "Cowdrey.MD 2.0 is a big step up:\n\n• Your files, where they live: open a file from Files or iCloud Drive and your changes save back to it\n• Sync folder: keep your documents in a folder such as iCloud Drive, and see them on iPhone, iPad and Mac\n• Search every document, with folders, pins and sorting\n• Version history: restore any version from the last 90 days\n• Export to PDF and Word, and print\n• Stay in the same place when you switch between writing and reading\n• Editor and code line numbers, and a blurred background behind panels\n• Clearer Terms of Use and Privacy",
@@ -42,10 +46,11 @@
     "screenshots": {
       "APP_DESKTOP": [
         "mac-1-split.png",
-        "mac-2-plan.png",
+        "mac-2-styles.png",
         "mac-3-math.png",
-        "mac-4-page.png",
-        "mac-5-insert-light.png"
+        "mac-4-files.png",
+        "mac-5-page.png",
+        "mac-6-export.png"
       ]
     }
   }

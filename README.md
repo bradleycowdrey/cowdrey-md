@@ -6,7 +6,7 @@ It combines MacDown's side-by-side writing, a Docs-style title bar, menus and pa
 
 ### [⬇ Download for Mac](https://github.com/bradleycowdrey/cowdrey-md/releases/latest/download/Cowdrey.MD.dmg) · [⬇ Download for Android](https://github.com/bradleycowdrey/cowdrey-md/releases/latest/download/Cowdrey.MD.apk) · [⬇ iPhone and iPad (App Store)](https://apps.apple.com/app/id6826704085) · [Open in your browser](https://bradcowdrey.com/cowdrey-md)
 
-[![The Cowdrey.MD page at bradcowdrey.com/cowdrey-md, with the editor running in a Mac window. Click to open it.](docs/product-page.png)](https://bradcowdrey.com/cowdrey-md)
+[![Cowdrey.MD on the Mac in dark mode: Markdown on the left and the printed page on the right. Click to open it in your browser.](docs/app-store/mac-1-split.png)](https://bradcowdrey.com/cowdrey-md)
 
 **Free. Forever.**
 - **Mac:** a `.dmg` for Apple silicon and Intel Macs. Open it and drag Cowdrey.MD into Applications. It's signed with an Apple Developer ID and notarized by Apple, so it opens with a double-click, and it keeps itself up to date. A Mac App Store version is in Apple's App Review; until it's out, the `.dmg` is the way to get the Mac app.

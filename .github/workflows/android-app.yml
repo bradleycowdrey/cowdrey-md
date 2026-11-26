@@ -93,6 +93,12 @@ jobs:
           npx tauri android init --ci 2>&1 | tee -a "$RUNNER_TEMP/android-build.log"
           # Glyph inside the adaptive-icon safe zone, so round and squircle launchers don't crop it.
           npx tauri icon src-tauri/icons/android-source.png 2>&1 | tail -3 | tee -a "$RUNNER_TEMP/android-build.log"
+          # Themed (monochrome) layer for Android 13+ launchers, added to the adaptive icon tauri just wrote.
+          RES=src-tauri/gen/android/app/src/main/res
+          if [ -f "$RES/mipmap-anydpi-v26/ic_launcher.xml" ] && ! grep -q monochrome "$RES/mipmap-anydpi-v26/ic_launcher.xml"; then
+            mkdir -p "$RES/drawable-nodpi" && cp src-tauri/icons/android-monochrome.png "$RES/drawable-nodpi/ic_launcher_monochrome.png"
+            sed -i 's|</adaptive-icon>|  <monochrome android:drawable="@drawable/ic_launcher_monochrome"/>\n</adaptive-icon>|' "$RES/mipmap-anydpi-v26/ic_launcher.xml"
+          fi
 
       # Phones (arm64, older armv7) and the x86_64 emulator used below.
       - name: Build the APK and App Bundle

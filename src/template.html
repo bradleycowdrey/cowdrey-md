@@ -91,8 +91,8 @@ svg.lucide { width: 16px; height: 16px; stroke-width: 1.8; flex: none; }
 /* ---------- title bar (Docs) ---------- */
 .titlebar { flex: none; background: var(--chrome); }
 .tb-inner { display: flex; align-items: center; gap: 12px; padding-block: calc(6px + env(safe-area-inset-top, 0px)) 0; } /* clear the status bar when the app draws behind it (Android 15, iPad) */
-.logo { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); text-decoration: none; }
-.logo svg { width: 26px; height: 26px; }
+.logo { flex: none; display: block; width: 32px; height: 32px; border-radius: 22.5%; overflow: hidden; text-decoration: none; }
+.logo img { display: block; width: 100%; height: 100%; }
 .tb-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0; }
 .tb-row { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .doc-title { font-size: 18px; font-weight: 600; letter-spacing: -.01em; border: 1px solid transparent; background: transparent; border-radius: 6px; padding: 2px 6px; margin-left: -7px; min-width: 60px; max-width: 100%; field-sizing: content; text-overflow: ellipsis; }
@@ -467,6 +467,8 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
 #sideToggle { display: none; }
 .app[data-overlay="on"] .sidebar { position: absolute; z-index: 15; top: 0; bottom: 0; left: 0; box-shadow: 0 10px 40px rgba(0,0,0,.25); }
 .app[data-overlay="on"] .workspace::after { content: ""; position: absolute; inset: 0; background: rgba(14, 20, 34, .32); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); z-index: 14; }
+/* On a tablet the sidebar slides over a page that stays readable, as in iPadOS: a light dim, no blur. */
+.app[data-overlay="on"]:not([data-mobile="on"]) .workspace::after { background: rgba(14, 20, 34, .16); -webkit-backdrop-filter: none; backdrop-filter: none; }
 .g-card .s { overflow: hidden; text-overflow: clip; max-width: 100%; }
 .sb-zoom { flex-shrink: 0; }
 @media (max-width: 990px) {
@@ -565,6 +567,8 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
 .preview .math-block { text-align: center; overflow-x: auto; overflow-y: hidden; padding: .3em 0; }
 .preview .mermaid-block { display: flex; justify-content: center; overflow-x: auto; }
 .preview .mermaid-block svg { max-width: 100%; height: auto; }
+/* Mermaid measures labels outside the page, at normal line height; draw them the same way so the text fits its box. */
+.preview .mermaid-block svg { line-height: normal; }
 .preview .render-error { font-family: var(--font-mono); font-size: .78em; color: var(--c-caution); border: 1px dashed currentColor; border-radius: 6px; padding: .6em .8em; white-space: pre-wrap; }
 .preview .front-matter { font-family: var(--font-ui); font-size: .72em; border: 0; border-bottom: 1px solid var(--paper-line); border-radius: 0; padding: 0 0 .8em; margin-bottom: 1.4em; letter-spacing: .01em; color: var(--paper-muted); display: grid; grid-template-columns: max-content 1fr; gap: .15em 1.2em; }
 .preview .front-matter b { font-weight: 600; text-transform: uppercase; letter-spacing: .07em; font-size: .9em; color: var(--paper-muted); }
@@ -740,7 +744,7 @@ kbd.k { font-family: var(--font-mono); font-size: 11.5px; background: var(--chro
   <header class="titlebar">
     <div class="tb-inner gutter-x">
       <a class="logo" href="https://bradcowdrey.com" target="_blank" rel="noopener" title="Cowdrey.MD by Bradley Cowdrey" aria-label="bradcowdrey.com">
-        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M21.6 9.4A9.5 9.5 0 1 0 21.6 22.6" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/><text x="23.6" y="19.4" text-anchor="middle" font-family="Instrument Sans, system-ui, sans-serif" font-weight="700" font-size="8.6" letter-spacing="-.2" fill="currentColor">MD</text></svg>
+        <img src="__APP_ICON__" width="32" height="32" alt="" aria-hidden="true">
       </a>
       <div class="tb-main">
         <div class="tb-row">

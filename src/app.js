@@ -349,12 +349,22 @@ function isDark() {
   return matchMedia('(prefers-color-scheme: dark)').matches;
 }
 let mermaidTheme = null;
+const MERMAID_FONT = 'Instrument Sans, system-ui, sans-serif';
+// Mermaid sizes each label by measuring it, so wait until the label font is ready before the first diagram.
+let mermaidFontsReady = null;
+const mermaidFonts = () => mermaidFontsReady || (mermaidFontsReady = (async () => {
+  try { if (document.fonts) { await document.fonts.load('16px "Instrument Sans"'); await document.fonts.ready; } } catch {}
+})());
 function renderMermaid() {
   const blocks = $$('.mermaid-block', preview);
   if (!blocks.length) return;
   if (!window.mermaid || typeof window.mermaid.render !== 'function') { blocks.forEach((b) => { b.innerHTML = '<div class="render-error">Loading diagram renderer…</div>'; }); return; }
   const theme = isDark() ? 'dark' : 'default';
-  if (mermaidTheme !== theme) { mermaid.initialize({ startOnLoad: false, theme, securityLevel: 'strict', fontFamily: 'Instrument Sans, system-ui, sans-serif' }); mermaidTheme = theme; }
+  if (mermaidTheme !== theme) {
+    // Labels are measured and drawn in the same font, so the boxes fit their text (descenders included).
+    mermaid.initialize({ startOnLoad: false, theme, securityLevel: 'strict', fontFamily: MERMAID_FONT, themeVariables: { fontFamily: MERMAID_FONT }, flowchart: { htmlLabels: true, padding: 12 } });
+    mermaidTheme = theme;
+  }
   const badge = $('#renderBadge');
   let pending = 0;
   for (const b of blocks) {
@@ -363,7 +373,7 @@ function renderMermaid() {
     if (mermaidCache.has(key)) { b.innerHTML = mermaidCache.get(key); continue; }
     pending++; badge.style.opacity = 1;
     const id = 'cowdrey-mmd-' + (++mermaidSeq);
-    Promise.resolve().then(() => mermaid.render(id, src)).then(({ svg }) => {
+    mermaidFonts().then(() => mermaid.render(id, src)).then(({ svg }) => {
       mermaidCache.set(key, svg);
       if (mermaidCache.size > 60) mermaidCache.delete(mermaidCache.keys().next().value);
       b.innerHTML = svg;

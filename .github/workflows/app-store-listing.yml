@@ -6,6 +6,7 @@ on:
     # Update the listing when its text, screenshots or this workflow change.
     paths:
       - docs/app-store/**
+      - scripts/store-frames/**
       - .github/scripts/app_store_listing.py
       - .github/workflows/app-store-listing.yml
   # After each iPhone build uploads, attach it to the App Store version once Apple has processed it.
@@ -28,10 +29,27 @@ jobs:
   listing:
     name: Fill in the App Store listing (submits only the version listing.json names)
     runs-on: ubuntu-latest
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    # Only from main: a run started by hand on another branch never touches App Store Connect.
+    if: github.ref == 'refs/heads/main' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+
+      # The raw captures in docs/app-store/raw become the Cowdrey family's standard frames (scripts/store-frames)
+      # before anything is uploaded, so App Store Connect only gets framed screenshots. The compositor stops the
+      # run if a frame's type or device is not where the standard puts it. A run after a build uploads no screenshots.
+      - uses: actions/setup-node@v4
+        if: github.event_name != 'workflow_run'
+        with:
+          node-version: 20
+
+      - name: Frame the screenshots
+        if: github.event_name != 'workflow_run'
+        run: |
+          set -o pipefail
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+          node scripts/store-frames/store-frames.js --config scripts/store-frames/cowdrey-md.json 2>&1 | tee "$RUNNER_TEMP/listing.log"
 
       - name: Update App Store Connect
         env:
@@ -44,7 +62,7 @@ jobs:
           # After an iPhone build only the build is attached; the full listing is filled in when docs/app-store changes.
           MODE=$([[ "${{ github.event_name }}" == workflow_run ]] && echo --build-only || true)
           if [[ "${{ github.event.workflow_run.name }}" == 'Mac App Store' ]]; then MODE=--mac-build-only; fi
-          python3 .github/scripts/app_store_listing.py $MODE 2>&1 | tee "$RUNNER_TEMP/listing.log"
+          python3 .github/scripts/app_store_listing.py $MODE 2>&1 | tee -a "$RUNNER_TEMP/listing.log"
 
       # The result goes on the app-store-log branch, so it can be read without signing in to GitHub.
       - name: Publish the result

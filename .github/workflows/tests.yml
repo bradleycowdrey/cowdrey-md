@@ -38,6 +38,16 @@ jobs:
           set -o pipefail
           node tests/e2e.mjs 2>&1 | tee "$RUNNER_TEMP/tests.log"
 
+      # The App Store screenshots: the raw captures framed in the family standard, checked against it, and kept as
+      # an artifact to review. Nothing is uploaded to App Store Connect from here.
+      - name: Frame the App Store screenshots
+        run: node scripts/store-frames/store-frames.js --config scripts/store-frames/cowdrey-md.json --out "$RUNNER_TEMP/store-frames"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-store-frames
+          path: ${{ runner.temp }}/store-frames
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:

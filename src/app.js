@@ -3547,7 +3547,101 @@ window.__cowdreyQA = (kind) => {
   try { if (!store.get(KEY + ':terms', null)) { store.set(KEY + ':terms', TERMS_BUILT.hash); termsAsking = false; closeDialog(); } } catch {}
   const run = { shareApp, shareMd: () => runCmd('saveMd'), shareDocx: () => runCmd('exportDocx'), pdf: () => runCmd('exportPdf'), print: () => runCmd('print'), open: () => runCmd('openFile'), saveAs: () => runCmd('saveAs'), folder: chooseSyncFolder, sheet: () => mobileAction('share'), about: () => runCmd('about') }[kind];
   if (run) setTimeout(run, 300);
+  const shot = STORE_SHOTS[kind];
+  if (shot) setTimeout(() => storeShot(...shot), 300);
 };
+// App Store captures in the iPhone and iPad Simulator (see .github/workflows/app-store-captures.yml): launched with
+// COWDREY_QA=store..., the app opens one of these fictional documents in dark mode on the screen that screenshot
+// shows. Nothing happens otherwise.
+const STORE_DOCS = {
+  plan: ['Spring Launch Plan', `# Spring Launch Plan
+
+> [!TIP]
+> Draft the announcement by **Friday**, then share it with the team for review.
+
+## Goals
+
+- Ship **Cowdrey.MD 2.0** to every platform
+- Reach ==10,000 readers== in the first month
+- Keep every document *private* and on device
+
+## Timeline
+
+| Week | Milestone | Owner |
+| :--- | :--- | :--- |
+| 1 | Final design review | Bradley |
+| 2 | Public preview | Team |
+| 3 | Launch day | Everyone |
+
+## Checklist
+
+- [x] Write the press release
+- [x] Record the demo video
+- [ ] Update the website
+- [ ] Send the newsletter
+
+## Notes
+
+The editor turns plain text into a clean, printable page as you type.[^1]
+
+[^1]: Export to PDF, Word or Markdown, or share it straight from your phone.
+`],
+  physics: ['Physics Notes', `# Physics Notes
+
+## Energy
+
+Einstein's famous equation relates mass and energy:
+
+$$E = mc^2$$
+
+The kinetic energy of a moving object is $K = \\tfrac{1}{2}mv^2$.
+
+## The quadratic formula
+
+$$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$
+
+## How a study session flows
+
+\`\`\`mermaid
+flowchart LR
+  A[Read] --> B[Summarize]
+  B --> C[Practice]
+  C --> D{Confident?}
+  D -- Yes --> E[Next topic]
+  D -- No --> A
+\`\`\`
+
+> [!NOTE]
+> Math and diagrams render right in the page.
+`],
+};
+// kind: [document, screen]. Phone screens: write, page, math, format, insert. iPad screens: split, page.
+const STORE_SHOTS = {
+  storeWrite: ['plan', 'write'], storePage: ['plan', 'page'], storeMath: ['physics', 'math'],
+  storeFormat: ['plan', 'format'], storeInsert: ['plan', 'insert'], storeSplit: ['plan', 'split'], storeMathSplit: ['physics', 'split'],
+};
+function storeShot(docKey, screen) {
+  const [title, text] = STORE_DOCS[docKey];
+  S.appTheme = 'dark'; applyTheme();
+  const d = docs.find((x) => x.title === title) || newDocSilently();
+  d.title = title; d.content = text; cmDocs.delete(d.id); markDirty(d.id); persist();
+  S.openTabs = [d.id]; openDoc(d.id);
+  const edit = () => { setMobileMode('edit', { focus: false }); blurEditor(); };
+  if (mobile) {
+    if (screen === 'write') { edit(); cm.setCursor({ line: 0, ch: 0 }); blurEditor(); }
+    else if (screen === 'format') { edit(); cm.setCursor({ line: 5, ch: 3 }); blurEditor(); openSheet('format', 'style'); }
+    else if (screen === 'insert') { edit(); cm.setCursor({ line: 13, ch: 0 }); blurEditor(); openSheet('insert'); }
+    else setMobileMode('read');
+  } else { setView(screen === 'split' ? 'split' : 'preview'); cm.setCursor({ line: 0, ch: 0 }); }
+  blurEditor();
+  if (!$('#mSheet').hidden) document.activeElement.blur(); // no focus ring on the sheet's close button
+  // The math screen starts at the first section, the way you would scroll to it.
+  setTimeout(() => {
+    canvas.scrollTop = 0; cm.scrollTo(0, 0); updateCursorStatus();
+    const h = screen === 'math' && $('#preview h2');
+    if (h) canvas.scrollTop = h.getBoundingClientRect().top - canvas.getBoundingClientRect().top + canvas.scrollTop - 40;
+  }, 1500);
+}
 // Where the share sheet points from on iPad (the Share button, or the top-right corner).
 function shareAnchor() {
   const b = document.querySelector('[data-m="share"]');

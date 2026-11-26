@@ -1,0 +1,164 @@
+name: App Store captures
+
+# Takes the iPhone and iPad App Store screenshots from the real app in the iOS Simulator, with the status bar set
+# to Apple's 9:41, full signal, Wi-Fi and a full battery, then frames them in the Cowdrey family standard
+# (scripts/store-frames). The app opens each screen itself when launched with COWDREY_QA=store... (see
+# window.__cowdreyQA in src/app.js), showing a fictional sample document in dark mode.
+#
+# This workflow uploads nothing to App Store Connect and has no App Store secrets. The raw captures and the framed
+# screenshots go on the appstore-captures-preview branch and in a run artifact to review. To use them, copy the
+# raw captures into docs/app-store/raw and commit; the App Store listing workflow uploads from main only.
+# The Mac screenshots are not taken here (tests/mac-screenshots.mjs); a Mac has no iOS status bar.
+on:
+  # Runs on the store/ review branches (never main) and by hand.
+  push:
+    branches: ['store/**']
+    paths:
+      - src/**
+      - desktop/src-tauri/**
+      - scripts/store-frames/**
+      - .github/workflows/app-store-captures.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: app-store-captures
+  cancel-in-progress: false
+
+jobs:
+  captures:
+    name: Capture the iPhone and iPad screenshots in the Simulator
+    runs-on: macos-latest
+    env:
+      IPHONEOS_DEPLOYMENT_TARGET: '15.0'
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios-sim
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri -> target
+          key: ios-sim
+
+      - name: Use the newest Xcode
+        run: |
+          XC=$(ls -d /Applications/Xcode_*.app | grep -vi beta | sort -V | tail -1)
+          echo "Using $XC" | tee -a "$RUNNER_TEMP/captures.log"
+          sudo xcode-select -s "$XC"
+          xcodebuild -version | tee -a "$RUNNER_TEMP/captures.log"
+
+      - name: Install build tools and libraries
+        working-directory: desktop
+        run: npm ci
+
+      - name: Bundle the web app for offline use
+        working-directory: desktop
+        run: node build.mjs
+
+      - name: Create the Xcode project
+        working-directory: desktop
+        run: npx tauri ios init --ci 2>&1 | tail -5 | tee -a "$RUNNER_TEMP/captures.log"
+
+      # A Simulator build, so nothing is signed.
+      - name: Build for the Simulator
+        working-directory: desktop
+        run: |
+          npx tauri ios build --target aarch64-sim --debug --ci 2>&1 | tail -40 | tee -a "$RUNNER_TEMP/captures.log" || true
+          APP=$(find src-tauri/gen/apple -type d -name '*.app' | grep -i simulator | head -1)
+          [ -n "$APP" ] || APP=$(find src-tauri/gen/apple src-tauri/target -type d -name 'Cowdrey.MD.app' 2>/dev/null | head -1)
+          echo "App: $APP" | tee -a "$RUNNER_TEMP/captures.log"
+          test -n "$APP"
+          echo "APP=$PWD/$APP" >> "$GITHUB_ENV"
+
+      - name: Take the screenshots
+        run: |
+          set -eo pipefail
+          RAW="$RUNNER_TEMP/raw"; mkdir -p "$RAW"
+          # A new 6.9" iPhone (17 Pro Max, else 16 Pro Max) and 13" iPad Pro on the newest iOS runtime.
+          pick() {
+            xcrun simctl list -j | python3 -c '
+          import json, sys, re
+          want = sys.argv[1].split("|")
+          d = json.load(sys.stdin)
+          rts = [r for r in d["runtimes"] if r.get("isAvailable") and r["identifier"].split(".")[-1].startswith("iOS")]
+          rts.sort(key=lambda r: [int(x) for x in re.findall(r"\d+", r["version"])], reverse=True)
+          for rt in rts:
+              names = {t["name"]: t["identifier"] for t in rt.get("supportedDeviceTypes", [])}
+              for w in want:
+                  hit = sorted(n for n in names if re.fullmatch(w, n))
+                  if hit:
+                      print(names[hit[-1]], rt["identifier"], rt["version"], hit[-1], sep="\t"); sys.exit(0)
+          sys.exit(1)
+          ' "$1"
+          }
+          shoot() { # device-kind, device types, then pairs of hook name and file name
+            KIND=$1; read -r TYPE RT VER NAME <<< "$(pick "$2" | tr '\t' ' ')"; shift 2
+            echo "$KIND: $NAME, iOS $VER" | tee -a "$RUNNER_TEMP/captures.log"
+            DEV=$(xcrun simctl create "Store $KIND" "$TYPE" "$RT")
+            xcrun simctl boot "$DEV"
+            xcrun simctl bootstatus "$DEV" -b > /dev/null
+            xcrun simctl ui "$DEV" appearance dark
+            xcrun simctl status_bar "$DEV" override --time 9:41 --dataNetwork wifi --wifiMode active --wifiBars 3 \
+              --cellularMode active --cellularBars 4 --batteryState charged --batteryLevel 100
+            xcrun simctl install "$DEV" "$APP"
+            while [ $# -gt 0 ]; do
+              SIMCTL_CHILD_COWDREY_QA=$1 xcrun simctl launch "$DEV" com.bradcowdrey.cowdreymd > /dev/null
+              sleep 20
+              xcrun simctl io "$DEV" screenshot --type=png --mask=ignored "$RAW/$2" > /dev/null 2>&1
+              python3 -c 'import struct,sys; d=open(sys.argv[1],"rb").read(24); print(sys.argv[2], *struct.unpack(">II", d[16:24]))' "$RAW/$2" "$2" | tee -a "$RUNNER_TEMP/captures.log"
+              xcrun simctl terminate "$DEV" com.bradcowdrey.cowdreymd || true
+              sleep 2; shift 2
+            done
+            xcrun simctl shutdown "$DEV" || true
+          }
+          shoot iphone 'iPhone 17 Pro Max|iPhone 16 Pro Max' \
+            storeWrite iphone-1-write.png storePage iphone-2-page.png storeMath iphone-3-math-dark.png \
+            storeFormat iphone-4-format.png storeInsert iphone-5-insert.png
+          shoot ipad 'iPad Pro 13-inch.*' \
+            storeSplit ipad-1-split.png storeMathSplit ipad-2-math-dark.png storePage ipad-3-page.png
+
+      # The real status bar is in the captures, so the compositor draws none. The Mac captures stay as committed.
+      - name: Frame the screenshots
+        run: |
+          set -o pipefail
+          cp "$RUNNER_TEMP"/raw/*.png docs/app-store/raw/
+          npm install --no-save playwright@1.56.1
+          npx playwright install chromium
+          node scripts/store-frames/store-frames.js --config scripts/store-frames/cowdrey-md.json --only iphone,ipad \
+            --out "$RUNNER_TEMP/frames" 2>&1 | tee -a "$RUNNER_TEMP/captures.log"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: app-store-captures
+          path: |
+            ${{ runner.temp }}/raw
+            ${{ runner.temp }}/frames
+            ${{ runner.temp }}/captures.log
+          if-no-files-found: ignore
+
+      # A review branch only: main's README and the App Store listing never read it.
+      - name: Publish to the review branch
+        if: always()
+        run: |
+          D=$(mktemp -d); cd "$D" && git init -q -b appstore-captures-preview
+          mkdir -p raw frames
+          cp "$RUNNER_TEMP"/raw/*.png raw/ 2>/dev/null || true
+          cp "$RUNNER_TEMP"/frames/* frames/ 2>/dev/null || true
+          [[ -f "$RUNNER_TEMP/captures.log" ]] && tail -c 200000 "$RUNNER_TEMP/captures.log" > captures.log
+          echo "${{ job.status }} · run ${{ github.run_number }} · ${{ github.ref_name }} · ${{ github.sha }}" > status.txt
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com add .
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -qm "App Store captures, run ${{ github.run_number }}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" appstore-captures-preview

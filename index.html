@@ -5008,7 +5008,7 @@ The editor turns plain text into a clean, printable page as you type.[^1]
 
 ## Energy
 
-Einstein's famous equation relates mass and energy:
+Einstein's equation relates mass and energy:
 
 $$E = mc^2$$
 
@@ -5057,7 +5057,7 @@ function storeShot(docKey, screen) {
   setTimeout(() => {
     canvas.scrollTop = 0; cm.scrollTo(0, 0); updateCursorStatus();
     const h = screen === 'math' && $('#preview h2');
-    if (h) canvas.scrollTop = h.getBoundingClientRect().top - canvas.getBoundingClientRect().top + canvas.scrollTop - 40;
+    if (h) canvas.scrollTop = h.getBoundingClientRect().top - canvas.getBoundingClientRect().top + canvas.scrollTop - 16;
   }, 1500);
 }
 // Where the share sheet points from on iPad (the Share button, or the top-right corner).

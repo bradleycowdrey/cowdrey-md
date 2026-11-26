@@ -386,7 +386,8 @@ pub fn run() {
                 std::thread::sleep(Duration::from_secs(8));
                 let kind: String = kind.chars().filter(|c| c.is_ascii_alphanumeric()).collect();
                 if let Some(w) = handle.get_webview_window("main") {
-                    let _ = w.eval(&format!("window.__cowdreyQA && window.__cowdreyQA('{kind}')"));
+                    // The page may still be loading on a cold start: try again every half second for 20 seconds.
+                    let _ = w.eval(&format!("(function f(n) {{ if (window.__cowdreyQA) window.__cowdreyQA('{kind}'); else if (n) setTimeout(function () {{ f(n - 1); }}, 500); }})(40)"));
                 }
             });
         }

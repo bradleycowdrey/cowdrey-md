@@ -115,8 +115,10 @@ Already answered in the build (ITSAppUsesNonExemptEncryption = NO), so App Store
 
 Upload from `docs/app-store/` in this repository. These are framed in the Cowdrey family's App Store standard
 (`scripts/store-frames/STANDARD.md`): the app's blue sky, an eyebrow, a headline and a subhead above the app in a
-drawn iPhone, iPad or Mac window, with a drawn 9:41 status bar on iPhone and iPad. The raw captures are in
-`docs/app-store/raw/` (the Mac ones come from `tests/mac-screenshots.mjs`). To make the frames again:
+drawn iPhone, iPad or Mac window. The raw captures are in `docs/app-store/raw/`. The iPhone and iPad ones are
+taken from the real app in the iOS Simulator by the App Store captures workflow, with iOS's own 9:41 status bar
+(it publishes them to the `appstore-captures-preview` branch to review and copy here); the Mac ones come from
+`tests/mac-screenshots.mjs`. To make the frames again:
 
 ```
 npm install --no-save playwright@1.56.1

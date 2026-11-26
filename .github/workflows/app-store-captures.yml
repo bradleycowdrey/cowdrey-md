@@ -113,6 +113,11 @@ jobs:
             xcrun simctl status_bar "$DEV" override --time 9:41 --dataNetwork wifi --wifiMode active --wifiBars 3 \
               --cellularMode active --cellularBars 4 --batteryState charged --batteryLevel 100
             xcrun simctl install "$DEV" "$APP"
+            # A first launch to get past the cold start and agree to the terms (the hook does that for any kind).
+            SIMCTL_CHILD_COWDREY_QA=none xcrun simctl launch "$DEV" com.bradcowdrey.cowdreymd > /dev/null
+            sleep 40
+            xcrun simctl terminate "$DEV" com.bradcowdrey.cowdreymd || true
+            sleep 2
             while [ $# -gt 0 ]; do
               SIMCTL_CHILD_COWDREY_QA=$1 xcrun simctl launch "$DEV" com.bradcowdrey.cowdreymd > /dev/null
               sleep 20

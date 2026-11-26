@@ -1,6 +1,7 @@
 // App Store screenshots for iPhone (6.9", 1320x2868), iPad (13", 2064x2752) and Mac (2880x1800), dark mode.
 // Each one is the real app (desktop/dist, the offline bundle the apps ship) with a fictional document, framed in a
-// neutral device with a headline, on the family template shared with Cowdrey.PDF (tests/store-frame.mjs).
+// neutral device with a headline, on the family template shared with Cowdrey.PDF (tests/store-frame.mjs). On the Mac
+// the window sits on the family's macOS desktop, shown on a MacBook.
 // Run: (cd desktop && npm ci && node build.mjs) && node tests/app-store-screens.mjs [out-dir] [name-filter]
 // Needs Playwright (npm install --no-save playwright) and Chromium. Writes opaque RGB PNGs to docs/app-store.
 // The headline font is Fraunces (SIL OFL, design/app-store/fonts); the sub-line is Instrument Sans, the app's own UI font.
@@ -8,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
-import { compose as frame, THEMES } from './store-frame.mjs';
+import { compose as frame, desktop, THEMES } from './store-frame.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
@@ -38,8 +39,8 @@ const DEVICES = {
     ua: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
     platform: 'MacIntel', touch: 5, mobile: true,
   },
-  mac: { // a 1180x728 point window; the native title bar is drawn by the frame
-    canvas: [2880, 1800], screen: [1180, 700], scale: 2, inset: null,
+  mac: { // a 1120x700 point window (the native 28 pt title bar is drawn by desktop()), about 74% of the MacBook's screen
+    canvas: [2880, 1800], screen: [1120, 672], scale: 2, inset: null,
     ua: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
     platform: 'MacIntel', touch: 0, mobile: false,
   },
@@ -279,7 +280,7 @@ const STORIES = [
   { dev: 'mac', file: 'mac-1-split.png', head: 'Write Markdown. See the page.', sub: 'Plain text on the left, a clean, printable page on the right.', doc: 'garden', settings: { ...MAC_BIG } },
   { dev: 'mac', file: 'mac-2-styles.png', head: 'Make it look like a book', sub: 'Five page styles, from clean to manuscript, on Letter or A4.', doc: 'chapter', settings: { ...MAC_BIG, ribbonTab: 'layout', pageStyle: 'manuscript' } },
   { dev: 'mac', file: 'mac-3-math.png', head: 'Math and diagrams, drawn for you', sub: 'LaTeX equations and Mermaid charts, right on the page.', doc: 'orbits', settings: { ...MAC_BIG } },
-  { dev: 'mac', file: 'mac-4-files.png', head: 'All your writing, in one place', sub: 'Folders, pins and search across every document.', doc: 'lisbon', settings: { view: 'split', split: 0.5, outline: true, sideTab: 'docs' } },
+  { dev: 'mac', file: 'mac-4-files.png', head: 'All your writing, in one place', sub: 'Folders, pins and search across every document.', doc: 'lisbon', settings: { view: 'split', split: 0.5, outline: true, sideTab: 'docs' }, act: sideDocs },
   { dev: 'mac', file: 'mac-5-page.png', head: 'A page you can print', sub: 'Letter or A4, ready to print or save as PDF.', doc: 'garden', settings: { view: 'preview', outline: true, sideTab: 'outline' } },
   { dev: 'mac', file: 'mac-6-export.png', head: 'Share it as PDF or Word', sub: 'Export, print, or copy with formatting into Docs or Mail.', doc: 'garden', settings: { view: 'split', split: 0.44 }, act: exportMenu },
 ];
@@ -380,8 +381,17 @@ async function capture(story) {
 }
 
 /* ---------------- frame ---------------- */
-// The family template (tests/store-frame.mjs, the same file in Cowdrey.PDF) in Cowdrey.MD's blue.
-const compose = (story, png) => frame(browser, story.dev, { ...story, png, title: 'Cowdrey.MD' }, THEMES.md, FONTS);
+// The family template (tests/store-frame.mjs, the same file in every app of the family) in Cowdrey.MD's blue. On the
+// Mac the captured window (at 2x its point size) goes on the family desktop, and the desktop on the MacBook.
+const MAC_WINDOW = [DEVICES.mac.screen[0], DEVICES.mac.screen[1] + 28]; // points, with the 28 pt title bar
+async function compose(story, png) {
+  if (story.dev !== 'mac') return frame(browser, story.dev, { ...story, png, title: 'Cowdrey.MD' }, THEMES.md, FONTS);
+  const screen = await desktop(browser, {
+    theme: THEMES.md, app: 'Cowdrey.MD', fonts: FONTS, // the clock is the family's MAC_CLOCK
+    windows: [{ png, w: MAC_WINDOW[0], h: MAC_WINDOW[1], title: 'Cowdrey.MD' }],
+  });
+  return frame(browser, 'mac', { ...story, device: 'macbook', png: screen }, THEMES.md, FONTS);
+}
 
 fs.mkdirSync(OUT, { recursive: true });
 for (const story of STORIES) {
